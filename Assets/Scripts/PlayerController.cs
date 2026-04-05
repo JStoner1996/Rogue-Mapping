@@ -82,11 +82,14 @@ public class PlayerController : MonoBehaviour
     private void OnEnable()
     {
         ExpCrystal.onExpCrystalCollect += GetExperience;
+        HealthPickup.onHealthPickup += GainHealth;
+
     }
 
     private void OnDisable()
     {
         ExpCrystal.onExpCrystalCollect -= GetExperience;
+        HealthPickup.onHealthPickup -= GainHealth;
     }
 
     public void TakeDamage(float damage)
@@ -126,6 +129,17 @@ public class PlayerController : MonoBehaviour
                 Mathf.CeilToInt(playerLevels[playerLevels.Count - 1] * 1.1f + 15)
             );
         }
+    }
+
+    private void GainHealth(int healthAmount)
+    {
+        playerHealth += healthAmount;
+        if (playerHealth > playerMaxHealth)
+        {
+            playerHealth = playerMaxHealth;
+        }
+
+        UIController.Instance.UpdateHealthSlider();
     }
 
     public void LevelUp()
