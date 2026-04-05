@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
 
     [Header("Player Weapons")]
-    public Weapon activeWeapon;
+    [SerializeField] private WeaponController weaponController;
 
     [Header("Immunity Handling")]
     private bool isImmune;
@@ -148,9 +148,17 @@ public class PlayerController : MonoBehaviour
         currentLevel++;
 
         AudioController.Instance.PlaySound(AudioController.Instance.levelUp);
+        var weapons = weaponController.activeWeapons;
 
+        for (int i = 0; i < UIController.Instance.levelUpButtons.Length; i++)
+        {
+            if (i < weapons.Count)
+            {
+                int randomIndex = Random.Range(0, weapons.Count);
+                UIController.Instance.levelUpButtons[i].ActivateButton(weapons[randomIndex]);
+            }
+        }
         UIController.Instance.UpdateExperienceSlider();
-        UIController.Instance.levelUpButtons[0].ActivateButton(activeWeapon);
         UIController.Instance.LevelUpPanelOpen();
     }
 }

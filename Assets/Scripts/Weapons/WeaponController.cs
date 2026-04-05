@@ -6,7 +6,7 @@ public class WeaponController : MonoBehaviour
     [Header("Starting Weapons")]
     [SerializeField] private List<Weapon> startingWeapons;
 
-    private List<Weapon> activeWeapons = new List<Weapon>();
+    public List<Weapon> activeWeapons = new List<Weapon>();
 
     void Start()
     {
