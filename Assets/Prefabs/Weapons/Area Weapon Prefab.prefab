@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3556274390671441545}
   - component: {fileID: 1758444767194726672}
   - component: {fileID: -2452665147723352844}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Area Weapon Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -141,3 +141,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f5e35d4be7cbd249a6f30d7890fac41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AreaWeaponPrefab
+  weapon: {fileID: 0}
+  enemiesInRange: []

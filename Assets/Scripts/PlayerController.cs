@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,32 +8,37 @@ public class PlayerController : MonoBehaviour
 
     public static PlayerController Instance;
 
+    [Header("Player Components")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator animator;
 
 
-    // Player input / movement
+    [Header("Player Movement")]
     public Vector3 _moveDirection;
     public InputActionReference move;
 
-    // player level
+    [Header("Player Levels")]
     public int currentLevel;
     public int maxLevel;
     public List<int> playerLevels;
     public int experience;
 
-    // Player stats
+    [Header("Player Stats")]
     public float playerMaxHealth;
     public float playerHealth;
     public float moveSpeed;
 
-    // Weapon
+    [Header("Player Weapons")]
     public Weapon activeWeapon;
 
-    // Immunity handling
+    [Header("Immunity Handling")]
     private bool isImmune;
     [SerializeField] private float immunityDuration;
     [SerializeField] private float immunityTimer;
+
+    [Header("Collector Stats")]
+    [SerializeField] private CircleCollider2D collectorCollider;
+    [SerializeField] private float pickupRadius;
 
 
     void Awake()
@@ -48,8 +54,11 @@ public class PlayerController : MonoBehaviour
     {
         GetExperienceCurve();
         playerHealth = playerMaxHealth;
+
         UIController.Instance.UpdateHealthSlider();
         UIController.Instance.UpdateExperienceSlider();
+
+        collectorCollider.radius = pickupRadius;
     }
 
     private void Update()
@@ -130,6 +139,11 @@ public class PlayerController : MonoBehaviour
         UIController.Instance.UpdateExperienceSlider();
         UIController.Instance.levelUpButtons[0].ActivateButton(activeWeapon);
         UIController.Instance.LevelUpPanelOpen();
+    }
 
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+        IItem item = collider.GetComponent<IItem>();
+        item?.Collect();
     }
 }

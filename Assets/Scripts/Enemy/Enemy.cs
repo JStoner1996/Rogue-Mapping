@@ -107,7 +107,6 @@ public class Enemy : MonoBehaviour
         if (loot)
         {
             GameObject droppedLoot = Instantiate(loot, transform.position, transform.rotation);
-            droppedLoot.GetComponent<SpriteRenderer>().color = Color.red;
         }
     }
 }
