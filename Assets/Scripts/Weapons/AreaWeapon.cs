@@ -2,13 +2,22 @@ using UnityEngine;
 
 public class AreaWeapon : Weapon
 {
-    [SerializeField] private GameObject prefab;
+    private float spawnCounter;
 
-    protected override void Fire()
+    public GameObject prefab;
+
+    public override void ManualUpdate(float deltaTime)
     {
-        GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity, transform);
+        spawnCounter -= deltaTime;
 
-        AreaWeaponPrefab area = obj.GetComponent<AreaWeaponPrefab>();
-        area.Initialize(this);
+        if (spawnCounter <= 0f)
+        {
+            spawnCounter = stats.cooldown;
+
+            GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity, transform);
+
+            AreaWeaponPrefab area = obj.GetComponent<AreaWeaponPrefab>();
+            area.Initialize(this);
+        }
     }
 }

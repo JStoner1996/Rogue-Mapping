@@ -3,31 +3,51 @@ using UnityEngine;
 public class Weapon : MonoBehaviour
 {
     public WeaponData data;
-    public int weaponLevel;
 
-    protected float cooldownTimer;
+    public RuntimeStats stats = new RuntimeStats();
 
-    public WeaponStats CurrentStats => data.levels[weaponLevel];
-
-    public virtual void Tick(float deltaTime)
+    public void InitializeStats()
     {
-        cooldownTimer -= deltaTime;
+        var baseStats = data.baseStats;
 
-        if (cooldownTimer <= 0f)
+        stats.damage = baseStats.damage;
+        stats.attackSpeed = baseStats.attackSpeed;
+        stats.range = baseStats.range;
+        stats.duration = baseStats.duration;
+        stats.cooldown = baseStats.cooldown;
+    }
+
+    public virtual void ManualUpdate(float deltaTime)
+    {
+        // Base weapon does nothing by default
+    }
+
+    public void ApplyUpgrade(WeaponUpgradeResult upgrade)
+    {
+        foreach (var stat in upgrade.stats)
         {
-            cooldownTimer = CurrentStats.cooldown;
-            Fire();
+            switch (stat.Key)
+            {
+                case StatType.Damage:
+                    stats.damage += stat.Value;
+                    break;
+
+                case StatType.AttackSpeed:
+                    stats.attackSpeed += stat.Value;
+                    break;
+
+                case StatType.Range:
+                    stats.range += stat.Value;
+                    break;
+
+                case StatType.Duration:
+                    stats.duration += stat.Value;
+                    break;
+
+                case StatType.Cooldown:
+                    stats.cooldown += stat.Value;
+                    break;
+            }
         }
-    }
-
-    protected virtual void Fire()
-    {
-        // Override in child weapons
-    }
-
-    public virtual void LevelUp()
-    {
-        if (weaponLevel < data.levels.Count - 1)
-            weaponLevel++;
     }
 }

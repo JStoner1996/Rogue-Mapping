@@ -18,20 +18,19 @@ public class WeaponController : MonoBehaviour
 
     void Update()
     {
+        float deltaTime = Time.deltaTime;
+
         foreach (var weapon in activeWeapons)
         {
-            weapon.Tick(Time.deltaTime);
+            weapon.ManualUpdate(deltaTime);
         }
     }
 
     public void AddWeapon(Weapon weaponPrefab)
     {
         Weapon weapon = Instantiate(weaponPrefab, transform);
-        activeWeapons.Add(weapon);
-    }
+        weapon.InitializeStats();
 
-    public void LevelUpWeapon(Weapon weapon)
-    {
-        weapon.LevelUp();
+        activeWeapons.Add(weapon);
     }
 }

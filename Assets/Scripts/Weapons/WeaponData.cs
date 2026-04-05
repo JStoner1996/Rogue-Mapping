@@ -6,16 +6,10 @@ public class WeaponData : ScriptableObject
 {
     public string weaponName;
     public Sprite icon;
-    public List<WeaponStats> levels;
-}
 
-[System.Serializable]
-public class WeaponStats
-{
-    public float cooldown;
-    public float duration;
-    public float damage;
-    public float range;
-    public float attackSpeed;
-    public string description;
+    public WeaponStats baseStats;
+
+    public List<StatRoll> upgradeRolls;
+
+    public UpgradePreset upgradePreset;
 }

@@ -148,16 +148,34 @@ public class PlayerController : MonoBehaviour
         currentLevel++;
 
         AudioController.Instance.PlaySound(AudioController.Instance.levelUp);
+
         var weapons = weaponController.activeWeapons;
 
         for (int i = 0; i < UIController.Instance.levelUpButtons.Length; i++)
         {
-            if (i < weapons.Count)
+            if (weapons.Count == 0) continue;
+
+            // Pick a random weapon
+            Weapon selectedWeapon = weapons[Random.Range(0, weapons.Count)];
+
+            // Generate a random upgrade for that weapon
+            if (selectedWeapon.data.upgradePreset == null)
             {
-                int randomIndex = Random.Range(0, weapons.Count);
-                UIController.Instance.levelUpButtons[i].ActivateButton(weapons[randomIndex]);
+                Debug.LogError("UpgradePreset is missing on WeaponData!");
+                return;
             }
+
+            var rolls = selectedWeapon.data.upgradePreset.rolls;
+
+
+            UpgradeRarity rarity = UpgradeRarity.Common; // later you randomize this
+
+            WeaponUpgradeResult upgrade = UpgradeCalculator.RollUpgrade(rolls, rarity);
+
+            // Assign to UI
+            UIController.Instance.levelUpButtons[i].ActivateButton(selectedWeapon, upgrade);
         }
+
         UIController.Instance.UpdateExperienceSlider();
         UIController.Instance.LevelUpPanelOpen();
     }
