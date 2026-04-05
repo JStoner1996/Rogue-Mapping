@@ -10,6 +10,6 @@ public class Magnet : MonoBehaviour, IItem
             .GetComponent<PlayerMagnet>()
             .ActivateMagnet(pullSpeed);
 
-        Destroy(gameObject);
+        PickupPools.Instance.ReturnMagnet(this);
     }
 }

@@ -19,6 +19,6 @@ public class Bomb : MonoBehaviour, IItem
             enemy.TakeDamage(damage);
         }
 
-        Destroy(gameObject);
+        PickupPools.Instance.ReturnBomb(this);
     }
 }

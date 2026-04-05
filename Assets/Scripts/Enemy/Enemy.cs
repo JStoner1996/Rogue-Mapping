@@ -92,7 +92,7 @@ public class Enemy : MonoBehaviour
         {
             if (Random.Range(0f, 100f) <= lootItem.dropChance)
             {
-                InstantiateLoot(lootItem.itemPrefab);
+                InstantiateLoot(lootItem);
             }
         }
 
@@ -101,16 +101,31 @@ public class Enemy : MonoBehaviour
         AudioController.Instance.PlayModifiedSound(AudioController.Instance.enemyDie);
     }
 
-    private void InstantiateLoot(GameObject lootPrefab)
+    private void InstantiateLoot(LootItem lootItem)
     {
-        if (!lootPrefab) return;
+        if (Random.Range(0f, 100f) > lootItem.dropChance) return;
 
-        GameObject droppedLoot = Instantiate(lootPrefab, transform.position, transform.rotation);
-        ExpCrystal expCrystal = droppedLoot.GetComponent<ExpCrystal>();
-
-        if (expCrystal != null)
+        switch (lootItem.type)
         {
-            expCrystal.worth = experienceWorth;
+            case LootType.Health:
+                HealthPickup health = PickupPools.Instance.GetHealth();
+                health.transform.position = transform.position;
+                break;
+            case LootType.Experience:
+                ExpCrystal xp = PickupPools.Instance.GetXP();
+                xp.transform.position = transform.position;
+                xp.Init(experienceWorth);
+                break;
+
+            case LootType.Magnet:
+                Magnet magnet = PickupPools.Instance.GetMagnet();
+                magnet.transform.position = transform.position;
+                break;
+
+            case LootType.Bomb:
+                Bomb bomb = PickupPools.Instance.GetBomb();
+                bomb.transform.position = transform.position;
+                break;
         }
     }
 }

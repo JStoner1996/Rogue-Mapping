@@ -5,10 +5,16 @@ public class ExpCrystal : MonoBehaviour, IItem
 {
     public static event Action<int> onExpCrystalCollect;
     public int worth = 5;
+
+    public void Init(int value)
+    {
+        worth = value;
+    }
+
     public void Collect()
     {
         onExpCrystalCollect?.Invoke(worth);
-        Destroy(gameObject);
+        PickupPools.Instance.ReturnXP(this);
     }
 
 }
