@@ -208,8 +208,14 @@ MonoBehaviour:
   health: 10
   pushTime: 0.5
   lootTable:
-  - itemPrefab: {fileID: 0}
-    dropChance: 0
+  - itemPrefab: {fileID: 8067296989678784352, guid: 4667355e2dc201a48b8be11181222934, type: 3}
+    dropChance: 100
+  - itemPrefab: {fileID: 9035283693994141731, guid: 4fb41613d8e46dc419e79cf646ad86d8, type: 3}
+    dropChance: 50
+  - itemPrefab: {fileID: 6203677586702522537, guid: 77f29ea490283e64c9da1aa297d252ed, type: 3}
+    dropChance: 30
+  - itemPrefab: {fileID: 1201580960227571414, guid: d524371948be3ec4b9ed62a65b9270f1, type: 3}
+    dropChance: 20
 --- !u!50 &4076860670479054232
 Rigidbody2D:
   serializedVersion: 5
