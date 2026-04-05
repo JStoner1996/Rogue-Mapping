@@ -106,8 +106,8 @@ public class Enemy : MonoBehaviour
         if (!lootPrefab) return;
 
         GameObject droppedLoot = Instantiate(lootPrefab, transform.position, transform.rotation);
-
         ExpCrystal expCrystal = droppedLoot.GetComponent<ExpCrystal>();
+
         if (expCrystal != null)
         {
             expCrystal.worth = experienceWorth;
