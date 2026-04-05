@@ -8,6 +8,7 @@ public class Bomb : MonoBehaviour, IItem
     public void Collect()
     {
         Explode();
+        AudioController.Instance.PlaySound(AudioController.Instance.bomb);
     }
 
     private void Explode()

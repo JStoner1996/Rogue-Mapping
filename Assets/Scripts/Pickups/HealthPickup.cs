@@ -9,7 +9,8 @@ public class HealthPickup : MonoBehaviour, IItem
     public void Collect()
     {
         onHealthPickup?.Invoke(worth);
-        Destroy(gameObject);
+        PickupPools.Instance.ReturnHealth(this);
+        AudioController.Instance.PlayModifiedSound(AudioController.Instance.heal);
     }
 
 

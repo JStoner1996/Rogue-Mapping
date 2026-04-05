@@ -12,6 +12,10 @@ public class AudioController : MonoBehaviour
     public AudioSource levelUp;
     public AudioSource areaWeaponSpawn;
     public AudioSource gameOver;
+    public AudioSource heal;
+    public AudioSource bomb;
+    public AudioSource getExp;
+    public AudioSource magnet;
 
     void Awake()
     {
@@ -27,9 +31,11 @@ public class AudioController : MonoBehaviour
         sound.Stop();
         sound.Play();
     }
-    public void PlayModifiedSound(AudioSource sound)
+    public void PlayModifiedSound(AudioSource sound, float minPitch = 0.5f, float maxPitch = 1.5f)
     {
-        sound.pitch = Random.Range(0.5f, 1.5f);
+        float pitch = Random.Range(minPitch, maxPitch);
+        sound.pitch = Mathf.Clamp(pitch, 0.1f, 3f);
+
         sound.Stop();
         sound.Play();
     }
