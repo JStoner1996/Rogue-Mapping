@@ -7,7 +7,7 @@ public class ExpCrystal : MonoBehaviour, IItem
     public int worth = 5;
     public void Collect()
     {
-        onExpCrystalCollect.Invoke(worth);
+        onExpCrystalCollect?.Invoke(worth);
         Destroy(gameObject);
     }
 

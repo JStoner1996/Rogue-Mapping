@@ -1,17 +1,14 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-
     public static PlayerController Instance;
 
     [Header("Player Components")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator animator;
-
 
     [Header("Player Movement")]
     public Vector3 _moveDirection;
@@ -34,19 +31,16 @@ public class PlayerController : MonoBehaviour
     [Header("Immunity Handling")]
     private bool isImmune;
     [SerializeField] private float immunityDuration;
-    [SerializeField] private float immunityTimer;
-
-    [Header("Collector Stats")]
-    [SerializeField] private CircleCollider2D collectorCollider;
-    [SerializeField] private float pickupRadius;
-
+    private float immunityTimer;
 
     void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(this);
+            Destroy(gameObject);
+            return;
         }
+
         Instance = this;
     }
 
@@ -57,25 +51,15 @@ public class PlayerController : MonoBehaviour
 
         UIController.Instance.UpdateHealthSlider();
         UIController.Instance.UpdateExperienceSlider();
-
-        collectorCollider.radius = pickupRadius;
     }
 
     private void Update()
     {
-
         _moveDirection = move.action.ReadValue<Vector2>().normalized;
+
         animator.SetFloat("moveX", _moveDirection.x);
         animator.SetFloat("moveY", _moveDirection.y);
-
-        if (_moveDirection == Vector3.zero)
-        {
-            animator.SetBool("moving", false);
-        }
-        else
-        {
-            animator.SetBool("moving", true);
-        }
+        animator.SetBool("moving", _moveDirection != Vector3.zero);
 
         if (immunityTimer > 0)
         {
@@ -89,25 +73,37 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        rb.linearVelocity = new Vector3(_moveDirection.x * moveSpeed, _moveDirection.y * moveSpeed);
+        rb.linearVelocity = new Vector2(
+            _moveDirection.x * moveSpeed,
+            _moveDirection.y * moveSpeed
+        );
+    }
+
+    private void OnEnable()
+    {
+        ExpCrystal.onExpCrystalCollect += GetExperience;
+    }
+
+    private void OnDisable()
+    {
+        ExpCrystal.onExpCrystalCollect -= GetExperience;
     }
 
     public void TakeDamage(float damage)
     {
-        if (!isImmune)
+        if (isImmune) return;
+
+        isImmune = true;
+        immunityTimer = immunityDuration;
+
+        playerHealth -= damage;
+
+        UIController.Instance.UpdateHealthSlider();
+
+        if (playerHealth <= 0)
         {
-            isImmune = true;
-            immunityTimer = immunityDuration;
-
-            playerHealth -= damage;
-
-            UIController.Instance.UpdateHealthSlider();
-
-            if (playerHealth <= 0)
-            {
-                gameObject.SetActive(false);
-                GameManager.Instance.GameOver();
-            }
+            gameObject.SetActive(false);
+            GameManager.Instance.GameOver();
         }
     }
 
@@ -115,6 +111,7 @@ public class PlayerController : MonoBehaviour
     {
         experience += addedExperience;
         UIController.Instance.UpdateExperienceSlider();
+
         if (experience >= playerLevels[currentLevel - 1])
         {
             LevelUp();
@@ -125,7 +122,9 @@ public class PlayerController : MonoBehaviour
     {
         for (int i = playerLevels.Count; i < maxLevel; i++)
         {
-            playerLevels.Add(Mathf.CeilToInt(playerLevels[playerLevels.Count - 1] * 1.1f + 15));
+            playerLevels.Add(
+                Mathf.CeilToInt(playerLevels[playerLevels.Count - 1] * 1.1f + 15)
+            );
         }
     }
 
@@ -139,11 +138,5 @@ public class PlayerController : MonoBehaviour
         UIController.Instance.UpdateExperienceSlider();
         UIController.Instance.levelUpButtons[0].ActivateButton(activeWeapon);
         UIController.Instance.LevelUpPanelOpen();
-    }
-
-    private void OnTriggerEnter2D(Collider2D collider)
-    {
-        IItem item = collider.GetComponent<IItem>();
-        item?.Collect();
     }
 }

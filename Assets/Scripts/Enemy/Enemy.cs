@@ -98,15 +98,19 @@ public class Enemy : MonoBehaviour
 
         Destroy(gameObject);
         Instantiate(destroyEffect, transform.position, transform.rotation);
-        PlayerController.Instance.GetExperience(experienceWorth);
         AudioController.Instance.PlayModifiedSound(AudioController.Instance.enemyDie);
     }
 
-    private void InstantiateLoot(GameObject loot)
+    private void InstantiateLoot(GameObject lootPrefab)
     {
-        if (loot)
+        if (!lootPrefab) return;
+
+        GameObject droppedLoot = Instantiate(lootPrefab, transform.position, transform.rotation);
+
+        ExpCrystal expCrystal = droppedLoot.GetComponent<ExpCrystal>();
+        if (expCrystal != null)
         {
-            GameObject droppedLoot = Instantiate(loot, transform.position, transform.rotation);
+            expCrystal.worth = experienceWorth;
         }
     }
 }
