@@ -1,28 +1,33 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+    public WeaponData data;
     public int weaponLevel;
-    public List<WeaponStats> stats;
-    public Sprite weaponIcon;
 
-    public void LevelUp()
+    protected float cooldownTimer;
+
+    public WeaponStats CurrentStats => data.levels[weaponLevel];
+
+    public virtual void Tick(float deltaTime)
     {
-        if (weaponLevel < stats.Count - 1)
-            weaponLevel++;
+        cooldownTimer -= deltaTime;
+
+        if (cooldownTimer <= 0f)
+        {
+            cooldownTimer = CurrentStats.cooldown;
+            Fire();
+        }
     }
 
-}
+    protected virtual void Fire()
+    {
+        // Override in child weapons
+    }
 
-[System.Serializable]
-public class WeaponStats
-{
-    public float cooldown;
-    public float duration;
-    public float damage;
-    public float range;
-    public float attackSpeed;
-    public string description;
-
+    public virtual void LevelUp()
+    {
+        if (weaponLevel < data.levels.Count - 1)
+            weaponLevel++;
+    }
 }

@@ -13,8 +13,8 @@ public class LevelUpButton : MonoBehaviour
     public void ActivateButton(Weapon weapon)
     {
         weaponName.text = weapon.name;
-        weaponDescription.text = weapon.stats[weapon.weaponLevel].description;
-        weaponIcon.sprite = weapon.weaponIcon;
+        // weaponDescription.text = weapon.stats[weapon.weaponLevel].description;
+        // weaponIcon.sprite = weapon.weaponIcon;
 
         assignedWeapon = weapon;
     }

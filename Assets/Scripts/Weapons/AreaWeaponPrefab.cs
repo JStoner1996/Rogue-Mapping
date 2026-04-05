@@ -3,61 +3,77 @@ using UnityEngine;
 
 public class AreaWeaponPrefab : MonoBehaviour
 {
+    private AreaWeapon weapon;
 
-    public AreaWeapon weapon;
     private Vector3 targetSize;
-    public List<Enemy> enemiesInRange;
     private float timer;
     private float counter;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public List<Enemy> enemiesInRange = new List<Enemy>();
+
+    public void Initialize(AreaWeapon weaponReference)
     {
-        weapon = GameObject.Find("Area Weapon").GetComponent<AreaWeapon>();
-        targetSize = Vector3.one * weapon.stats[weapon.weaponLevel].range;
+        weapon = weaponReference;
+
+        var stats = weapon.CurrentStats;
+
+        targetSize = Vector3.one * stats.range;
         transform.localScale = Vector3.zero;
-        timer = weapon.stats[weapon.weaponLevel].duration;
+        timer = stats.duration;
+        counter = 0f;
 
         AudioController.Instance.PlayModifiedSound(AudioController.Instance.areaWeaponSpawn);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // grow and shrink toward target size
-        transform.localScale = Vector3.MoveTowards(transform.localScale, targetSize, Time.deltaTime * 5);
+        if (weapon == null) return;
 
-        //shrink and destroy
+        var stats = weapon.CurrentStats;
+
+        transform.localScale = Vector3.MoveTowards(
+            transform.localScale,
+            targetSize,
+            Time.deltaTime * 5f
+        );
+
         timer -= Time.deltaTime;
-        if (timer <= 0)
+
+        if (timer <= 0f)
         {
             targetSize = Vector3.zero;
-            if (transform.localScale.x == 0f)
+
+            if (transform.localScale.x <= 0.01f)
             {
                 Destroy(gameObject);
             }
         }
 
-        // periodic damage
         counter -= Time.deltaTime;
-        if (counter <= 0)
-        {
-            counter = weapon.stats[weapon.weaponLevel].attackSpeed;
 
-            for (int i = 0; i < enemiesInRange.Count; i++)
+        if (counter <= 0f)
+        {
+            counter = stats.attackSpeed;
+
+            for (int i = enemiesInRange.Count - 1; i >= 0; i--)
             {
-                enemiesInRange[i].TakeDamage(weapon.stats[weapon.weaponLevel].damage);
+                if (enemiesInRange[i] != null)
+                {
+                    enemiesInRange[i].TakeDamage(stats.damage);
+                }
             }
         }
-
     }
-
 
     private void OnTriggerEnter2D(Collider2D collider)
     {
         if (collider.CompareTag("Enemy"))
         {
-            enemiesInRange.Add(collider.GetComponent<Enemy>());
+            Enemy enemy = collider.GetComponent<Enemy>();
+            if (enemy != null && !enemiesInRange.Contains(enemy))
+            {
+                enemiesInRange.Add(enemy);
+            }
         }
     }
 
@@ -65,7 +81,11 @@ public class AreaWeaponPrefab : MonoBehaviour
     {
         if (collider.CompareTag("Enemy"))
         {
-            enemiesInRange.Remove(collider.GetComponent<Enemy>());
+            Enemy enemy = collider.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemiesInRange.Remove(enemy);
+            }
         }
     }
 }

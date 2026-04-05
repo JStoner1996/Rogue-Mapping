@@ -2,18 +2,13 @@ using UnityEngine;
 
 public class AreaWeapon : Weapon
 {
-
     [SerializeField] private GameObject prefab;
-    private float spawnCounter;
 
-    // Update is called once per frame
-    void Update()
+    protected override void Fire()
     {
-        spawnCounter -= Time.deltaTime;
-        if (spawnCounter <= 0)
-        {
-            spawnCounter = stats[weaponLevel].cooldown;
-            Instantiate(prefab, transform.position, transform.rotation, transform);
-        }
+        GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity, transform);
+
+        AreaWeaponPrefab area = obj.GetComponent<AreaWeaponPrefab>();
+        area.Initialize(this);
     }
 }
