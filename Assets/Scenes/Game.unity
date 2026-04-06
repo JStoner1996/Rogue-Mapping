@@ -36842,7 +36842,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
   startingWeapons:
-  - {fileID: 1421270835611811585, guid: b79d2498e8ff00448918b3bf0af2e9c9, type: 3}
+  - {fileID: 6286844665201509070, guid: d908a02c4833d3443b85e958ae24f690, type: 3}
   activeWeapons: []
 --- !u!1 &1338702976
 GameObject:
