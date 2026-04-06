@@ -63,7 +63,7 @@ public class LevelUpButton : MonoBehaviour
 
     private string FormatStat(StatType statType, float value)
     {
-        string statName = statType.ToString().Replace("AttackSpeed", "Attack Speed");
+        string statName = StringUtils.SplitCamelCase(statType.ToString());
 
         switch (statType)
         {
