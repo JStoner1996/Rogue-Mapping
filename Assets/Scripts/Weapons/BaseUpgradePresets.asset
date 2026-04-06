@@ -10,6 +10,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73a849eef0a550847be5ca70c55102d5, type: 3}
-  m_Name: BeamWeaponsUpgrades
+  m_Name: BaseUpgradePresets
   m_EditorClassIdentifier: Assembly-CSharp::UpgradePreset
   rolls: []

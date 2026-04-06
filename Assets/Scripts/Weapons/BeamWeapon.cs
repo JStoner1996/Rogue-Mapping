@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BeamWeapon : Weapon
 {
@@ -31,5 +32,4 @@ public class BeamWeapon : Weapon
             }
         }
     }
-
 }

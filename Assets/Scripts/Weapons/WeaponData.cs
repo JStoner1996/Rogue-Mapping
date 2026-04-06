@@ -11,5 +11,7 @@ public class WeaponData : ScriptableObject
 
     public List<StatRoll> upgradeRolls;
 
+    public List<StatType> allowedStats = new List<StatType>();
     public UpgradePreset upgradePreset;
+
 }

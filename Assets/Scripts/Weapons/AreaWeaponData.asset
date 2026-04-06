@@ -21,4 +21,5 @@ MonoBehaviour:
     duration: 3
     cooldown: 5
   upgradeRolls: []
-  upgradePreset: {fileID: 11400000, guid: 408f2d28ff7c2f7489124a3518edd555, type: 2}
+  allowedStats: 0000000001000000020000000300000004000000
+  upgradePreset: {fileID: 11400000, guid: f6b8514e7ed5e404b96185332302f9e3, type: 2}

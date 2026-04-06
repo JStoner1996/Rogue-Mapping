@@ -176,12 +176,16 @@ public class PlayerController : MonoBehaviour
                 continue;
             }
 
-            var rolls = selectedWeapon.data.upgradePreset.rolls;
+            var allRolls = selectedWeapon.data.upgradePreset.rolls;
+
+            HashSet<StatType> allowed = new HashSet<StatType>(selectedWeapon.data.allowedStats);
+
+            List<StatRoll> filteredRolls = UpgradeCalculator.FilterRolls(allRolls, allowed);
 
             UpgradeRarity rarity = UpgradeCalculator.RollRarity();
 
             WeaponUpgradeResult upgrade =
-                UpgradeCalculator.RollUpgrade(rolls, rarity);
+                UpgradeCalculator.RollUpgrade(filteredRolls, rarity);
 
             UIController.Instance.levelUpButtons[i]
                 .ActivateButton(selectedWeapon, upgrade);

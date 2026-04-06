@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
@@ -15,10 +16,6 @@ public class Weapon : MonoBehaviour
         stats.baseRange = baseStats.range;
         stats.duration = baseStats.duration;
         stats.cooldown = baseStats.cooldown;
-
-        Debug.Log($"Base AS: {stats.baseAttackSpeed}");
-        Debug.Log($"Multiplier AS: {stats.attackSpeedMultiplier}");
-        Debug.Log($"Final AS: {stats.AttackSpeed}");
     }
 
     public virtual void ManualUpdate(float deltaTime)

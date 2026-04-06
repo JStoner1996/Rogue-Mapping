@@ -85,4 +85,9 @@ public static class UpgradeCalculator
 
         return result;
     }
+
+    public static List<StatRoll> FilterRolls(List<StatRoll> rolls, HashSet<StatType> allowed)
+    {
+        return rolls.FindAll(r => allowed.Contains(r.statType));
+    }
 }
