@@ -5,8 +5,9 @@ using UnityEngine.UI;
 public class LevelUpButton : MonoBehaviour
 {
     public TMP_Text weaponName;
-    public TMP_Text weaponDescription;
     public Image weaponIcon;
+    public TMP_Text rarityText;
+    public TMP_Text weaponDescription;
 
     private Weapon assignedWeapon;
     private WeaponUpgradeResult assignedUpgrade;
@@ -18,6 +19,8 @@ public class LevelUpButton : MonoBehaviour
 
         weaponName.text = weapon.data.weaponName;
         weaponIcon.sprite = weapon.data.icon;
+
+        rarityText.text = upgrade.rarity.ToString();
 
         // Build a description from the upgrade stats
         weaponDescription.text = BuildUpgradeDescription(upgrade);
@@ -37,6 +40,7 @@ public class LevelUpButton : MonoBehaviour
     private string BuildUpgradeDescription(WeaponUpgradeResult upgrade)
     {
         string desc = "";
+
         Debug.Log("upgrade:" + upgrade);
         Debug.Log("upgrade stats:" + upgrade.stats);
         foreach (var stat in upgrade.stats)
@@ -44,7 +48,6 @@ public class LevelUpButton : MonoBehaviour
             desc += $"{stat.Key} +{stat.Value:F2}\n";
         }
 
-        desc += $"\nRarity: {upgrade.rarity}";
 
         return desc;
     }

@@ -151,29 +151,31 @@ public class PlayerController : MonoBehaviour
 
         var weapons = weaponController.activeWeapons;
 
+        if (weapons.Count == 0) return;
+
         for (int i = 0; i < UIController.Instance.levelUpButtons.Length; i++)
         {
-            if (weapons.Count == 0) continue;
-
             // Pick a random weapon
             Weapon selectedWeapon = weapons[Random.Range(0, weapons.Count)];
 
-            // Generate a random upgrade for that weapon
             if (selectedWeapon.data.upgradePreset == null)
             {
                 Debug.LogError("UpgradePreset is missing on WeaponData!");
-                return;
+                continue;
             }
 
             var rolls = selectedWeapon.data.upgradePreset.rolls;
 
-
+            // Roll rarity
             UpgradeRarity rarity = UpgradeCalculator.RollRarity();
 
-            WeaponUpgradeResult upgrade = UpgradeCalculator.RollUpgrade(rolls, rarity);
+            // Generate upgrade
+            WeaponUpgradeResult upgrade =
+                UpgradeCalculator.RollUpgrade(rolls, rarity);
 
-            // Assign to UI
-            UIController.Instance.levelUpButtons[i].ActivateButton(selectedWeapon, upgrade);
+            // Assign to button
+            UIController.Instance.levelUpButtons[i]
+                .ActivateButton(selectedWeapon, upgrade);
         }
 
         UIController.Instance.UpdateExperienceSlider();
