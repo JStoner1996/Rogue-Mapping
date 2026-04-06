@@ -50,38 +50,32 @@ public class LevelUpButton : MonoBehaviour
     {
         string desc = "";
 
-        Debug.Log("upgrade:" + upgrade);
-        Debug.Log("upgrade stats:" + upgrade.stats);
         foreach (var stat in upgrade.stats)
         {
-            desc += $"{FormatStat(stat.Key, stat.Value)}\n";
+            desc += FormatStat(stat.Key, stat.Value) + "\n";
         }
-
 
         return desc;
     }
 
     private string FormatStat(StatType statType, float value)
     {
-        string statName = statType.ToString();
-
-        statName = statName.Replace("AttackSpeed", "Attack Speed");
+        string statName = statType.ToString().Replace("AttackSpeed", "Attack Speed");
 
         switch (statType)
         {
             case StatType.AttackSpeed:
-                float attackSpeedPercent = Mathf.Abs(value) * 100f;
-                return $"{statName} +{attackSpeedPercent:F0}%";
-
             case StatType.Range:
-                float rangePercent = value * 100f;
-                return $"{statName} +{rangePercent:F0}%";
-
+                float percent = value * 100f;
+                return $"{statName} +{percent:F0}%";
+            case StatType.Cooldown:
+                {
+                    return $"{statName} {value:F2}";
+                }
             default:
                 return $"{statName} +{value:F2}";
         }
     }
-
     private void ApplyRarityVisuals(UpgradeRarity rarity)
     {
         Color borderColor;

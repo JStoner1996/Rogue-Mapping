@@ -188,6 +188,7 @@ public class PlayerController : MonoBehaviour
         }
 
         UIController.Instance.LevelUpPanelOpen();
+
     }
 
     public void OnUpgradeSelected()
@@ -196,5 +197,6 @@ public class PlayerController : MonoBehaviour
         {
             LevelUp();
         }
+
     }
 }

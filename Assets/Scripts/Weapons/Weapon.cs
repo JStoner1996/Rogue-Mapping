@@ -11,10 +11,14 @@ public class Weapon : MonoBehaviour
         var baseStats = data.baseStats;
 
         stats.damage = baseStats.damage;
-        stats.attackSpeed = baseStats.attackSpeed;
-        stats.range = baseStats.range;
+        stats.baseAttackSpeed = baseStats.attackSpeed;
+        stats.baseRange = baseStats.range;
         stats.duration = baseStats.duration;
         stats.cooldown = baseStats.cooldown;
+
+        Debug.Log($"Base AS: {stats.baseAttackSpeed}");
+        Debug.Log($"Multiplier AS: {stats.attackSpeedMultiplier}");
+        Debug.Log($"Final AS: {stats.AttackSpeed}");
     }
 
     public virtual void ManualUpdate(float deltaTime)
@@ -28,16 +32,16 @@ public class Weapon : MonoBehaviour
         {
             switch (stat.Key)
             {
+                case StatType.AttackSpeed:
+                    stats.attackSpeedMultiplier += stat.Value;
+                    break;
+
                 case StatType.Damage:
                     stats.damage += stat.Value;
                     break;
 
-                case StatType.AttackSpeed:
-                    stats.attackSpeed += stat.Value;
-                    break;
-
                 case StatType.Range:
-                    stats.range += stat.Value;
+                    stats.rangeMultiplier += stat.Value;
                     break;
 
                 case StatType.Duration:

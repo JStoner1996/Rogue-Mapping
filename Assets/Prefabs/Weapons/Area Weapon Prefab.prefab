@@ -45,5 +45,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AreaWeapon
   data: {fileID: 11400000, guid: 01790d9b8bda8584d8ad2fc8445edf46, type: 2}
-  weaponLevel: 1
+  stats:
+    damage: 0
+    baseAttackSpeed: 0
+    attackSpeedMultiplier: 0
+    baseRange: 0
+    rangeMultiplier: 0
+    duration: 0
+    cooldown: 0
   prefab: {fileID: 4964872540552076819, guid: eedde0c3b5233004998c72e2915606e3, type: 3}

@@ -3,10 +3,24 @@ using UnityEngine;
 
 public class WeaponController : MonoBehaviour
 {
+
+    public static WeaponController Instance;
+
     [Header("Starting Weapons")]
     [SerializeField] private List<Weapon> startingWeapons;
 
     public List<Weapon> activeWeapons = new List<Weapon>();
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
 
     void Start()
     {

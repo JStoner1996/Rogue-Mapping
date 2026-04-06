@@ -17,8 +17,9 @@ public class AreaWeaponPrefab : MonoBehaviour
 
         var stats = weapon.stats;
 
-        targetSize = Vector3.one * stats.range;
+        targetSize = Vector3.one * stats.Range;
         transform.localScale = Vector3.zero;
+
         timer = stats.duration;
         counter = 0f;
 
@@ -31,14 +32,12 @@ public class AreaWeaponPrefab : MonoBehaviour
 
         var stats = weapon.stats;
 
-        // Grow to target size
         transform.localScale = Vector3.MoveTowards(
             transform.localScale,
             targetSize,
             Time.deltaTime * 5f
         );
 
-        // Lifetime countdown
         timer -= Time.deltaTime;
 
         if (timer <= 0f)
@@ -51,12 +50,12 @@ public class AreaWeaponPrefab : MonoBehaviour
             }
         }
 
-        // Attack timer
+        float attackInterval = 1f / stats.AttackSpeed;
         counter -= Time.deltaTime;
 
         if (counter <= 0f)
         {
-            counter = stats.attackSpeed;
+            counter = attackInterval;
 
             for (int i = enemiesInRange.Count - 1; i >= 0; i--)
             {
