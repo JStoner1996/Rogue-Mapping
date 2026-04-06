@@ -33,6 +33,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float immunityDuration;
     private float immunityTimer;
 
+    private int pendingLevelUps = 0;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -113,9 +115,18 @@ public class PlayerController : MonoBehaviour
     public void GetExperience(int addedExperience)
     {
         experience += addedExperience;
+
+        while (currentLevel < playerLevels.Count &&
+               experience >= playerLevels[currentLevel - 1])
+        {
+            experience -= playerLevels[currentLevel - 1];
+            currentLevel++;
+            pendingLevelUps++;
+        }
+
         UIController.Instance.UpdateExperienceSlider();
 
-        if (experience >= playerLevels[currentLevel - 1])
+        if (pendingLevelUps > 0)
         {
             LevelUp();
         }
@@ -142,10 +153,12 @@ public class PlayerController : MonoBehaviour
         UIController.Instance.UpdateHealthSlider();
     }
 
-    public void LevelUp()
+    private void LevelUp()
     {
-        experience -= playerLevels[currentLevel - 1];
-        currentLevel++;
+        if (pendingLevelUps <= 0)
+            return;
+
+        pendingLevelUps--;
 
         AudioController.Instance.PlaySound(AudioController.Instance.levelUp);
 
@@ -155,7 +168,6 @@ public class PlayerController : MonoBehaviour
 
         for (int i = 0; i < UIController.Instance.levelUpButtons.Length; i++)
         {
-            // Pick a random weapon
             Weapon selectedWeapon = weapons[Random.Range(0, weapons.Count)];
 
             if (selectedWeapon.data.upgradePreset == null)
@@ -166,19 +178,23 @@ public class PlayerController : MonoBehaviour
 
             var rolls = selectedWeapon.data.upgradePreset.rolls;
 
-            // Roll rarity
             UpgradeRarity rarity = UpgradeCalculator.RollRarity();
 
-            // Generate upgrade
             WeaponUpgradeResult upgrade =
                 UpgradeCalculator.RollUpgrade(rolls, rarity);
 
-            // Assign to button
             UIController.Instance.levelUpButtons[i]
                 .ActivateButton(selectedWeapon, upgrade);
         }
 
-        UIController.Instance.UpdateExperienceSlider();
         UIController.Instance.LevelUpPanelOpen();
+    }
+
+    public void OnUpgradeSelected()
+    {
+        if (pendingLevelUps > 0)
+        {
+            LevelUp();
+        }
     }
 }
