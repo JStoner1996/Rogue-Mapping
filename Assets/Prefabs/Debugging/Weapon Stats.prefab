@@ -184,7 +184,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Damage: XX.XX\nRange: XX.XX \nAttack Speed: XX.XX\nDuration: XX.XX\nCooldown:
+  m_text: "Damage: XX.XX\nAttack Speed: XX.XX\nRange: XX.XX \nDuration: XX.XX\nCooldown:
     XX.XX"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e352206794c302c4f8db851100d72c2a, type: 2}

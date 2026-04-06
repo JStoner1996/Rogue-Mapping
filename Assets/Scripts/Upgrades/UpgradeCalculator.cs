@@ -38,17 +38,17 @@ public static class UpgradeCalculator
         {
             case UpgradeRarity.Common:
                 minWeight = 1;
-                maxWeight = 4;
+                maxWeight = 2;
                 break;
 
             case UpgradeRarity.Uncommon:
-                minWeight = 5;
-                maxWeight = 8;
+                minWeight = 3;
+                maxWeight = 5;
                 break;
 
             case UpgradeRarity.Rare:
-                minWeight = 9;
-                maxWeight = 12;
+                minWeight = 6;
+                maxWeight = 9;
                 break;
         }
 
