@@ -11,7 +11,6 @@ public class LevelUpButton : MonoBehaviour
     private Weapon assignedWeapon;
     private WeaponUpgradeResult assignedUpgrade;
 
-    // Now we pass BOTH the weapon and the generated upgrade
     public void ActivateButton(Weapon weapon, WeaponUpgradeResult upgrade)
     {
         assignedWeapon = weapon;

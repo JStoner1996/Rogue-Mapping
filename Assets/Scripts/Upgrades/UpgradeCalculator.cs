@@ -3,9 +3,28 @@ using UnityEngine;
 
 public static class UpgradeCalculator
 {
+    // Rolls a rarity based on weighted chances
+    public static UpgradeRarity RollRarity(
+        float commonChance = 0.6f,
+        float uncommonChance = 0.3f,
+        float rareChance = 0.1f)
+    {
+        float rand = Random.value;
+
+        if (rand < commonChance)
+            return UpgradeRarity.Common;
+
+        if (rand < commonChance + uncommonChance)
+            return UpgradeRarity.Uncommon;
+
+        return UpgradeRarity.Rare;
+    }
+
+    // Generates an upgrade based on rolls + rarity weight budget
     public static WeaponUpgradeResult RollUpgrade(List<StatRoll> rolls, UpgradeRarity rarity)
     {
         WeaponUpgradeResult result = new WeaponUpgradeResult();
+        result.rarity = rarity;
 
         if (rolls == null || rolls.Count == 0)
         {
@@ -20,12 +39,12 @@ public static class UpgradeCalculator
         {
             case UpgradeRarity.Common:
                 minWeight = 1;
-                maxWeight = 3;
+                maxWeight = 4;
                 break;
 
             case UpgradeRarity.Uncommon:
                 minWeight = 5;
-                maxWeight = 7;
+                maxWeight = 8;
                 break;
 
             case UpgradeRarity.Rare:
@@ -42,7 +61,7 @@ public static class UpgradeCalculator
         {
             StatRoll roll = availableRolls[Random.Range(0, availableRolls.Count)];
 
-            // Prevent exceeding rarity budget
+            // Prevent exceeding rarity weight cap
             if (currentWeight + roll.weight > maxWeight)
             {
                 availableRolls.Remove(roll);
@@ -51,7 +70,7 @@ public static class UpgradeCalculator
 
             float value = Random.Range(roll.minValue, roll.maxValue);
 
-            Debug.Log($"Rarity: {rarity} | Roll: {roll.statType} + {value}");
+            Debug.Log($"Rarity: {rarity} | Roll: {roll.statType} + {value:F2}");
 
             result.AddStat(roll.statType, value);
 

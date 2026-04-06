@@ -168,7 +168,7 @@ public class PlayerController : MonoBehaviour
             var rolls = selectedWeapon.data.upgradePreset.rolls;
 
 
-            UpgradeRarity rarity = UpgradeRarity.Common; // later you randomize this
+            UpgradeRarity rarity = UpgradeCalculator.RollRarity();
 
             WeaponUpgradeResult upgrade = UpgradeCalculator.RollUpgrade(rolls, rarity);
 

@@ -33,8 +33,8 @@ public class UpgradePreset : ScriptableObject
             // RANGE
             // =====================
             new StatRoll { statType = StatType.Range, minValue = 0.05f, maxValue = 0.1f, weight = 1 },
-            new StatRoll { statType = StatType.Range, minValue = 0.1f, maxValue = .15f, weight = 2 },
-            new StatRoll { statType = StatType.Range, minValue = .15f, maxValue = .25f, weight = 3 },
+            new StatRoll { statType = StatType.Range, minValue = 0.1f, maxValue = 0.15f, weight = 2 },
+            new StatRoll { statType = StatType.Range, minValue = 0.15f, maxValue = 0.25f, weight = 3 },
 
             // =====================
             // DURATION
