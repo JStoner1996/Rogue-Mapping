@@ -55,6 +55,9 @@ public class LevelUpButton : MonoBehaviour
             desc += FormatStat(stat.Key, stat.Value) + "\n";
         }
 
+        // Debug: Show weight in description for testing purposes
+        desc += "\n" + "Weight: " + upgrade.weight.ToString("F2");
+
         return desc;
     }
 

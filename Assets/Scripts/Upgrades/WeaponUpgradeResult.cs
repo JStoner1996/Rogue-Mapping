@@ -4,6 +4,7 @@ public class WeaponUpgradeResult
 {
     public Dictionary<StatType, float> stats = new Dictionary<StatType, float>();
     public UpgradeRarity rarity;
+    public float weight;
 
     public void AddStat(StatType type, float value)
     {

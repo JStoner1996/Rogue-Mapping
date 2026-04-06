@@ -51,14 +51,14 @@ public static class UpgradeCalculator
                 maxWeight = 9;
                 break;
         }
-
+        maxWeight = Random.Range(minWeight, maxWeight + 1);
         int currentWeight = 0;
         List<StatRoll> availableRolls = new List<StatRoll>(rolls);
 
         while (availableRolls.Count > 0 && currentWeight < maxWeight)
         {
             StatRoll roll = availableRolls[Random.Range(0, availableRolls.Count)];
-
+            Debug.Log($"Attempting to add roll: {roll.statType} with weight {roll.weight:F2} (Current Weight: {currentWeight}, Max Weight: {maxWeight})");
             // Prevent exceeding rarity weight cap
             if (currentWeight + roll.weight > maxWeight)
             {
@@ -79,6 +79,8 @@ public static class UpgradeCalculator
 
             currentWeight += roll.weight;
             availableRolls.Remove(roll);
+
+            result.weight = currentWeight;
         }
 
         return result;
