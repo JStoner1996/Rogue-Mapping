@@ -25,8 +25,8 @@ public class UpgradePreset : ScriptableObject
             // ATTACK SPEED
             // =====================
             new StatRoll { statType = StatType.AttackSpeed, minValue = -0.05f, maxValue = -0.075f, weight = 1 },
-            new StatRoll { statType = StatType.AttackSpeed, minValue = -0.075f, maxValue = -0.1f, weight = 1 },
-            new StatRoll { statType = StatType.AttackSpeed, minValue = -0.1f, maxValue = -0.15f, weight = 1 },
+            new StatRoll { statType = StatType.AttackSpeed, minValue = -0.075f, maxValue = -0.1f, weight = 2 },
+            new StatRoll { statType = StatType.AttackSpeed, minValue = -0.1f, maxValue = -0.15f, weight = 3 },
     
 
             // =====================
@@ -47,8 +47,16 @@ public class UpgradePreset : ScriptableObject
             // COOLDOWN (reduction-style rolls)
             // =====================
             new StatRoll { statType = StatType.Cooldown, minValue = -0.2f, maxValue = -0.1f, weight = 4 },
-            new StatRoll { statType = StatType.Cooldown, minValue = -0.4f, maxValue = -0.2f, weight = 5 },
+            new StatRoll { statType = StatType.Cooldown, minValue = -0.5f, maxValue = -0.3f, weight = 5 },
             new StatRoll { statType = StatType.Cooldown, minValue = -0.6f, maxValue = -0.3f, weight = 6 },
+
+            // =====================
+            // BOUNCE COUNT (flat increase)
+            // =====================
+            new StatRoll { statType = StatType.BounceCount, minValue = 1f, maxValue = 1f, weight = 1 },
+            new StatRoll { statType = StatType.BounceCount, minValue = 2, maxValue = 3f, weight = 4 },
+            new StatRoll { statType = StatType.BounceCount, minValue = 4, maxValue = 5f, weight = 6 },
+
         };
     }
 }

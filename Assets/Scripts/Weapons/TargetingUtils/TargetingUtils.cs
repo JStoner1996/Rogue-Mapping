@@ -1,8 +1,9 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public static class TargetingUtils
 {
-    public static Enemy FindNearestEnemy(Vector3 origin, float range)
+    public static Enemy FindNearestEnemy(Vector3 position, float range, HashSet<Enemy> ignoreList = null)
     {
         Enemy[] enemies = Object.FindObjectsByType<Enemy>();
 
@@ -11,7 +12,10 @@ public static class TargetingUtils
 
         foreach (var enemy in enemies)
         {
-            float dist = Vector3.Distance(origin, enemy.transform.position);
+            if (ignoreList != null && ignoreList.Contains(enemy))
+                continue;
+
+            float dist = Vector3.Distance(position, enemy.transform.position);
 
             if (dist < minDist && dist <= range)
             {

@@ -4,5 +4,6 @@ public enum StatType
     AttackSpeed,
     Range,
     Duration,
-    Cooldown
+    Cooldown,
+    BounceCount,
 }

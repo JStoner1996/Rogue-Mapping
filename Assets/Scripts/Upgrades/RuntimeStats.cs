@@ -12,4 +12,6 @@ public class RuntimeStats
     public float Range => baseRange * (1f + rangeMultiplier);
     public float duration;
     public float cooldown;
+    public int bounceCount;
+
 }

@@ -36440,7 +36440,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3185581634386999045, guid: 4667355e2dc201a48b8be11181222934, type: 3}
       propertyPath: worth
-      value: 100
+      value: 2000
       objectReference: {fileID: 0}
     - target: {fileID: 8067296989678784352, guid: 4667355e2dc201a48b8be11181222934, type: 3}
       propertyPath: m_Name
@@ -36856,8 +36856,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
   startingWeapons:
-  - {fileID: 6286844665201509070, guid: d908a02c4833d3443b85e958ae24f690, type: 3}
-  - {fileID: 1421270835611811585, guid: b79d2498e8ff00448918b3bf0af2e9c9, type: 3}
+  - {fileID: -1146507695568951787, guid: 68c1dfdc2a2e66245ac270803878e055, type: 3}
   activeWeapons: []
 --- !u!1 &1338702976
 GameObject:
@@ -37319,7 +37318,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 1916880163
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_TargetDisplay: 0
 --- !u!224 &1521094510
 RectTransform:
@@ -39821,7 +39820,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 1916880163
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!224 &1931078467
 RectTransform:

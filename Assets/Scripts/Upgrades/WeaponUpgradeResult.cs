@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public class WeaponUpgradeResult
 {
@@ -11,6 +12,14 @@ public class WeaponUpgradeResult
         if (!stats.ContainsKey(type))
             stats[type] = 0;
 
-        stats[type] += value;
+        // Special handling for int-based stats
+        if (type == StatType.BounceCount)
+        {
+            stats[type] += Mathf.RoundToInt(value);
+        }
+        else
+        {
+            stats[type] += value;
+        }
     }
 }

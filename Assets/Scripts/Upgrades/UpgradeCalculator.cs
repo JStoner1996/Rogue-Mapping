@@ -59,6 +59,7 @@ public static class UpgradeCalculator
         {
             StatRoll roll = availableRolls[Random.Range(0, availableRolls.Count)];
             Debug.Log($"Attempting to add roll: {roll.statType} with weight {roll.weight:F2} (Current Weight: {currentWeight}, Max Weight: {maxWeight})");
+
             // Prevent exceeding rarity weight cap
             if (currentWeight + roll.weight > maxWeight)
             {

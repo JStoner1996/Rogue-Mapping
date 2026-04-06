@@ -12,4 +12,76 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a849eef0a550847be5ca70c55102d5, type: 3}
   m_Name: BaseUpgradePresets
   m_EditorClassIdentifier: Assembly-CSharp::UpgradePreset
-  rolls: []
+  rolls:
+  - statType: 0
+    minValue: 1
+    maxValue: 2
+    weight: 1
+  - statType: 0
+    minValue: 2.01
+    maxValue: 4
+    weight: 2
+  - statType: 0
+    minValue: 4.01
+    maxValue: 6
+    weight: 3
+  - statType: 1
+    minValue: -0.05
+    maxValue: -0.075
+    weight: 1
+  - statType: 1
+    minValue: -0.075
+    maxValue: -0.1
+    weight: 2
+  - statType: 1
+    minValue: -0.1
+    maxValue: -0.15
+    weight: 3
+  - statType: 2
+    minValue: 0.05
+    maxValue: 0.1
+    weight: 1
+  - statType: 2
+    minValue: 0.1
+    maxValue: 0.15
+    weight: 2
+  - statType: 2
+    minValue: 0.15
+    maxValue: 0.25
+    weight: 3
+  - statType: 3
+    minValue: 0.5
+    maxValue: 1
+    weight: 4
+  - statType: 3
+    minValue: 1
+    maxValue: 2
+    weight: 5
+  - statType: 3
+    minValue: 2
+    maxValue: 3
+    weight: 6
+  - statType: 4
+    minValue: -0.2
+    maxValue: -0.1
+    weight: 4
+  - statType: 4
+    minValue: -0.5
+    maxValue: -0.3
+    weight: 5
+  - statType: 4
+    minValue: -0.6
+    maxValue: -0.3
+    weight: 6
+  - statType: 5
+    minValue: 1
+    maxValue: 1
+    weight: 1
+  - statType: 5
+    minValue: 2
+    maxValue: 3
+    weight: 4
+  - statType: 5
+    minValue: 4
+    maxValue: 5
+    weight: 6

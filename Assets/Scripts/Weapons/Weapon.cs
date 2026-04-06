@@ -16,6 +16,7 @@ public class Weapon : MonoBehaviour
         stats.baseRange = baseStats.range;
         stats.duration = baseStats.duration;
         stats.cooldown = baseStats.cooldown;
+        stats.bounceCount = baseStats.bounceCount;
     }
 
     public virtual void ManualUpdate(float deltaTime)
@@ -47,6 +48,10 @@ public class Weapon : MonoBehaviour
 
                 case StatType.Cooldown:
                     stats.cooldown += stat.Value;
+                    break;
+
+                case StatType.BounceCount:
+                    stats.bounceCount += (int)stat.Value;
                     break;
             }
         }

@@ -67,18 +67,22 @@ public class LevelUpButton : MonoBehaviour
 
         switch (statType)
         {
+            case StatType.BounceCount:
+                return $"{statName} +{Mathf.RoundToInt(value)}";
+
             case StatType.AttackSpeed:
             case StatType.Range:
                 float percent = value * 100f;
                 return $"{statName} +{percent:F0}%";
+
             case StatType.Cooldown:
-                {
-                    return $"{statName} {value:F2}";
-                }
+                return $"{statName} {value:F2}";
+
             default:
                 return $"{statName} +{value:F2}";
         }
     }
+
     private void ApplyRarityVisuals(UpgradeRarity rarity)
     {
         Color borderColor;

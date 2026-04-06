@@ -176,11 +176,25 @@ public class PlayerController : MonoBehaviour
                 continue;
             }
 
+
+
+
             var allRolls = selectedWeapon.data.upgradePreset.rolls;
 
             HashSet<StatType> allowed = new HashSet<StatType>(selectedWeapon.data.allowedStats);
 
             List<StatRoll> filteredRolls = UpgradeCalculator.FilterRolls(allRolls, allowed);
+
+
+            foreach (var roll in selectedWeapon.data.upgradePreset.rolls)
+            {
+                Debug.Log($"Preset Roll: {roll.statType}");
+            }
+
+            foreach (var stat in selectedWeapon.data.allowedStats)
+            {
+                Debug.Log($"Allowed: {stat}");
+            }
 
             UpgradeRarity rarity = UpgradeCalculator.RollRarity();
 

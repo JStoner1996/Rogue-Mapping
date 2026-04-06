@@ -8,4 +8,5 @@ public class WeaponStats
     public float range;
     public float duration;
     public float cooldown;
+    public int bounceCount;
 }

@@ -16,15 +16,28 @@ public class WeaponStatsUI : MonoBehaviour
     private string BuildStatsText(Weapon weapon)
     {
         var stats = weapon.stats;
+        var allowed = weapon.data.allowedStats;
 
         string desc = "";
 
-        desc += $"Damage: {stats.damage}\n";
-        desc += $"Attack Speed: {stats.AttackSpeed:F2}\n";
-        desc += $"Range: {stats.Range:F2}\n";
-        desc += $"Duration: {stats.duration:F2}\n";
-        desc += $"Cooldown: {stats.cooldown:F2}";
+        if (allowed.Contains(StatType.Damage))
+            desc += $"Damage: {stats.damage}\n";
 
-        return desc;
+        if (allowed.Contains(StatType.AttackSpeed))
+            desc += $"Attack Speed: {stats.AttackSpeed:F2}\n";
+
+        if (allowed.Contains(StatType.Range))
+            desc += $"Range: {stats.Range:F2}\n";
+
+        if (allowed.Contains(StatType.Duration))
+            desc += $"Duration: {stats.duration:F2}\n";
+
+        if (allowed.Contains(StatType.Cooldown))
+            desc += $"Cooldown: {stats.cooldown:F2}\n";
+
+        if (allowed.Contains(StatType.BounceCount))
+            desc += $"Bounce Count: {stats.bounceCount}";
+
+        return desc.TrimEnd('\n');
     }
 }

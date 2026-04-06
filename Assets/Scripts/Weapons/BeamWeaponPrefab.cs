@@ -9,9 +9,8 @@ public class BeamWeaponPrefab : MonoBehaviour
 
     public void Initialize(BeamWeapon weaponReference)
     {
-        weapon = weaponReference;
-
         var stats = weapon.stats;
+        weapon = weaponReference;
 
         Vector3 currentScale = transform.localScale;
         targetSize = new Vector3(currentScale.x, stats.Range, currentScale.z);
@@ -21,8 +20,6 @@ public class BeamWeaponPrefab : MonoBehaviour
     void Update()
     {
         if (weapon == null) return;
-
-        var stats = weapon.stats;
 
         // Scale Y toward target
         Vector3 scale = transform.localScale;
