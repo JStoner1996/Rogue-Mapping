@@ -61,7 +61,7 @@ public class AreaWeaponPrefab : MonoBehaviour
             {
                 if (enemiesInRange[i] != null)
                 {
-                    enemiesInRange[i].TakeDamage(stats.damage);
+                    enemiesInRange[i].TakeDamage(stats.Damage);
                 }
             }
         }

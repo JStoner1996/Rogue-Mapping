@@ -35144,7 +35144,7 @@ MonoBehaviour:
   maxLevel: 30
   playerLevels: 0a000000140000001e000000
   experience: 0
-  playerMaxHealth: 100
+  playerMaxHealth: 10
   playerHealth: 0
   moveSpeed: 5
   weaponController: {fileID: 1325946333}

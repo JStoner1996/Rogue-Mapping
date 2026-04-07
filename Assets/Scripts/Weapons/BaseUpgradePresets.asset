@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UpgradePreset
   rolls:
   - statType: 0
-    minValue: 1
-    maxValue: 2
+    minValue: 0.05
+    maxValue: 0.15
     weight: 1
   - statType: 0
-    minValue: 2.01
-    maxValue: 4
+    minValue: 0.16
+    maxValue: 0.25
     weight: 2
   - statType: 0
-    minValue: 4.01
-    maxValue: 6
+    minValue: 0.26
+    maxValue: 0.4
     weight: 3
   - statType: 1
     minValue: -0.05

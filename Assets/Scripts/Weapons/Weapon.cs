@@ -11,7 +11,7 @@ public class Weapon : MonoBehaviour
     {
         var baseStats = data.baseStats;
 
-        stats.damage = baseStats.damage;
+        stats.baseDamage = baseStats.damage;
         stats.baseAttackSpeed = baseStats.attackSpeed;
         stats.baseRange = baseStats.range;
         stats.duration = baseStats.duration;
@@ -35,7 +35,7 @@ public class Weapon : MonoBehaviour
                     break;
 
                 case StatType.Damage:
-                    stats.damage += stat.Value;
+                    stats.damageMultiplier += stat.Value;
                     break;
 
                 case StatType.Range:

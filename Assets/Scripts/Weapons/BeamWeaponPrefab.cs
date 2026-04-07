@@ -76,7 +76,7 @@ public class BeamWeaponPrefab : MonoBehaviour
             {
                 if (hitEnemies.Add(enemy))
                 {
-                    enemy.TakeDamage(stats.damage);
+                    enemy.TakeDamage(stats.Damage);
                 }
             }
         }

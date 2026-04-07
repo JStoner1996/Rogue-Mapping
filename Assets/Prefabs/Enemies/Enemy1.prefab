@@ -204,8 +204,8 @@ MonoBehaviour:
   destroyEffect: {fileID: 1424168793998055834, guid: f587819a14468d74fa2f42eccf304135, type: 3}
   experienceWorth: 1
   moveSpeed: 1.5
-  damage: 1
-  health: 10
+  damage: 5
+  health: 550
   pushTime: 0.5
   lootTable:
   - type: 0

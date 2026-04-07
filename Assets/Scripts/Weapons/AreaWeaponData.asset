@@ -15,11 +15,12 @@ MonoBehaviour:
   weaponName: Area Weapon
   icon: {fileID: 21300000, guid: 7c3c287865072c74cbd1a886fa9666f5, type: 3}
   baseStats:
-    damage: 2
-    attackSpeed: 1
+    damage: 160
+    attackSpeed: 0.6
     range: 0.7
     duration: 3
     cooldown: 5
+    bounceCount: 0
   upgradeRolls: []
   allowedStats: 0000000001000000020000000300000004000000
   upgradePreset: {fileID: 11400000, guid: f6b8514e7ed5e404b96185332302f9e3, type: 2}

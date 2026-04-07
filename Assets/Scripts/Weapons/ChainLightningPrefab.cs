@@ -57,7 +57,7 @@ public class ChainLightningPrefab : MonoBehaviour
         if (!hitEnemies.Contains(currentTarget))
         {
             hitEnemies.Add(currentTarget);
-            currentTarget.TakeDamage(stats.damage);
+            currentTarget.TakeDamage(stats.Damage);
         }
 
         Debug.Log("Remaining bounces: " + remainingBounces);

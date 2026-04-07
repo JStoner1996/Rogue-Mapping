@@ -69,7 +69,7 @@ public class LevelUpButton : MonoBehaviour
         {
             case StatType.BounceCount:
                 return $"{statName} +{Mathf.RoundToInt(value)}";
-
+            case StatType.Damage:
             case StatType.AttackSpeed:
             case StatType.Range:
                 float percent = value * 100f;

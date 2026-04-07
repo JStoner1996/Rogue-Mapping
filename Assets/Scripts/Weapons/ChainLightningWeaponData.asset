@@ -15,8 +15,8 @@ MonoBehaviour:
   weaponName: Chain Lightning
   icon: {fileID: 1181468014, guid: f47ab04441f456b46926e56362ca2a72, type: 3}
   baseStats:
-    damage: 1
-    attackSpeed: 1.2
+    damage: 140
+    attackSpeed: 0.8
     range: 5
     duration: 0
     cooldown: 0

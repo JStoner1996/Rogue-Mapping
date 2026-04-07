@@ -17,9 +17,9 @@ public class UpgradePreset : ScriptableObject
             // =====================
             // DAMAGE
             // =====================
-            new StatRoll { statType = StatType.Damage, minValue = 1f, maxValue = 2f, weight = 1 },
-            new StatRoll { statType = StatType.Damage, minValue = 2.01f, maxValue = 4f, weight = 2 },
-            new StatRoll { statType = StatType.Damage, minValue = 4.01f, maxValue = 6f, weight = 3 },
+            new StatRoll { statType = StatType.Damage, minValue = 0.05f, maxValue = 0.15f, weight = 1 },
+            new StatRoll { statType = StatType.Damage, minValue = .16f, maxValue = .25f, weight = 2 },
+            new StatRoll { statType = StatType.Damage, minValue = .26f, maxValue = .4f, weight = 3 },
 
             // =====================
             // ATTACK SPEED

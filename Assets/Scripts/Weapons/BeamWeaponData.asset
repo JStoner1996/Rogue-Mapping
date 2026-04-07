@@ -15,11 +15,12 @@ MonoBehaviour:
   weaponName: Beam Weapon
   icon: {fileID: -6947956404107024711, guid: bd4c9024e16ea254e9eec02520ddd8a9, type: 3}
   baseStats:
-    damage: 10
+    damage: 500
     attackSpeed: 0.25
     range: 5
     duration: 0
     cooldown: 0
+    bounceCount: 0
   upgradeRolls: []
   allowedStats: 000000000100000002000000
   upgradePreset: {fileID: 11400000, guid: f6b8514e7ed5e404b96185332302f9e3, type: 2}

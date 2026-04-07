@@ -21,7 +21,7 @@ public class WeaponStatsUI : MonoBehaviour
         string desc = "";
 
         if (allowed.Contains(StatType.Damage))
-            desc += $"Damage: {stats.damage}\n";
+            desc += $"Damage: {stats.Damage:F2}\n";
 
         if (allowed.Contains(StatType.AttackSpeed))
             desc += $"Attack Speed: {stats.AttackSpeed:F2}\n";
