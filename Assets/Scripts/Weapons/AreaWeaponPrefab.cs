@@ -59,9 +59,17 @@ public class AreaWeaponPrefab : MonoBehaviour
 
             for (int i = enemiesInRange.Count - 1; i >= 0; i--)
             {
-                if (enemiesInRange[i] != null)
+                Enemy enemy = enemiesInRange[i];
+
+                if (enemy != null)
                 {
-                    enemiesInRange[i].TakeDamage(stats.Damage);
+                    Vector2 direction = (enemy.transform.position - transform.position).normalized;
+
+                    enemy.TakeDamage(
+                        stats.Damage,
+                        direction,
+                        stats.Knockback
+                    );
                 }
             }
         }

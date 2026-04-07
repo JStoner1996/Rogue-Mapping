@@ -4,13 +4,12 @@ using UnityEngine;
 public class BeamWeaponPrefab : MonoBehaviour
 {
     private BeamWeapon weapon;
-
     private Vector3 targetSize;
 
     public void Initialize(BeamWeapon weaponReference)
     {
-        var stats = weapon.stats;
         weapon = weaponReference;
+        var stats = weapon.stats;
 
         Vector3 currentScale = transform.localScale;
         targetSize = new Vector3(currentScale.x, stats.Range, currentScale.z);
@@ -60,14 +59,6 @@ public class BeamWeaponPrefab : MonoBehaviour
 
         Collider2D[] hits = Physics2D.OverlapBoxAll(boxCenter, boxSize, rotationZ);
 
-        // ✅ DEBUG (accurate now)
-        Vector3 right = new Vector3(-direction.y, direction.x);
-        float halfWidth = width / 2f;
-
-        Debug.DrawRay(start, direction * range, Color.green, 1f);
-        Debug.DrawRay(start + right * halfWidth, direction * range, Color.green, 1f);
-        Debug.DrawRay(start - right * halfWidth, direction * range, Color.green, 1f);
-
         HashSet<Enemy> hitEnemies = new HashSet<Enemy>();
 
         foreach (var hit in hits)
@@ -76,7 +67,7 @@ public class BeamWeaponPrefab : MonoBehaviour
             {
                 if (hitEnemies.Add(enemy))
                 {
-                    enemy.TakeDamage(stats.Damage);
+                    enemy.TakeDamage(stats.Damage, direction, stats.Knockback);
                 }
             }
         }

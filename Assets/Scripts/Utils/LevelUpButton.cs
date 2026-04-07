@@ -69,14 +69,17 @@ public class LevelUpButton : MonoBehaviour
         {
             case StatType.BounceCount:
                 return $"{statName} +{Mathf.RoundToInt(value)}";
+
             case StatType.Damage:
+            case StatType.Knockback:
             case StatType.AttackSpeed:
             case StatType.Range:
                 float percent = value * 100f;
                 return $"{statName} +{percent:F0}%";
 
+            case StatType.Duration:
             case StatType.Cooldown:
-                return $"{statName} {value:F2}";
+                return $"{statName} {value:F2}s";
 
             default:
                 return $"{statName} +{value:F2}";

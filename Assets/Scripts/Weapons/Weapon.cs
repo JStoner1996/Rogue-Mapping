@@ -13,6 +13,7 @@ public class Weapon : MonoBehaviour
 
         stats.baseDamage = baseStats.damage;
         stats.baseAttackSpeed = baseStats.attackSpeed;
+        stats.baseKnockback = baseStats.knockback;
         stats.baseRange = baseStats.range;
         stats.duration = baseStats.duration;
         stats.cooldown = baseStats.cooldown;
@@ -36,6 +37,10 @@ public class Weapon : MonoBehaviour
 
                 case StatType.Damage:
                     stats.damageMultiplier += stat.Value;
+                    break;
+
+                case StatType.Knockback:
+                    stats.knockbackMultiplier += stat.Value;
                     break;
 
                 case StatType.Range:

@@ -18,52 +18,45 @@ public class Enemy : MonoBehaviour
 
 
     [Header("Knockback")]
-    [SerializeField] private float pushTime;
-    private float pushCounter;
+    [SerializeField, Range(0f, 100f)]
+    private float knockbackResistance = 0f;
+
+    private Vector2 knockbackVelocity;
+    private float knockbackTimer;
 
     [Header("Loot")]
     public List<LootItem> lootTable = new List<LootItem>();
 
 
-    // Update is called once per frame
     void FixedUpdate()
     {
-        if (PlayerController.Instance.gameObject.activeSelf)
+        if (!PlayerController.Instance.gameObject.activeSelf)
         {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
 
-            // Face the player
-            if (PlayerController.Instance.transform.position.x > transform.position.x)
-            {
-                spriteRenderer.flipX = true;
-            }
-            else
-            {
-                spriteRenderer.flipX = false;
-            }
+        // Face the player
+        if (PlayerController.Instance.transform.position.x > transform.position.x)
+            spriteRenderer.flipX = true;
+        else
+            spriteRenderer.flipX = false;
 
-            // push back
-            if (pushCounter > 0)
-            {
-                pushCounter -= Time.deltaTime;
-                if (moveSpeed > 0)
-                {
-                    moveSpeed = -moveSpeed;
-                }
+        Vector2 finalVelocity;
 
-                if (pushCounter <= 0)
-                {
-                    moveSpeed = Mathf.Abs(moveSpeed);
-                }
-            }
-
-            // Move towards player
-            direction = (PlayerController.Instance.transform.position - transform.position).normalized;
-            rb.linearVelocity = new Vector2(direction.x * moveSpeed, direction.y * moveSpeed);
+        // Knockback active
+        if (knockbackTimer > 0)
+        {
+            knockbackTimer -= Time.deltaTime;
+            finalVelocity = knockbackVelocity;
         }
         else
         {
-            rb.linearVelocity = Vector2.zero;
+            direction = (PlayerController.Instance.transform.position - transform.position).normalized;
+            finalVelocity = direction * moveSpeed;
         }
+
+        rb.linearVelocity = finalVelocity;
     }
 
     void OnCollisionStay2D(Collision2D collision)
@@ -74,11 +67,17 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, Vector2? hitDirection = null, float knockbackForce = 0f)
     {
         health -= damage;
+
         DamageNumberController.Instance.CreateNumber(damage, transform.position);
-        pushCounter = pushTime;
+        Debug.Log($"Enemy hit from {hitDirection?.ToString() ?? "no direction"}. knockback force: {knockbackForce} ");
+        // Only apply knockback if both are valid
+        if (hitDirection.HasValue && knockbackForce > 0f)
+        {
+            ApplyKnockback(hitDirection.Value, knockbackForce);
+        }
 
         if (health <= 0)
         {
@@ -101,6 +100,14 @@ public class Enemy : MonoBehaviour
         AudioController.Instance.PlayModifiedSound(AudioController.Instance.enemyDie);
     }
 
+    private void ApplyKnockback(Vector2 direction, float force)
+    {
+        float resistance = Mathf.Clamp01(knockbackResistance / 100f);
+        float finalForce = force * (1f - resistance);
+
+        knockbackVelocity = direction.normalized * finalForce;
+        knockbackTimer = 0.1f;
+    }
     private void InstantiateLoot(LootItem lootItem)
     {
         if (Random.Range(0f, 100f) > lootItem.dropChance) return;

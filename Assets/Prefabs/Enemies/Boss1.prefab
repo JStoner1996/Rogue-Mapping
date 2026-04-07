@@ -291,7 +291,7 @@ MonoBehaviour:
   moveSpeed: 0.5
   damage: 25
   health: 2500
-  pushTime: 0.1
+  knockbackResistance: 100
   lootTable:
   - type: 0
     itemPrefab: {fileID: 1201580960227571414, guid: d524371948be3ec4b9ed62a65b9270f1, type: 3}

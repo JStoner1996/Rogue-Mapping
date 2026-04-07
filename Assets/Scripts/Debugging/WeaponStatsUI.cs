@@ -26,6 +26,9 @@ public class WeaponStatsUI : MonoBehaviour
         if (allowed.Contains(StatType.AttackSpeed))
             desc += $"Attack Speed: {stats.AttackSpeed:F2}\n";
 
+        if (allowed.Contains(StatType.Knockback))
+            desc += $"Knockback: {stats.Knockback:F2}\n";
+
         if (allowed.Contains(StatType.Range))
             desc += $"Range: {stats.Range:F2}\n";
 
@@ -37,6 +40,7 @@ public class WeaponStatsUI : MonoBehaviour
 
         if (allowed.Contains(StatType.BounceCount))
             desc += $"Bounce Count: {stats.bounceCount}";
+
 
         return desc.TrimEnd('\n');
     }
