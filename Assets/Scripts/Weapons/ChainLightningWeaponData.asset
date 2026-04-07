@@ -18,9 +18,10 @@ MonoBehaviour:
     damage: 140
     attackSpeed: 0.8
     range: 5
+    knockback: 1
     duration: 0
     cooldown: 0
     bounceCount: 3
   upgradeRolls: []
-  allowedStats: 000000000100000005000000
+  allowedStats: 000000000100000006000000
   upgradePreset: {fileID: 11400000, guid: f6b8514e7ed5e404b96185332302f9e3, type: 2}
