@@ -2,5 +2,6 @@ public enum UpgradeRarity
 {
     Common,
     Uncommon,
-    Rare
+    Rare,
+    Legendary
 }

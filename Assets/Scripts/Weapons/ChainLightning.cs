@@ -3,7 +3,7 @@ public class ChainLightningWeapon : TargetedWeapon
 {
     protected override void InitializeProjectile(GameObject obj, Enemy target)
     {
-        ChainLightningPrefab chain = obj.GetComponent<ChainLightningPrefab>();
+        ChainLightningAttack chain = obj.GetComponent<ChainLightningAttack>();
         chain.Initialize(this, target);
     }
 }

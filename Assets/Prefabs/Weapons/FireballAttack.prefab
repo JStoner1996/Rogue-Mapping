@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2266970623064839173}
   - component: {fileID: 8433442102692174556}
   m_Layer: 9
-  m_Name: FireballAttackPrefab
+  m_Name: FireballAttack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -4,8 +4,6 @@ public abstract class TargetedWeapon : Weapon
 {
     protected float spawnCounter;
 
-    public GameObject prefab;
-
     public override void ManualUpdate(float deltaTime)
     {
         spawnCounter -= deltaTime;
@@ -30,7 +28,7 @@ public abstract class TargetedWeapon : Weapon
 
     protected virtual void Fire(Enemy target)
     {
-        GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity, transform);
+        GameObject obj = Instantiate(Data.attackPrefab, transform.position, Quaternion.identity, transform);
         InitializeProjectile(obj, target);
     }
 

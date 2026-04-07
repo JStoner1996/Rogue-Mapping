@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8497517313710323629}
   - component: {fileID: 6286844665201509070}
   m_Layer: 0
-  m_Name: Beam Weapon Prefab
+  m_Name: Beam Weapon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,12 +45,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeamWeapon
   data: {fileID: 11400000, guid: e2933172246e78a4fbd8debeaebff873, type: 2}
-  stats:
-    damage: 0
-    baseAttackSpeed: 0
-    attackSpeedMultiplier: 0
-    baseRange: 0
-    rangeMultiplier: 0
-    duration: 0
-    cooldown: 0
-  prefab: {fileID: 5855027322998723540, guid: 3077e28de779a5f4f951aaebd717e516, type: 3}

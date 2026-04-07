@@ -10,18 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4eb17568cba28e74e96155a03b367f58, type: 3}
-  m_Name: BeamWeaponData
+  m_Name: ChainLightningWeaponData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
-  weaponName: Beam Weapon
-  icon: {fileID: -6947956404107024711, guid: bd4c9024e16ea254e9eec02520ddd8a9, type: 3}
+  weaponName: Chain Lightning
+  icon: {fileID: 1181468014, guid: f47ab04441f456b46926e56362ca2a72, type: 3}
+  prefab: {fileID: -1146507695568951787, guid: 68c1dfdc2a2e66245ac270803878e055, type: 3}
+  attackPrefab: {fileID: 2673891347449104220, guid: f0516309b5d10c949921366840a753c8, type: 3}
   baseStats:
-    damage: 500
-    attackSpeed: 0.25
+    damage: 140
+    attackSpeed: 0.8
     range: 5
-    knockback: 6
+    knockback: 0
     duration: 0
     cooldown: 0
-    bounceCount: 0
+    bounceCount: 3
   upgradeRolls: []
-  allowedStats: 00000000010000000200000005000000
+  allowedStats: 000000000100000006000000
   upgradePreset: {fileID: 11400000, guid: f6b8514e7ed5e404b96185332302f9e3, type: 2}

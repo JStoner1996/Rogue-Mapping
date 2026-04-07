@@ -1,14 +1,31 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
-    public WeaponData data;
+    [Header("Runtime Data")]
+    [SerializeField] private WeaponData data;
 
-    public RuntimeStats stats = new RuntimeStats();
+    public WeaponData Data => data;
 
-    public void InitializeStats()
+    [System.NonSerialized] public RuntimeStats stats = new RuntimeStats();
+
+    protected bool isInitialized;
+
+    public virtual void Initialize(WeaponData weaponData)
     {
+        data = weaponData;
+        InitializeStats();
+        isInitialized = true;
+    }
+
+    private void InitializeStats()
+    {
+        if (data == null)
+        {
+            Debug.LogError($"{name}: WeaponData is missing!");
+            return;
+        }
+
         var baseStats = data.baseStats;
 
         stats.baseDamage = baseStats.damage;
@@ -18,11 +35,17 @@ public class Weapon : MonoBehaviour
         stats.duration = baseStats.duration;
         stats.cooldown = baseStats.cooldown;
         stats.bounceCount = baseStats.bounceCount;
+
+        stats.damageMultiplier = 0f;
+        stats.attackSpeedMultiplier = 0f;
+        stats.knockbackMultiplier = 0f;
+        stats.rangeMultiplier = 0f;
     }
 
     public virtual void ManualUpdate(float deltaTime)
     {
-        // Base weapon does nothing by default
+        if (!isInitialized)
+            return;
     }
 
     public void ApplyUpgrade(WeaponUpgradeResult upgrade)

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AreaWeaponPrefab : MonoBehaviour
+public class AreaWeaponAttack : MonoBehaviour
 {
     private AreaWeapon weapon;
 
@@ -14,7 +14,6 @@ public class AreaWeaponPrefab : MonoBehaviour
     public void Initialize(AreaWeapon weaponReference)
     {
         weapon = weaponReference;
-
         var stats = weapon.stats;
 
         targetSize = Vector3.one * stats.Range;

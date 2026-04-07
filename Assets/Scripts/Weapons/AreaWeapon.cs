@@ -1,10 +1,7 @@
 using UnityEngine;
-
 public class AreaWeapon : Weapon
 {
     private float spawnCounter;
-
-    public GameObject prefab;
 
     public override void ManualUpdate(float deltaTime)
     {
@@ -14,10 +11,18 @@ public class AreaWeapon : Weapon
         {
             spawnCounter = stats.cooldown;
 
-            GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity, transform);
+            GameObject obj = Instantiate(Data.attackPrefab, transform.position, Quaternion.identity, transform);
 
-            AreaWeaponPrefab area = obj.GetComponent<AreaWeaponPrefab>();
-            area.Initialize(this);
+            AreaWeaponAttack attack = obj.GetComponent<AreaWeaponAttack>();
+
+            if (attack != null)
+            {
+                attack.Initialize(this);
+            }
+            else
+            {
+                Debug.LogError("AreaWeaponAttack missing on attack prefab!");
+            }
         }
     }
 }

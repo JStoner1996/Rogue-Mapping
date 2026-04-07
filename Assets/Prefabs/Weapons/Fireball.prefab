@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8497517313710323629}
-  - component: {fileID: -1146507695568951787}
+  - component: {fileID: -3225107794166436590}
   m_Layer: 0
-  m_Name: Chain Lightning Prefab
+  m_Name: Fireball
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-1146507695568951787
+--- !u!114 &-3225107794166436590
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,17 +41,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 1006779285657584941}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ce07773276f68e4a8dc512c6263fc37, type: 3}
+  m_Script: {fileID: 11500000, guid: d8a3f37275cac1742ad36218473fb886, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChainLightningWeapon
-  data: {fileID: 11400000, guid: 2036156484914c740933e998f2ee17ee, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::FireballWeapon
+  data: {fileID: 11400000, guid: 2a1340224fffee042a388a2ebe43cd06, type: 2}
   stats:
-    damage: 0
+    baseDamage: 0
+    damageMultiplier: 0
     baseAttackSpeed: 0
     attackSpeedMultiplier: 0
     baseRange: 0
     rangeMultiplier: 0
+    baseKnockback: 0
+    knockbackMultiplier: 0
     duration: 0
     cooldown: 0
     bounceCount: 0
-  prefab: {fileID: 2673891347449104220, guid: f0516309b5d10c949921366840a753c8, type: 3}
+  prefab: {fileID: 2673891347449104220, guid: 9734c581d09650146971aaf7c0f92b3b, type: 3}

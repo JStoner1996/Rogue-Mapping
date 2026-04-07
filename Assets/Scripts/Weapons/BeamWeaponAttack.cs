@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BeamWeaponPrefab : MonoBehaviour
+public class BeamWeaponAttack : MonoBehaviour
 {
     private BeamWeapon weapon;
     private Vector3 targetSize;

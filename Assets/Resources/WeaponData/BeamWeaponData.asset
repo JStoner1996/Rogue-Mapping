@@ -10,18 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4eb17568cba28e74e96155a03b367f58, type: 3}
-  m_Name: AreaWeaponData
+  m_Name: BeamWeaponData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
-  weaponName: Area Weapon
-  icon: {fileID: 21300000, guid: 7c3c287865072c74cbd1a886fa9666f5, type: 3}
+  weaponName: Beam Weapon
+  icon: {fileID: -6947956404107024711, guid: bd4c9024e16ea254e9eec02520ddd8a9, type: 3}
+  prefab: {fileID: 6286844665201509070, guid: d908a02c4833d3443b85e958ae24f690, type: 3}
+  attackPrefab: {fileID: 5855027322998723540, guid: 3077e28de779a5f4f951aaebd717e516, type: 3}
   baseStats:
-    damage: 100
-    attackSpeed: 1
-    range: 0.7
-    knockback: 1
-    duration: 3
-    cooldown: 5
+    damage: 500
+    attackSpeed: 0.25
+    range: 5
+    knockback: 6
+    duration: 0
+    cooldown: 0
     bounceCount: 0
   upgradeRolls: []
-  allowedStats: 000000000100000002000000030000000400000005000000
+  allowedStats: 00000000010000000200000005000000
   upgradePreset: {fileID: 11400000, guid: f6b8514e7ed5e404b96185332302f9e3, type: 2}

@@ -1,11 +1,9 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class BeamWeapon : Weapon
 {
     private float spawnCounter;
 
-    public GameObject prefab;
 
     public override void ManualUpdate(float deltaTime)
     {
@@ -20,9 +18,9 @@ public class BeamWeapon : Weapon
             {
                 spawnCounter = spawnCounter = 1f / stats.AttackSpeed; ;
 
-                GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity, transform);
+                GameObject obj = Instantiate(Data.attackPrefab, transform.position, Quaternion.identity, transform);
 
-                BeamWeaponPrefab beam = obj.GetComponent<BeamWeaponPrefab>();
+                BeamWeaponAttack beam = obj.GetComponent<BeamWeaponAttack>();
                 beam.Initialize(this);
             }
             else

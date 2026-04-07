@@ -9,14 +9,14 @@ public class WeaponStatsUI : MonoBehaviour
 
     public void Initialize(Weapon weapon)
     {
-        weaponName.text = weapon.data.weaponName;
+        weaponName.text = weapon.Data.weaponName;
         weaponStats.text = BuildStatsText(weapon);
     }
 
     private string BuildStatsText(Weapon weapon)
     {
         var stats = weapon.stats;
-        var allowed = weapon.data.allowedStats;
+        var allowed = weapon.Data.allowedStats;
 
         string desc = "";
 

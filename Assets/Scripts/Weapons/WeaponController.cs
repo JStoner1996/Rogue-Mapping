@@ -7,8 +7,8 @@ public class WeaponController : MonoBehaviour
     public static WeaponController Instance;
 
     [Header("Starting Weapons")]
-    [SerializeField] private List<Weapon> startingWeapons;
-
+    [SerializeField] private List<WeaponData> startingWeapons;
+    public int maxWeapons = 3;
     public List<Weapon> activeWeapons = new List<Weapon>();
 
     void Awake()
@@ -24,9 +24,9 @@ public class WeaponController : MonoBehaviour
 
     void Start()
     {
-        foreach (var weaponPrefab in startingWeapons)
+        foreach (var weaponData in startingWeapons)
         {
-            AddWeapon(weaponPrefab);
+            AddWeapon(weaponData);
         }
     }
 
@@ -40,11 +40,22 @@ public class WeaponController : MonoBehaviour
         }
     }
 
-    public void AddWeapon(Weapon weaponPrefab)
+    public void AddWeapon(WeaponData weaponData)
     {
-        Weapon weapon = Instantiate(weaponPrefab, transform);
-        weapon.InitializeStats();
+        if (activeWeapons.Count >= maxWeapons)
+        {
+            Debug.LogWarning("Max weapons reached!");
+            return;
+        }
+
+        Weapon weapon = Instantiate(weaponData.prefab, transform);
+        weapon.Initialize(weaponData);
 
         activeWeapons.Add(weapon);
+    }
+
+    public bool CanAddWeapon()
+    {
+        return activeWeapons.Count < maxWeapons;
     }
 }

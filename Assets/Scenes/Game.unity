@@ -35155,6 +35155,11 @@ MonoBehaviour:
   playerHealth: 0
   moveSpeed: 5
   weaponController: {fileID: 1325946333}
+  allWeapons:
+  - {fileID: 11400000, guid: 01790d9b8bda8584d8ad2fc8445edf46, type: 2}
+  - {fileID: 11400000, guid: e2933172246e78a4fbd8debeaebff873, type: 2}
+  - {fileID: 11400000, guid: 2036156484914c740933e998f2ee17ee, type: 2}
+  - {fileID: 11400000, guid: 2a1340224fffee042a388a2ebe43cd06, type: 2}
   immunityDuration: 1
 --- !u!50 &946145814
 Rigidbody2D:
@@ -36870,9 +36875,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
   startingWeapons:
-  - {fileID: -3225107794166436590, guid: a23602c8fd1f2e14eb438ff5f1389b91, type: 3}
-  - {fileID: -1146507695568951787, guid: 68c1dfdc2a2e66245ac270803878e055, type: 3}
-  - {fileID: 6286844665201509070, guid: d908a02c4833d3443b85e958ae24f690, type: 3}
+  - {fileID: 11400000, guid: e2933172246e78a4fbd8debeaebff873, type: 2}
+  maxWeapons: 3
   activeWeapons: []
 --- !u!1 &1338702976
 GameObject:
@@ -39099,7 +39103,7 @@ MonoBehaviour:
   healthPrefab: {fileID: -6341055785340273556, guid: d524371948be3ec4b9ed62a65b9270f1, type: 3}
   healthPoolSize: 3
   xpPrefab: {fileID: 3185581634386999045, guid: 4667355e2dc201a48b8be11181222934, type: 3}
-  xpPoolSize: 150
+  xpPoolSize: 30
   magnetPrefab: {fileID: 5792896393468435496, guid: 4fb41613d8e46dc419e79cf646ad86d8, type: 3}
   magnetPoolSize: 3
   bombPrefab: {fileID: 7569470617867634613, guid: 77f29ea490283e64c9da1aa297d252ed, type: 3}

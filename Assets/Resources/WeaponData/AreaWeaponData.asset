@@ -10,18 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4eb17568cba28e74e96155a03b367f58, type: 3}
-  m_Name: ChainLightningWeaponData
+  m_Name: AreaWeaponData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
-  weaponName: Chain Lightning
-  icon: {fileID: 1181468014, guid: f47ab04441f456b46926e56362ca2a72, type: 3}
+  weaponName: Area Weapon
+  icon: {fileID: 21300000, guid: 7c3c287865072c74cbd1a886fa9666f5, type: 3}
+  prefab: {fileID: -7012261314914239984, guid: b79d2498e8ff00448918b3bf0af2e9c9, type: 3}
+  attackPrefab: {fileID: 4964872540552076819, guid: eedde0c3b5233004998c72e2915606e3, type: 3}
   baseStats:
-    damage: 140
-    attackSpeed: 0.8
-    range: 5
+    damage: 100
+    attackSpeed: 1
+    range: 0.7
     knockback: 1
-    duration: 0
-    cooldown: 0
-    bounceCount: 3
+    duration: 3
+    cooldown: 5
+    bounceCount: 0
   upgradeRolls: []
-  allowedStats: 000000000100000006000000
+  allowedStats: 000000000100000002000000030000000400000005000000
   upgradePreset: {fileID: 11400000, guid: f6b8514e7ed5e404b96185332302f9e3, type: 2}

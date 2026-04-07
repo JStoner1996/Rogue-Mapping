@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class ChainLightningPrefab : ProjectileBase
+public class ChainLightningAttack : ProjectileBase
 {
     private ChainLightningWeapon weapon;
     private int remainingBounces;
