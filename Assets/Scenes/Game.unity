@@ -33020,7 +33020,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 426.66666, y: -50}
+  m_AnchoredPosition: {x: 426.66663, y: -50}
   m_SizeDelta: {x: 700, y: 760}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &405930780
@@ -36870,7 +36870,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
   startingWeapons:
-  - {fileID: 1421270835611811585, guid: b79d2498e8ff00448918b3bf0af2e9c9, type: 3}
+  - {fileID: -3225107794166436590, guid: a23602c8fd1f2e14eb438ff5f1389b91, type: 3}
+  - {fileID: -1146507695568951787, guid: 68c1dfdc2a2e66245ac270803878e055, type: 3}
+  - {fileID: 6286844665201509070, guid: d908a02c4833d3443b85e958ae24f690, type: 3}
   activeWeapons: []
 --- !u!1 &1338702976
 GameObject:

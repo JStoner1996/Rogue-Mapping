@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eb17568cba28e74e96155a03b367f58, type: 3}
+  m_Name: FireballWeaponData
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponName: Fireball
+  icon: {fileID: 1181468014, guid: f47ab04441f456b46926e56362ca2a72, type: 3}
+  baseStats:
+    damage: 200
+    attackSpeed: 0.75
+    range: 5
+    knockback: 1
+    duration: 0
+    cooldown: 0
+    bounceCount: 0
+  upgradeRolls: []
+  allowedStats: 00000000010000000200000005000000
+  upgradePreset: {fileID: 11400000, guid: f6b8514e7ed5e404b96185332302f9e3, type: 2}

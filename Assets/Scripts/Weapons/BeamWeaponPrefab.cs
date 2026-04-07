@@ -59,6 +59,10 @@ public class BeamWeaponPrefab : MonoBehaviour
 
         Collider2D[] hits = Physics2D.OverlapBoxAll(boxCenter, boxSize, rotationZ);
 
+#if UNITY_EDITOR
+        DebugUtils.DrawBox(boxCenter, boxSize, rotationZ, Color.green, 1f);
+#endif
+
         HashSet<Enemy> hitEnemies = new HashSet<Enemy>();
 
         foreach (var hit in hits)
