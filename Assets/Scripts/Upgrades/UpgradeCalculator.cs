@@ -1,8 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public static class UpgradeCalculator
 {
+
+    const int MAX_STATS_PER_UPGRADE = 3;
+
     public static UpgradeRarity RollRarity(
         float commonChance = 0.4f,
         float uncommonChance = 0.3f,
@@ -22,7 +26,6 @@ public static class UpgradeCalculator
     public static WeaponUpgradeResult RollUpgrade(List<StatRoll> rolls, UpgradeRarity rarity)
     {
         WeaponUpgradeResult result = new WeaponUpgradeResult();
-
         result.rarity = rarity;
 
         if (rolls == null || rolls.Count == 0)
@@ -51,16 +54,27 @@ public static class UpgradeCalculator
                 maxWeight = 9;
                 break;
         }
-        maxWeight = Random.Range(minWeight, maxWeight + 1);
-        int currentWeight = 0;
-        List<StatRoll> availableRolls = new List<StatRoll>(rolls);
 
-        while (availableRolls.Count > 0 && currentWeight < maxWeight)
+        maxWeight = Random.Range(minWeight, maxWeight + 1);
+
+        int currentWeight = 0;
+
+        List<StatRoll> availableRolls = new List<StatRoll>(rolls);
+        HashSet<StatType> usedStats = new HashSet<StatType>();
+
+
+        while (availableRolls.Count > 0 && currentWeight < maxWeight && usedStats.Count < MAX_STATS_PER_UPGRADE)
         {
             StatRoll roll = availableRolls[Random.Range(0, availableRolls.Count)];
-            Debug.Log($"Attempting to add roll: {roll.statType} with weight {roll.weight:F2} (Current Weight: {currentWeight}, Max Weight: {maxWeight})");
 
-            // Prevent exceeding rarity weight cap
+            // Prevent duplicate stat types
+            if (usedStats.Contains(roll.statType))
+            {
+                availableRolls.Remove(roll);
+                continue;
+            }
+
+            // Prevent exceeding weight cap
             if (currentWeight + roll.weight > maxWeight)
             {
                 availableRolls.Remove(roll);
@@ -69,8 +83,6 @@ public static class UpgradeCalculator
 
             float value = Random.Range(roll.minValue, roll.maxValue);
 
-            Debug.Log($"Rarity: {rarity} | Roll: {roll.statType} + {value:F2}");
-
             if (roll.statType == StatType.AttackSpeed)
             {
                 value = Mathf.Abs(value);
@@ -78,7 +90,9 @@ public static class UpgradeCalculator
 
             result.AddStat(roll.statType, value);
 
+            usedStats.Add(roll.statType);
             currentWeight += roll.weight;
+
             availableRolls.Remove(roll);
 
             result.weight = currentWeight;
@@ -86,7 +100,6 @@ public static class UpgradeCalculator
 
         return result;
     }
-
     public static List<StatRoll> FilterRolls(List<StatRoll> rolls, HashSet<StatType> allowed)
     {
         return rolls.FindAll(r => allowed.Contains(r.statType));
