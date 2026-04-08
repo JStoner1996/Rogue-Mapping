@@ -42,7 +42,6 @@ public class AudioManager : MonoBehaviour
         CreatePool();
     }
 
-
     void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
