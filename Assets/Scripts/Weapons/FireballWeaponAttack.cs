@@ -8,6 +8,8 @@ public class FireballWeaponPrefab : ProjectileBase
     {
         weapon = weaponReference;
         this.target = target;
+
+        AudioManager.Instance.Play(SoundType.FireballWeapon);
     }
 
     protected override void OnHit()

@@ -15,7 +15,7 @@ public class ExpCrystal : MonoBehaviour, IItem
     {
         onExpCrystalCollect?.Invoke(worth);
         PickupPools.Instance.ReturnXP(this);
-        AudioController.Instance.PlayModifiedSound(AudioController.Instance.getExp, 0.9f, 1.1f);
+        AudioManager.Instance.Play(SoundType.GetExp);
     }
 
 }

@@ -72,7 +72,6 @@ public class Enemy : MonoBehaviour
         health -= damage;
 
         DamageNumberController.Instance.CreateNumber(damage, transform.position);
-        Debug.Log($"Enemy hit from {hitDirection?.ToString() ?? "no direction"}. knockback force: {knockbackForce} ");
         // Only apply knockback if both are valid
         if (hitDirection.HasValue && knockbackForce > 0f)
         {
@@ -97,7 +96,8 @@ public class Enemy : MonoBehaviour
 
         Destroy(gameObject);
         Instantiate(destroyEffect, transform.position, transform.rotation);
-        AudioController.Instance.PlayModifiedSound(AudioController.Instance.enemyDie);
+        AudioManager.Instance.Play(SoundType.EnemyDie);
+
     }
 
     private void ApplyKnockback(Vector2 direction, float force)

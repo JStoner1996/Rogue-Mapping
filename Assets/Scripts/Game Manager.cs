@@ -52,7 +52,8 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         UIController.Instance.gameOverPanel.SetActive(true);
 
-        AudioController.Instance.PlaySound(AudioController.Instance.gameOver);
+        AudioManager.Instance.Play(SoundType.GameOver);
+
     }
     public void Restart()
     {
@@ -65,13 +66,15 @@ public class GameManager : MonoBehaviour
         {
             UIController.Instance.pausePanel.SetActive(true);
             Time.timeScale = 0f;
-            AudioController.Instance.PlaySound(AudioController.Instance.pause);
+            AudioManager.Instance.Play(SoundType.Pause);
+
         }
         else
         {
             UIController.Instance.pausePanel.SetActive(false);
             Time.timeScale = 1f;
-            AudioController.Instance.PlaySound(AudioController.Instance.unpause);
+            AudioManager.Instance.Play(SoundType.Unpause);
+
         }
     }
 

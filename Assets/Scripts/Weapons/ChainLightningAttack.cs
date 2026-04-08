@@ -13,6 +13,8 @@ public class ChainLightningAttack : ProjectileBase
 
         remainingBounces = weapon.stats.bounceCount;
         hitEnemies.Clear();
+
+        AudioManager.Instance.Play(SoundType.ChainLightningWeapon);
     }
 
     protected override void OnHit()

@@ -163,7 +163,7 @@ public class PlayerController : MonoBehaviour
 
         pendingLevelUps--;
 
-        AudioController.Instance.PlaySound(AudioController.Instance.levelUp);
+        AudioManager.Instance.Play(SoundType.LevelUp);
 
         var weapons = weaponController.activeWeapons;
         if (weapons.Count == 0) return;
@@ -182,7 +182,7 @@ public class PlayerController : MonoBehaviour
             bool canAddWeapon = weaponController.CanAddWeapon();
             bool offerNewWeapon = canAddWeapon && Random.value < 0.25f;
 
-            // Offer new weapopn with 25% chance if player can carry more, ensuring no duplicates in the offer
+            // Offer new weapon with 25% chance if player can carry more, ensuring no duplicates in the offer
             if (offerNewWeapon)
             {
                 availableWeapons.RemoveAll(w => offeredNewWeapons.Contains(w));

@@ -10,7 +10,8 @@ public class HealthPickup : MonoBehaviour, IItem
     {
         onHealthPickup?.Invoke(worth);
         PickupPools.Instance.ReturnHealth(this);
-        AudioController.Instance.PlayModifiedSound(AudioController.Instance.heal);
+        AudioManager.Instance.Play(SoundType.Heal);
+
     }
 
 

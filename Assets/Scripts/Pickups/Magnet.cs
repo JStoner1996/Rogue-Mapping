@@ -11,6 +11,7 @@ public class Magnet : MonoBehaviour, IItem
             .ActivateMagnet(pullSpeed);
 
         PickupPools.Instance.ReturnMagnet(this);
-        AudioController.Instance.PlaySound(AudioController.Instance.magnet);
+        AudioManager.Instance.Play(SoundType.Magnet);
+
     }
 }

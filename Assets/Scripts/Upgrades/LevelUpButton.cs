@@ -67,7 +67,8 @@ public class LevelUpButton : MonoBehaviour
             assignedWeapon.ApplyUpgrade(assignedUpgrade);
         }
 
-        AudioController.Instance.PlaySound(AudioController.Instance.selectUpgrade);
+        AudioManager.Instance.Play(SoundType.SelectUpgrade);
+
         UIController.Instance.LevelUpPanelClosed();
         PlayerController.Instance.OnUpgradeSelected();
     }

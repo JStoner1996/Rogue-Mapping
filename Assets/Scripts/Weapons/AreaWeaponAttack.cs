@@ -22,7 +22,7 @@ public class AreaWeaponAttack : MonoBehaviour
         timer = stats.duration;
         counter = 0f;
 
-        AudioController.Instance.PlayModifiedSound(AudioController.Instance.areaWeaponSpawn);
+        AudioManager.Instance.Play(SoundType.AreaWeapon);
     }
 
     void Update()

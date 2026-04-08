@@ -1,0 +1,19 @@
+public enum SoundType
+{
+    MenuMusic,
+    GameMusic,
+    Pause,
+    Unpause,
+    EnemyDie,
+    GameOver,
+    LevelUp,
+    GetExp,
+    SelectUpgrade,
+    Heal,
+    Bomb,
+    Magnet,
+    AreaWeapon,
+    BeamWeapon,
+    ChainLightningWeapon,
+    FireballWeapon,
+}

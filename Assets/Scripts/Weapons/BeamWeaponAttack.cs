@@ -14,6 +14,8 @@ public class BeamWeaponAttack : MonoBehaviour
         Vector3 currentScale = transform.localScale;
         targetSize = new Vector3(currentScale.x, stats.Range, currentScale.z);
         FireBeam(TargetingUtils.FindNearestEnemy(transform.position, stats.Range));
+
+        AudioManager.Instance.Play(SoundType.BeamWeapon);
     }
 
     void Update()

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb62365f8dc8a2e49a73d0e36d314df2, type: 3}
+  m_Name: bomb_Sound
+  m_EditorClassIdentifier: Assembly-CSharp::SoundData
+  clip: {fileID: 8300000, guid: 37380d9774fcf274bbd64b5d23af5503, type: 3}
+  volume: 1
+  randomizeVolume: 0
+  volumeRange: {x: 0.8, y: 1}
+  randomizePitch: 0
+  pitchRange: {x: 0.9, y: 1.1}
+  loop: 0
