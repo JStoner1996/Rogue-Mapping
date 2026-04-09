@@ -9,5 +9,6 @@ public class WeaponStats
     public float knockback;
     public float duration;
     public float cooldown;
+    public float projectileSpeed;
     public int bounceCount;
 }

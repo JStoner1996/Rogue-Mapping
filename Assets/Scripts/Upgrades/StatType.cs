@@ -6,5 +6,6 @@ public enum StatType
     Duration,
     Cooldown,
     Knockback,
+    ProjectileSpeed,
     BounceCount,
 }

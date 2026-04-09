@@ -28,7 +28,7 @@ public abstract class TargetedWeapon : Weapon
 
     protected virtual void Fire(Enemy target)
     {
-        GameObject obj = Instantiate(Data.attackPrefab, transform.position, Quaternion.identity, transform);
+        GameObject obj = Instantiate(Data.attackPrefab, transform.position, Quaternion.identity);
         InitializeProjectile(obj, target);
     }
 

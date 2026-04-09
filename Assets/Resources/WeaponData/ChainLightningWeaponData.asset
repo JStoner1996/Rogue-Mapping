@@ -23,6 +23,7 @@ MonoBehaviour:
     knockback: 0
     duration: 0
     cooldown: 0
+    projectileSpeed: 20
     bounceCount: 3
   upgradeRolls: []
   allowedStats: 000000000100000006000000

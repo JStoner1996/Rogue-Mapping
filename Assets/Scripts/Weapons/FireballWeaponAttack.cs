@@ -9,9 +9,13 @@ public class FireballWeaponPrefab : ProjectileBase
         weapon = weaponReference;
         this.target = target;
 
+        projectileSpeed = weapon.stats.projectileSpeed;
+
+        direction = (target.transform.position - transform.position).normalized;
+        Rotate(direction, 180f);
+
         AudioManager.Instance.Play(SoundType.FireballWeapon);
     }
-
     protected override void OnHit()
     {
         var stats = weapon.stats;

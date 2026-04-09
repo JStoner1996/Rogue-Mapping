@@ -11,6 +11,8 @@ public class ChainLightningAttack : ProjectileBase
         weapon = weaponReference;
         target = firstTarget;
 
+        projectileSpeed = weapon.stats.projectileSpeed;
+
         remainingBounces = weapon.stats.bounceCount;
         hitEnemies.Clear();
 

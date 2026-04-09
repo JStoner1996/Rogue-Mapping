@@ -34,6 +34,7 @@ public class Weapon : MonoBehaviour
         stats.baseRange = baseStats.range;
         stats.duration = baseStats.duration;
         stats.cooldown = baseStats.cooldown;
+        stats.projectileSpeed = baseStats.projectileSpeed;
         stats.bounceCount = baseStats.bounceCount;
 
         stats.damageMultiplier = 0f;

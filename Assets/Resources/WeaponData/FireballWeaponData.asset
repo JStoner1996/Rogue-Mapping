@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FireballWeaponData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Fireball
-  icon: {fileID: 1181468014, guid: f47ab04441f456b46926e56362ca2a72, type: 3}
+  icon: {fileID: 5353841184698615464, guid: 03ef2d4f8390282468eb7a05cad62939, type: 3}
   prefab: {fileID: -3225107794166436590, guid: a23602c8fd1f2e14eb438ff5f1389b91, type: 3}
   attackPrefab: {fileID: 2673891347449104220, guid: 9734c581d09650146971aaf7c0f92b3b, type: 3}
   baseStats:
@@ -23,6 +23,7 @@ MonoBehaviour:
     knockback: 3
     duration: 0
     cooldown: 0
+    projectileSpeed: 10
     bounceCount: 0
   upgradeRolls: []
   allowedStats: 00000000010000000200000005000000
