@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FireballWeapon : TargetedWeapon
+public class FireballAttack : TargetedWeapon
 {
     protected override void InitializeProjectile(GameObject obj, Enemy target)
     {

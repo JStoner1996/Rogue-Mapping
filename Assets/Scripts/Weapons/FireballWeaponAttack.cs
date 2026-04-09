@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class FireballWeaponPrefab : ProjectileBase
 {
-    private FireballWeapon weapon;
+    private FireballAttack weapon;
+    [SerializeField] private GameObject explosionVFX;
 
-    public void Initialize(FireballWeapon weaponReference, Enemy target)
+    public void Initialize(FireballAttack weaponReference, Enemy target)
     {
         weapon = weaponReference;
         this.target = target;
@@ -20,11 +21,19 @@ public class FireballWeaponPrefab : ProjectileBase
     {
         var stats = weapon.stats;
 
-        float explosionRadius = stats.Range * 0.5f; // 1:4 ratio
+        float explosionRadius = stats.Range * 0.5f;
 
 #if UNITY_EDITOR
         DebugUtils.DrawCircle(transform.position, explosionRadius, Color.red, 1f);
 #endif
+
+        GameObject explosion = Instantiate(explosionVFX, transform.position, Quaternion.identity);
+
+        var scaler = explosion.GetComponent<ScaleToRadius>();
+        if (scaler != null)
+        {
+            scaler.SetRadius(explosionRadius);
+        }
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, explosionRadius);
 
