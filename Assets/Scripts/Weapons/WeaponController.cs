@@ -24,9 +24,17 @@ public class WeaponController : MonoBehaviour
 
     void Start()
     {
-        foreach (var weaponData in startingWeapons)
+
+        if (RunData.SelectedWeapon != null)
         {
-            AddWeapon(weaponData);
+            AddWeapon(RunData.SelectedWeapon);
+        }
+        else
+        {
+            foreach (var weaponData in startingWeapons)
+            {
+                AddWeapon(weaponData);
+            }
         }
     }
 
