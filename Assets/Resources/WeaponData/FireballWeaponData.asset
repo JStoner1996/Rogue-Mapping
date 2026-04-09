@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FireballWeaponData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Fireball
-  icon: {fileID: 5353841184698615464, guid: 03ef2d4f8390282468eb7a05cad62939, type: 3}
+  icon: {fileID: 4177796789233386801, guid: 90ac92dab602a714baabe743a2502ac3, type: 3}
   prefab: {fileID: -3225107794166436590, guid: a23602c8fd1f2e14eb438ff5f1389b91, type: 3}
   attackPrefab: {fileID: 2673891347449104220, guid: 9734c581d09650146971aaf7c0f92b3b, type: 3}
   baseStats:
