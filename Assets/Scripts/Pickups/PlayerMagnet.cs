@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class PlayerMagnet : MonoBehaviour
 {
-    private float pullSpeed;
+    [SerializeField] private float duration = 5f;
 
+    private float pullSpeed;
     private bool isActive;
-    private float duration = 5f;
     private float timer;
 
     public void ActivateMagnet(float speed)
@@ -17,7 +17,10 @@ public class PlayerMagnet : MonoBehaviour
 
     void Update()
     {
-        if (!isActive) return;
+        if (!isActive)
+        {
+            return;
+        }
 
         timer -= Time.deltaTime;
         if (timer <= 0f)
@@ -35,8 +38,6 @@ public class PlayerMagnet : MonoBehaviour
 
         foreach (ExpCrystal crystal in crystals)
         {
-            if (crystal == null) continue;
-
             Vector3 direction = (transform.position - crystal.transform.position).normalized;
             crystal.transform.position += direction * pullSpeed * Time.deltaTime;
         }

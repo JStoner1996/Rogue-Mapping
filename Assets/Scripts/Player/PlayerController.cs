@@ -119,8 +119,7 @@ public class PlayerController : MonoBehaviour
     {
         experience += addedExperience;
 
-        while (currentLevel < playerLevels.Count &&
-               experience >= playerLevels[currentLevel - 1])
+        while (currentLevel < playerLevels.Count && experience >= playerLevels[currentLevel - 1])
         {
             experience -= playerLevels[currentLevel - 1];
             currentLevel++;
@@ -147,11 +146,7 @@ public class PlayerController : MonoBehaviour
 
     private void GainHealth(int healthAmount)
     {
-        playerHealth += healthAmount;
-        if (playerHealth > playerMaxHealth)
-        {
-            playerHealth = playerMaxHealth;
-        }
+        playerHealth = Mathf.Min(playerHealth + healthAmount, playerMaxHealth);
 
         UIController.Instance.UpdateHealthSlider();
     }
@@ -272,7 +267,7 @@ public class PlayerController : MonoBehaviour
     {
         List<WeaponData> available = new List<WeaponData>();
 
-        foreach (var weaponData in allWeapons)
+        foreach (WeaponData weaponData in allWeapons)
         {
             bool alreadyOwned = weaponController.activeWeapons
                 .Exists(w => w.Data == weaponData);

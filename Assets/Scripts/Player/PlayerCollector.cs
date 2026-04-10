@@ -10,7 +10,7 @@ public class PlayerCollector : MonoBehaviour
     {
         if (collectorCollider == null)
         {
-            collectorCollider = GetComponent<CircleCollider2D>();
+            TryGetComponent(out collectorCollider);
         }
     }
 
@@ -21,9 +21,7 @@ public class PlayerCollector : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collider)
     {
-        IItem item = collider.GetComponent<IItem>();
-
-        if (item != null)
+        if (collider.TryGetComponent(out IItem item))
         {
             item.Collect();
         }

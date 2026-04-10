@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-
     [System.Serializable]
     public class Wave
     {
@@ -22,35 +21,38 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        if (PlayerController.Instance.gameObject.activeSelf)
+        if (!PlayerController.Instance.gameObject.activeSelf)
         {
-
-            waves[waveNumber].spawnTimer += Time.deltaTime;
-
-            if (waves[waveNumber].spawnTimer >= waves[waveNumber].spawnInterval)
-            {
-                waves[waveNumber].spawnTimer = 0;
-                SpawnEnemy();
-            }
-
-            if (waves[waveNumber].spawnedEnemyCount >= waves[waveNumber].enemiesPerWave)
-            {
-                waves[waveNumber].spawnedEnemyCount = 0;
-
-                if (waves[waveNumber].spawnInterval > 0.15f)
-                {
-                    waves[waveNumber].spawnInterval *= 0.8f;
-
-                }
-                waveNumber++;
-            }
-
-            if (waveNumber >= waves.Count)
-            {
-                waveNumber = 0;
-            }
+            return;
         }
 
+        Wave currentWave = waves[waveNumber];
+        currentWave.spawnTimer += Time.deltaTime;
+
+        if (currentWave.spawnTimer >= currentWave.spawnInterval)
+        {
+            currentWave.spawnTimer = 0f;
+            SpawnEnemy();
+        }
+
+        if (currentWave.spawnedEnemyCount < currentWave.enemiesPerWave)
+        {
+            return;
+        }
+
+        currentWave.spawnedEnemyCount = 0;
+
+        if (currentWave.spawnInterval > 0.15f)
+        {
+            currentWave.spawnInterval *= 0.8f;
+        }
+
+        waveNumber++;
+
+        if (waveNumber >= waves.Count)
+        {
+            waveNumber = 0;
+        }
     }
 
     private void SpawnEnemy()

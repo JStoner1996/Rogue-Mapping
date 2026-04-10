@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,23 +23,28 @@ public class UIController : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(this);
+            Destroy(gameObject);
+            return;
         }
         Instance = this;
     }
 
     public void UpdateHealthSlider()
     {
-        playerHealthSlider.maxValue = PlayerController.Instance.playerMaxHealth;
-        playerHealthSlider.value = PlayerController.Instance.playerHealth;
-        healthText.text = playerHealthSlider.value + " / " + playerHealthSlider.maxValue;
+        PlayerController player = PlayerController.Instance;
+
+        playerHealthSlider.maxValue = player.playerMaxHealth;
+        playerHealthSlider.value = player.playerHealth;
+        healthText.text = $"{playerHealthSlider.value} / {playerHealthSlider.maxValue}";
     }
 
     public void UpdateExperienceSlider()
     {
-        playerExperienceSlider.maxValue = PlayerController.Instance.playerLevels[PlayerController.Instance.currentLevel - 1];
-        playerExperienceSlider.value = PlayerController.Instance.experience;
-        experienceText.text = playerExperienceSlider.value + " / " + playerExperienceSlider.maxValue;
+        PlayerController player = PlayerController.Instance;
+
+        playerExperienceSlider.maxValue = player.playerLevels[player.currentLevel - 1];
+        playerExperienceSlider.value = player.experience;
+        experienceText.text = $"{playerExperienceSlider.value} / {playerExperienceSlider.maxValue}";
     }
 
     public void UpdateTimer(float timer)

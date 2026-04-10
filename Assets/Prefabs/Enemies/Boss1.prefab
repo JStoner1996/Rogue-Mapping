@@ -287,7 +287,7 @@ MonoBehaviour:
   spriteRenderer: {fileID: 3582648568308148033}
   rb: {fileID: 8061212314342040822}
   destroyEffect: {fileID: 1424168793998055834, guid: f587819a14468d74fa2f42eccf304135, type: 3}
-  experienceWorth: 50
+  experienceWorth: 150
   moveSpeed: 0.5
   damage: 25
   health: 2500
