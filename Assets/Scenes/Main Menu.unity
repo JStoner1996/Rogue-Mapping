@@ -573,6 +573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a971aaa1aae6eb4da2b6168bf85660e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameBootstrap
+  audioManagerPrefab: {fileID: 3971176473845827843, guid: dde05cf42c86bff41968962bb540f218, type: 3}
 --- !u!4 &789196998
 Transform:
   m_ObjectHideFlags: 0

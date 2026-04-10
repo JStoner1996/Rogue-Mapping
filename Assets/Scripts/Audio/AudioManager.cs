@@ -10,7 +10,6 @@ public class AudioManager : MonoBehaviour
 
     [Header("Defaults")]
     [SerializeField] private SoundData defaultMusic;
-    [SerializeField] private GameObject audioManagerPrefab;
 
     [Header("Pooling")]
     [SerializeField] private int initialPoolSize = 10;
@@ -29,21 +28,6 @@ public class AudioManager : MonoBehaviour
     private Dictionary<SoundType, SoundData> soundMap;
 
 
-    public static void EnsureExists()
-    {
-        if (Instance != null) return;
-
-        var prefab = Resources.Load<GameObject>("AudioManager");
-
-        if (prefab != null)
-        {
-            Instantiate(prefab);
-        }
-        else
-        {
-            Debug.LogError("AudioManager prefab missing in Resources folder!");
-        }
-    }
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -59,6 +43,11 @@ public class AudioManager : MonoBehaviour
         CreatePool();
     }
 
+    void Start()
+    {
+        HandleSceneMusic(SceneManager.GetActiveScene());
+    }
+
     void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -72,7 +61,11 @@ public class AudioManager : MonoBehaviour
     // Scene-based music control
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        HandleSceneMusic(scene);
+    }
 
+    void HandleSceneMusic(Scene scene)
+    {
         if (scene.name == "Game")
         {
             PlayMusic(audioLibrary.sounds.Find(s => s.type == SoundType.GameMusic)?.sound);

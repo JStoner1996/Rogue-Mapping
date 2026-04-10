@@ -2,8 +2,13 @@ using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
 {
+    [SerializeField] private AudioManager audioManagerPrefab;
+
     void Awake()
     {
-        AudioManager.EnsureExists();
+        if (AudioManager.Instance == null)
+        {
+            Instantiate(audioManagerPrefab);
+        }
     }
 }
