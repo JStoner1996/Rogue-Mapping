@@ -6,12 +6,9 @@ public class Magnet : MonoBehaviour, IItem
 
     public void Collect()
     {
-        PlayerController.Instance
-            .GetComponent<PlayerMagnet>()
-            .ActivateMagnet(pullSpeed);
+        PlayerController.Instance.GetComponent<PlayerMagnet>().ActivateMagnet(pullSpeed);
 
         PickupPools.Instance.ReturnMagnet(this);
         AudioManager.Instance.Play(SoundType.Magnet);
-
     }
 }

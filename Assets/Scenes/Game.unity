@@ -290,6 +290,51 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   FollowOffset: {x: 0, y: 0, z: -10}
+--- !u!1 &78179471
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 78179473}
+  - component: {fileID: 78179472}
+  m_Layer: 0
+  m_Name: PlayerLevelUpController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &78179472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 78179471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed9c18a7863043747bbd3135a99b140a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLevelUpController
+  weaponController: {fileID: 0}
+--- !u!4 &78179473
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 78179471}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.35592, y: 0.28793, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &98316340
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23985,6 +24030,50 @@ Transform:
   - {fileID: 1931078467}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &395844444
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 395844446}
+  - component: {fileID: 395844445}
+  m_Layer: 0
+  m_Name: PlayerMovement
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &395844445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395844444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68d6a6f700a95014ca4bd5f7c5cbf4cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+--- !u!4 &395844446
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395844444}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.35592, y: 0.28793, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &405634042
 GameObject:
   m_ObjectHideFlags: 0
@@ -33508,6 +33597,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 636345594}
   m_CullTransparentMesh: 1
+--- !u!1 &649769023
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 649769025}
+  - component: {fileID: 649769024}
+  m_Layer: 0
+  m_Name: PlayerHealth
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &649769024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649769023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0585a6859f655dc408e1eadc6227ab74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+--- !u!4 &649769025
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649769023}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.35592, y: 0.28793, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &701277254
 GameObject:
   m_ObjectHideFlags: 0
@@ -34040,6 +34173,50 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8413676096600323722, guid: 2bb8ebae75f0464468b47475957539b0, type: 3}
   m_PrefabInstance: {fileID: 1995121211}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &942048950
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 942048952}
+  - component: {fileID: 942048951}
+  m_Layer: 0
+  m_Name: PlayerExperience
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &942048951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942048950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fb739fb433b74b4a83e0e337cf90131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerExperience
+--- !u!4 &942048952
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942048950}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.35592, y: 0.28793, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &946145809
 GameObject:
   m_ObjectHideFlags: 0
@@ -34051,10 +34228,15 @@ GameObject:
   - component: {fileID: 946145812}
   - component: {fileID: 946145811}
   - component: {fileID: 946145810}
+  - component: {fileID: 946145815}
   - component: {fileID: 946145813}
   - component: {fileID: 946145817}
+  - component: {fileID: 946145822}
+  - component: {fileID: 946145821}
+  - component: {fileID: 946145820}
+  - component: {fileID: 946145819}
+  - component: {fileID: 946145818}
   - component: {fileID: 946145814}
-  - component: {fileID: 946145815}
   - component: {fileID: 946145816}
   m_Layer: 6
   m_Name: Player
@@ -34175,22 +34357,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   rb: {fileID: 946145814}
   animator: {fileID: 946145810}
-  _moveDirection: {x: 0, y: 0, z: 0}
+  playerMovement: {fileID: 946145822}
+  playerHealthComponent: {fileID: 946145820}
+  playerExperienceComponent: {fileID: 946145819}
+  playerLevelUpController: {fileID: 946145821}
+  playerMagnet: {fileID: 946145817}
   move: {fileID: -7155802127004010268, guid: 26165b8c2c39faa468faf264aa1f8abb, type: 3}
-  currentLevel: 1
-  maxLevel: 30
-  playerLevels: 0a000000140000001e000000
-  experience: 0
-  playerMaxHealth: 100
-  playerHealth: 0
   moveSpeed: 5
+  startingLevel: 1
+  maxLevel: 30
+  levelThresholds: 0a000000140000001e000000
+  startingExperience: 0
+  maxHealth: 100
+  immunityDuration: 1
   weaponController: {fileID: 1325946333}
   allWeapons:
   - {fileID: 11400000, guid: 01790d9b8bda8584d8ad2fc8445edf46, type: 2}
   - {fileID: 11400000, guid: e2933172246e78a4fbd8debeaebff873, type: 2}
   - {fileID: 11400000, guid: 2036156484914c740933e998f2ee17ee, type: 2}
   - {fileID: 11400000, guid: 2a1340224fffee042a388a2ebe43cd06, type: 2}
-  immunityDuration: 1
 --- !u!50 &946145814
 Rigidbody2D:
   serializedVersion: 5
@@ -34313,6 +34498,70 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8380d9a9778b4ad4b93775a27ca9a376, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMagnet
+  duration: 5
+--- !u!114 &946145818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946145809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db50b055a081a5046940676f9daf3957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCollector
+  collectorCollider: {fileID: 0}
+  pickupRadius: 2
+--- !u!114 &946145819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946145809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fb739fb433b74b4a83e0e337cf90131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerExperience
+--- !u!114 &946145820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946145809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0585a6859f655dc408e1eadc6227ab74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+--- !u!114 &946145821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946145809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed9c18a7863043747bbd3135a99b140a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLevelUpController
+  weaponController: {fileID: 0}
+--- !u!114 &946145822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946145809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68d6a6f700a95014ca4bd5f7c5cbf4cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
 --- !u!1 &964823226
 GameObject:
   m_ObjectHideFlags: 0
@@ -42563,6 +42812,10 @@ SceneRoots:
   - {fileID: 1000462646}
   - {fileID: 1632871705}
   - {fileID: 966611672}
+  - {fileID: 649769025}
+  - {fileID: 395844446}
+  - {fileID: 942048952}
+  - {fileID: 78179473}
   - {fileID: 946145812}
   - {fileID: 1521094510}
   - {fileID: 796516940}

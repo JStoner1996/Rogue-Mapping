@@ -31,19 +31,19 @@ public class UIController : MonoBehaviour
 
     public void UpdateHealthSlider()
     {
-        PlayerController player = PlayerController.Instance;
+        PlayerHealth health = PlayerController.Instance.GetComponent<PlayerHealth>();
 
-        playerHealthSlider.maxValue = player.playerMaxHealth;
-        playerHealthSlider.value = player.playerHealth;
+        playerHealthSlider.maxValue = health.MaxHealth;
+        playerHealthSlider.value = health.CurrentHealth;
         healthText.text = $"{playerHealthSlider.value} / {playerHealthSlider.maxValue}";
     }
 
     public void UpdateExperienceSlider()
     {
-        PlayerController player = PlayerController.Instance;
+        PlayerExperience experience = PlayerController.Instance.GetComponent<PlayerExperience>();
 
-        playerExperienceSlider.maxValue = player.playerLevels[player.currentLevel - 1];
-        playerExperienceSlider.value = player.experience;
+        playerExperienceSlider.maxValue = experience.LevelThresholds[experience.CurrentLevel - 1];
+        playerExperienceSlider.value = experience.CurrentExperience;
         experienceText.text = $"{playerExperienceSlider.value} / {playerExperienceSlider.maxValue}";
     }
 
