@@ -19,6 +19,9 @@ public class UIController : MonoBehaviour
 
     public LevelUpButton[] levelUpButtons;
 
+    private PlayerHealth playerHealth;
+    private PlayerExperience playerExperience;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -29,21 +32,32 @@ public class UIController : MonoBehaviour
         Instance = this;
     }
 
+    void Start()
+    {
+        CachePlayerReferences();
+    }
+
     public void UpdateHealthSlider()
     {
-        PlayerHealth health = PlayerController.Instance.GetComponent<PlayerHealth>();
+        if (playerHealth == null)
+        {
+            CachePlayerReferences();
+        }
 
-        playerHealthSlider.maxValue = health.MaxHealth;
-        playerHealthSlider.value = health.CurrentHealth;
+        playerHealthSlider.maxValue = playerHealth.MaxHealth;
+        playerHealthSlider.value = playerHealth.CurrentHealth;
         healthText.text = $"{playerHealthSlider.value} / {playerHealthSlider.maxValue}";
     }
 
     public void UpdateExperienceSlider()
     {
-        PlayerExperience experience = PlayerController.Instance.GetComponent<PlayerExperience>();
+        if (playerExperience == null)
+        {
+            CachePlayerReferences();
+        }
 
-        playerExperienceSlider.maxValue = experience.LevelThresholds[experience.CurrentLevel - 1];
-        playerExperienceSlider.value = experience.CurrentExperience;
+        playerExperienceSlider.maxValue = playerExperience.LevelThresholds[playerExperience.CurrentLevel - 1];
+        playerExperienceSlider.value = playerExperience.CurrentExperience;
         experienceText.text = $"{playerExperienceSlider.value} / {playerExperienceSlider.maxValue}";
     }
 
@@ -65,5 +79,16 @@ public class UIController : MonoBehaviour
     {
         levelUpPanel.SetActive(false);
         Time.timeScale = 1f;
+    }
+
+    private void CachePlayerReferences()
+    {
+        if (PlayerController.Instance == null)
+        {
+            return;
+        }
+
+        playerHealth = PlayerController.Instance.GetComponent<PlayerHealth>();
+        playerExperience = PlayerController.Instance.GetComponent<PlayerExperience>();
     }
 }

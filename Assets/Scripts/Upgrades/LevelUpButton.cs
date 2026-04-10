@@ -16,9 +16,15 @@ public class LevelUpButton : MonoBehaviour
 
     private Weapon assignedWeapon;
     private WeaponUpgradeResult assignedUpgrade;
+    private PlayerLevelUpController playerLevelUpController;
 
     private WeaponData newWeaponData;
     private bool isNewWeapon;
+
+    void Start()
+    {
+        CachePlayerLevelUpController();
+    }
 
     public void ActivateButton(Weapon weapon, WeaponUpgradeResult upgrade)
     {
@@ -70,7 +76,12 @@ public class LevelUpButton : MonoBehaviour
         AudioManager.Instance.Play(SoundType.SelectUpgrade);
 
         UIController.Instance.LevelUpPanelClosed();
-        PlayerController.Instance.OnUpgradeSelected();
+        if (playerLevelUpController == null)
+        {
+            CachePlayerLevelUpController();
+        }
+
+        playerLevelUpController.OnUpgradeSelected();
     }
 
     private void ApplyRarityVisuals(UpgradeRarity rarity)
@@ -106,5 +117,15 @@ public class LevelUpButton : MonoBehaviour
 
         borderImage.color = borderColor;
         backgroundImage.color = fillColor;
+    }
+
+    private void CachePlayerLevelUpController()
+    {
+        if (PlayerController.Instance == null)
+        {
+            return;
+        }
+
+        playerLevelUpController = PlayerController.Instance.GetComponent<PlayerLevelUpController>();
     }
 }

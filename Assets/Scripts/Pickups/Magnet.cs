@@ -4,9 +4,16 @@ public class Magnet : MonoBehaviour, IItem
 {
     [SerializeField] private float pullSpeed = 5f;
 
+    private PlayerMagnet playerMagnet;
+
     public void Collect()
     {
-        PlayerController.Instance.GetComponent<PlayerMagnet>().ActivateMagnet(pullSpeed);
+        if (playerMagnet == null && PlayerController.Instance != null)
+        {
+            playerMagnet = PlayerController.Instance.GetComponent<PlayerMagnet>();
+        }
+
+        playerMagnet.ActivateMagnet(pullSpeed);
 
         PickupPools.Instance.ReturnMagnet(this);
         AudioManager.Instance.Play(SoundType.Magnet);

@@ -27,17 +27,24 @@ public class Enemy : MonoBehaviour
     [Header("Loot")]
     public List<LootItem> lootTable = new List<LootItem>();
 
+    private PlayerController player;
+    private PlayerHealth playerHealth;
 
     void FixedUpdate()
     {
-        if (!PlayerController.Instance.gameObject.activeSelf)
+        if (player == null)
+        {
+            CachePlayerReferences();
+        }
+
+        if (player == null || !player.gameObject.activeSelf)
         {
             rb.linearVelocity = Vector2.zero;
             return;
         }
 
         // Face the player
-        if (PlayerController.Instance.transform.position.x > transform.position.x)
+        if (player.transform.position.x > transform.position.x)
             spriteRenderer.flipX = true;
         else
             spriteRenderer.flipX = false;
@@ -52,7 +59,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            direction = (PlayerController.Instance.transform.position - transform.position).normalized;
+            direction = (player.transform.position - transform.position).normalized;
             finalVelocity = direction * moveSpeed;
         }
 
@@ -63,7 +70,12 @@ public class Enemy : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            PlayerController.Instance.TakeDamage(damage);
+            if (playerHealth == null)
+            {
+                CachePlayerReferences();
+            }
+
+            playerHealth?.TakeDamage(damage);
         }
     }
 
@@ -108,6 +120,7 @@ public class Enemy : MonoBehaviour
         knockbackVelocity = direction.normalized * finalForce;
         knockbackTimer = 0.1f;
     }
+
     private void InstantiateLoot(LootItem lootItem)
     {
         if (Random.Range(0f, 100f) > lootItem.dropChance) return;
@@ -133,6 +146,16 @@ public class Enemy : MonoBehaviour
                 Bomb bomb = PickupPools.Instance.GetBomb();
                 bomb.transform.position = transform.position;
                 break;
+        }
+    }
+
+    private void CachePlayerReferences()
+    {
+        player = PlayerController.Instance;
+
+        if (player != null)
+        {
+            playerHealth = player.GetComponent<PlayerHealth>();
         }
     }
 }

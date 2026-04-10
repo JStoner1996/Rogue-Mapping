@@ -51,21 +51,6 @@ public class PlayerController : MonoBehaviour
         ConfigureComponents();
     }
 
-    public void TakeDamage(float damage)
-    {
-        playerHealthComponent.TakeDamage(damage);
-    }
-
-    public void GetExperience(int addedExperience)
-    {
-        playerExperienceComponent.AddExperience(addedExperience);
-    }
-
-    public void OnUpgradeSelected()
-    {
-        playerLevelUpController.OnUpgradeSelected();
-    }
-
     private void EnsureComponents()
     {
         playerMovement = GetOrAddComponent(playerMovement);
