@@ -51,7 +51,7 @@ public class WeaponSelectManager : MonoBehaviour
         foreach (var weapon in allWeapons)
         {
             WeaponButtonUI button = Instantiate(buttonPrefab, buttonParent);
-            button.Setup(weapon, OnWeaponSelected);
+            button.Setup(weapon, OnWeaponSelected, PreviewWeapon, RestoreSelectedWeaponPreview);
         }
     }
 
@@ -60,6 +60,22 @@ public class WeaponSelectManager : MonoBehaviour
         selectedWeapon = weapon;
         selectedWeaponUI.SetWeapon(weapon);
         Debug.Log($"Selected: {weapon.weaponName}");
+    }
+
+    void PreviewWeapon(WeaponData weapon)
+    {
+        selectedWeaponUI.SetWeapon(weapon);
+    }
+
+    void RestoreSelectedWeaponPreview()
+    {
+        if (selectedWeapon != null)
+        {
+            selectedWeaponUI.SetWeapon(selectedWeapon);
+            return;
+        }
+
+        selectedWeaponUI.Clear();
     }
 
     public void ConfirmSelection()

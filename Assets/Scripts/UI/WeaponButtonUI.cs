@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using UnityEngine.EventSystems;
 
-public class WeaponButtonUI : MonoBehaviour
+public class WeaponButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
@@ -11,11 +12,15 @@ public class WeaponButtonUI : MonoBehaviour
 
     private WeaponData weaponData;
     private Action<WeaponData> onClick;
+    private Action<WeaponData> onHoverEnter;
+    private Action onHoverExit;
 
-    public void Setup(WeaponData data, Action<WeaponData> callback)
+    public void Setup(WeaponData data, Action<WeaponData> clickCallback, Action<WeaponData> hoverEnterCallback, Action hoverExitCallback)
     {
         weaponData = data;
-        onClick = callback;
+        onClick = clickCallback;
+        onHoverEnter = hoverEnterCallback;
+        onHoverExit = hoverExitCallback;
 
         nameText.text = data.weaponName;
 
@@ -27,5 +32,15 @@ public class WeaponButtonUI : MonoBehaviour
 
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => onClick?.Invoke(weaponData));
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        onHoverEnter?.Invoke(weaponData);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        onHoverExit?.Invoke();
     }
 }
