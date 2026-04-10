@@ -7,15 +7,13 @@ public class Enemy : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private GameObject destroyEffect;
-
-    private Vector3 direction;
+    [SerializeField] private SpriteRenderer rarityOutlineRenderer;
 
     [Header("Enemy Stats")]
     [SerializeField] private int experienceWorth;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float damage;
     [SerializeField] private float health;
-
 
     [Header("Knockback")]
     [SerializeField, Range(0f, 100f)]
@@ -24,11 +22,26 @@ public class Enemy : MonoBehaviour
     private Vector2 knockbackVelocity;
     private float knockbackTimer;
 
+
     [Header("Loot")]
     public List<LootItem> lootTable = new List<LootItem>();
 
+    public EnemyRarity Rarity { get; private set; } = EnemyRarity.Normal;
     private PlayerController player;
     private PlayerHealth playerHealth;
+    private float currentHealth;
+    private EnemySpawnContext spawnContext = EnemySpawnContext.Default;
+
+
+    void Awake()
+    {
+        ResetRuntimeState();
+    }
+
+    void OnEnable()
+    {
+        ResetRuntimeState();
+    }
 
     void FixedUpdate()
     {
@@ -50,8 +63,6 @@ public class Enemy : MonoBehaviour
             spriteRenderer.flipX = false;
 
         Vector2 finalVelocity;
-
-        // Knockback active
         if (knockbackTimer > 0)
         {
             knockbackTimer -= Time.deltaTime;
@@ -59,8 +70,8 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            direction = (player.transform.position - transform.position).normalized;
-            finalVelocity = direction * moveSpeed;
+            Vector2 direction = (player.transform.position - transform.position).normalized;
+            finalVelocity = direction * CurrentMoveSpeed;
         }
 
         rb.linearVelocity = finalVelocity;
@@ -75,56 +86,70 @@ public class Enemy : MonoBehaviour
                 CachePlayerReferences();
             }
 
-            playerHealth?.TakeDamage(damage);
+            playerHealth?.TakeDamage(CurrentContactDamage);
         }
     }
 
     public void TakeDamage(float damage, Vector2? hitDirection = null, float knockbackForce = 0f)
     {
-        health -= damage;
+        currentHealth -= damage;
 
         DamageNumberController.Instance.CreateNumber(damage, transform.position);
-        // Only apply knockback if both are valid
         if (hitDirection.HasValue && knockbackForce > 0f)
         {
             ApplyKnockback(hitDirection.Value, knockbackForce);
         }
 
-        if (health <= 0)
+        if (currentHealth <= 0f)
         {
-            DestroyEnemy();
+            Die();
         }
     }
 
-    private void DestroyEnemy()
+    public void Initialize(EnemySpawnContext context)
     {
-        foreach (LootItem lootItem in lootTable)
-        {
-            if (Random.Range(0f, 100f) <= lootItem.dropChance)
-            {
-                InstantiateLoot(lootItem);
-            }
-        }
+        spawnContext = context;
+        Rarity = context.rarity;
+        ResetRuntimeState();
+    }
+
+    private float CurrentMoveSpeed => moveSpeed * spawnContext.moveSpeedMultiplier;
+    private float CurrentContactDamage => damage * spawnContext.damageMultiplier;
+    private int CurrentExperienceWorth => Mathf.RoundToInt(experienceWorth * spawnContext.experienceMultiplier);
+
+    private void Die()
+    {
+        DropLoot();
 
         Destroy(gameObject);
         Instantiate(destroyEffect, transform.position, transform.rotation);
         AudioManager.Instance.Play(SoundType.EnemyDie);
-
     }
 
-    private void ApplyKnockback(Vector2 direction, float force)
+    private void DropLoot()
+    {
+        foreach (LootItem lootItem in lootTable)
+        {
+            if (Random.Range(0f, 100f) > lootItem.dropChance)
+            {
+                continue;
+            }
+
+            SpawnLoot(lootItem);
+        }
+    }
+
+    private void ApplyKnockback(Vector2 hitDirection, float force)
     {
         float resistance = Mathf.Clamp01(knockbackResistance / 100f);
         float finalForce = force * (1f - resistance);
 
-        knockbackVelocity = direction.normalized * finalForce;
+        knockbackVelocity = hitDirection.normalized * finalForce;
         knockbackTimer = 0.1f;
     }
 
-    private void InstantiateLoot(LootItem lootItem)
+    private void SpawnLoot(LootItem lootItem)
     {
-        if (Random.Range(0f, 100f) > lootItem.dropChance) return;
-
         switch (lootItem.type)
         {
             case LootType.Health:
@@ -134,7 +159,7 @@ public class Enemy : MonoBehaviour
             case LootType.Experience:
                 ExpCrystal xp = PickupPools.Instance.GetXP();
                 xp.transform.position = transform.position;
-                xp.Init(experienceWorth);
+                xp.Init(CurrentExperienceWorth);
                 break;
 
             case LootType.Magnet:
@@ -158,4 +183,12 @@ public class Enemy : MonoBehaviour
             playerHealth = player.GetComponent<PlayerHealth>();
         }
     }
+
+    private void ResetRuntimeState()
+    {
+        currentHealth = health * spawnContext.healthMultiplier;
+        knockbackTimer = 0f;
+        knockbackVelocity = Vector2.zero;
+    }
+
 }

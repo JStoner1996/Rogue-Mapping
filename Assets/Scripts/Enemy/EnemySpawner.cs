@@ -7,45 +7,115 @@ public class EnemySpawner : MonoBehaviour
     public class Wave
     {
         public GameObject enemyPrefab;
-        public float spawnTimer;
-        public float spawnInterval;
-        public int enemiesPerWave;
-        public int spawnedEnemyCount;
+        public float spawnInterval = 1f;
+        public int enemiesPerWave = 10;
+        public int packSize = 1;
+        public float minimumSpawnInterval = 0.15f;
+        [Range(0.1f, 1f)] public float spawnIntervalDecay = 0.8f;
     }
 
-    public List<Wave> waves;
-    public int waveNumber;
-    public Transform minPos;
-    public Transform maxPos;
+    private class SpawnRuntimeState
+    {
+        public float spawnTimer;
+        public float currentSpawnInterval;
+        public int completedSpawnCycles;
+    }
 
+    [Header("Spawn Sequence")]
+    public List<Wave> waves = new List<Wave>();
+
+    [Header("Spawn Bounds")]
+    [SerializeField] private Transform minPos;
+    [SerializeField] private Transform maxPos;
+
+    [Header("Run Modifiers")]
+    [SerializeField] private EnemySpawnModifiers modifiers = new EnemySpawnModifiers();
+
+    private readonly List<SpawnRuntimeState> runtimeStates = new List<SpawnRuntimeState>();
+    public int waveNumber;
+    private PlayerController player;
+
+    void Awake()
+    {
+        BuildRuntimeStates();
+    }
 
     void Update()
     {
-        if (!PlayerController.Instance.gameObject.activeSelf)
+        if (player == null)
+        {
+            player = PlayerController.Instance;
+        }
+
+        if (player == null || !player.gameObject.activeSelf || waves.Count == 0)
         {
             return;
         }
 
         Wave currentWave = waves[waveNumber];
-        currentWave.spawnTimer += Time.deltaTime;
+        SpawnRuntimeState currentState = runtimeStates[waveNumber];
+        currentState.spawnTimer += Time.deltaTime;
 
-        if (currentWave.spawnTimer >= currentWave.spawnInterval)
-        {
-            currentWave.spawnTimer = 0f;
-            SpawnEnemy();
-        }
-
-        if (currentWave.spawnedEnemyCount < currentWave.enemiesPerWave)
+        if (currentState.spawnTimer < currentState.currentSpawnInterval)
         {
             return;
         }
 
-        currentWave.spawnedEnemyCount = 0;
+        currentState.spawnTimer = 0f;
+        SpawnPack(currentWave);
+        currentState.completedSpawnCycles++;
 
-        if (currentWave.spawnInterval > 0.15f)
+        if (currentState.completedSpawnCycles < currentWave.enemiesPerWave)
         {
-            currentWave.spawnInterval *= 0.8f;
+            return;
         }
+
+        AdvanceToNextWave(currentWave, currentState);
+    }
+
+    private void BuildRuntimeStates()
+    {
+        runtimeStates.Clear();
+
+        foreach (Wave wave in waves)
+        {
+            runtimeStates.Add(new SpawnRuntimeState
+            {
+                spawnTimer = 0f,
+                currentSpawnInterval = wave.spawnInterval,
+                completedSpawnCycles = 0,
+            });
+        }
+    }
+
+    private void SpawnPack(Wave wave)
+    {
+        int packSize = Mathf.Max(1, Mathf.RoundToInt(wave.packSize * modifiers.quantity));
+
+        for (int i = 0; i < packSize; i++)
+        {
+            SpawnEnemy(wave);
+        }
+    }
+
+    private void SpawnEnemy(Wave wave)
+    {
+        GameObject enemyObject = Instantiate(wave.enemyPrefab, RandomSpawnPoint(), transform.rotation);
+        Enemy enemy = enemyObject.GetComponent<Enemy>();
+
+        if (enemy != null)
+        {
+            enemy.Initialize(BuildSpawnContext());
+        }
+    }
+
+    private void AdvanceToNextWave(Wave wave, SpawnRuntimeState currentState)
+    {
+        currentState.completedSpawnCycles = 0;
+        currentState.currentSpawnInterval = Mathf.Max(
+            wave.minimumSpawnInterval,
+            currentState.currentSpawnInterval * wave.spawnIntervalDecay
+        );
 
         waveNumber++;
 
@@ -55,10 +125,55 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    private void SpawnEnemy()
+    private EnemySpawnContext BuildSpawnContext()
     {
-        Instantiate(waves[waveNumber].enemyPrefab, RandomSpawnPoint(), transform.rotation);
-        waves[waveNumber].spawnedEnemyCount++;
+        EnemyRarity rarity = RollRarity();
+
+        switch (rarity)
+        {
+            case EnemyRarity.Uncommon:
+                return new EnemySpawnContext
+                {
+                    rarity = rarity,
+                    healthMultiplier = 1.5f,
+                    damageMultiplier = 1.2f,
+                    moveSpeedMultiplier = 1.05f,
+                    experienceMultiplier = 1.5f,
+                };
+
+            case EnemyRarity.Rare:
+                return new EnemySpawnContext
+                {
+                    rarity = rarity,
+                    healthMultiplier = 2.5f,
+                    damageMultiplier = 1.5f,
+                    moveSpeedMultiplier = 1.1f,
+                    experienceMultiplier = 2.5f,
+                };
+
+            default:
+                return EnemySpawnContext.Default;
+        }
+    }
+
+    private EnemyRarity RollRarity()
+    {
+        float quality = Mathf.Max(0f, modifiers.quality);
+        float rareChance = Mathf.Clamp01(0.03f * quality);
+        float uncommonChance = Mathf.Clamp01(0.12f * quality);
+        float roll = Random.value;
+
+        if (roll < rareChance)
+        {
+            return EnemyRarity.Rare;
+        }
+
+        if (roll < rareChance + uncommonChance)
+        {
+            return EnemyRarity.Uncommon;
+        }
+
+        return EnemyRarity.Normal;
     }
 
     private Vector2 RandomSpawnPoint()
