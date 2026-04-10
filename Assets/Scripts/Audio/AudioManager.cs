@@ -185,6 +185,11 @@ public class AudioManager : MonoBehaviour
     {
         if (musicSource == null || music == null) return;
 
+        if (musicSource.clip == music.clip && musicSource.isPlaying)
+        {
+            return;
+        }
+
         musicSource.clip = music.clip;
         musicSource.volume = music.volume;
         musicSource.loop = true;

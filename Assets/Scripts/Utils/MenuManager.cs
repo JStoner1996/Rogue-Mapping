@@ -5,7 +5,7 @@ public class MenuManager : MonoBehaviour
 {
     public void NewGame()
     {
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene("Weapon Select");
     }
 
     public void QuitGame()

@@ -7,6 +7,7 @@ public class WeaponSelectManager : MonoBehaviour
     [Header("UI")]
     [SerializeField] private Transform buttonParent;
     [SerializeField] private WeaponButtonUI buttonPrefab;
+    [SerializeField] private SelectedWeaponUI selectedWeaponUI;
 
     [Header("Data")]
     private List<WeaponData> allWeapons;
@@ -16,6 +17,19 @@ public class WeaponSelectManager : MonoBehaviour
     {
         LoadWeapons();
         CreateButtons();
+
+        // Find default weapon
+        WeaponData defaultWeapon = allWeapons.Find(w => w.weaponName == "Area Weapon");
+
+        if (defaultWeapon != null)
+        {
+            OnWeaponSelected(defaultWeapon);
+        }
+        else
+        {
+            selectedWeaponUI.Clear();
+            Debug.LogWarning("Default weapon not found!");
+        }
     }
 
     void LoadWeapons()
@@ -44,6 +58,7 @@ public class WeaponSelectManager : MonoBehaviour
     void OnWeaponSelected(WeaponData weapon)
     {
         selectedWeapon = weapon;
+        selectedWeaponUI.SetWeapon(weapon);
         Debug.Log($"Selected: {weapon.weaponName}");
     }
 
