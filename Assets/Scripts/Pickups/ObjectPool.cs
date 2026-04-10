@@ -12,32 +12,46 @@ public class ObjectPool<T> where T : MonoBehaviour
 
         for (int i = 0; i < initialSize; i++)
         {
-            T obj = Object.Instantiate(prefab);
-            obj.gameObject.SetActive(false);
-            pool.Enqueue(obj);
+            T obj = CreateInstance();
+            ReturnToPool(obj);
         }
     }
 
     public T Get()
     {
-        T obj;
-
-        if (pool.Count > 0)
+        while (pool.Count > 0)
         {
-            obj = pool.Dequeue();
-        }
-        else
-        {
-            obj = Object.Instantiate(prefab);
+            T obj = pool.Dequeue();
+
+            if (obj == null)
+            {
+                continue;
+            }
+
+            obj.gameObject.SetActive(true);
+            return obj;
         }
 
-        obj.gameObject.SetActive(true);
-        return obj;
+        T newObj = CreateInstance();
+        newObj.gameObject.SetActive(true);
+        return newObj;
     }
 
     public void ReturnToPool(T obj)
     {
+        if (obj == null)
+        {
+            return;
+        }
+
         obj.gameObject.SetActive(false);
         pool.Enqueue(obj);
+    }
+
+    private T CreateInstance()
+    {
+        T obj = Object.Instantiate(prefab);
+        obj.gameObject.SetActive(false);
+        return obj;
     }
 }
