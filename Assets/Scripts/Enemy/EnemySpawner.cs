@@ -37,6 +37,7 @@ public class EnemySpawner : MonoBehaviour
 
     void Awake()
     {
+        ApplyRunModifiers();
         BuildRuntimeStates();
     }
 
@@ -128,6 +129,11 @@ public class EnemySpawner : MonoBehaviour
     private EnemySpawnContext BuildSpawnContext()
     {
         EnemyRarity rarity = RollRarity();
+        float damageMultiplier = 1f + GetMapModifier(MapStatType.EnemyDamage);
+        float healthMultiplier = 1f + GetMapModifier(MapStatType.EnemyHealth);
+        float moveSpeedMultiplier = 1f + GetMapModifier(MapStatType.EnemyMoveSpeed);
+        float experienceMultiplier = 1f + GetMapModifier(MapStatType.ExperienceWorth);
+        float dropChanceMultiplier = 1f + GetMapModifier(MapStatType.DropChance);
 
         switch (rarity)
         {
@@ -135,24 +141,34 @@ public class EnemySpawner : MonoBehaviour
                 return new EnemySpawnContext
                 {
                     rarity = rarity,
-                    healthMultiplier = 1.5f,
-                    damageMultiplier = 1.2f,
-                    moveSpeedMultiplier = 1.05f,
-                    experienceMultiplier = 1.5f,
+                    healthMultiplier = 1.5f * healthMultiplier,
+                    damageMultiplier = 1.2f * damageMultiplier,
+                    moveSpeedMultiplier = 1.05f * moveSpeedMultiplier,
+                    experienceMultiplier = 1.5f * experienceMultiplier,
+                    dropChanceMultiplier = dropChanceMultiplier,
                 };
 
             case EnemyRarity.Rare:
                 return new EnemySpawnContext
                 {
                     rarity = rarity,
-                    healthMultiplier = 2.5f,
-                    damageMultiplier = 1.5f,
-                    moveSpeedMultiplier = 1.1f,
-                    experienceMultiplier = 2.5f,
+                    healthMultiplier = 2.5f * healthMultiplier,
+                    damageMultiplier = 1.5f * damageMultiplier,
+                    moveSpeedMultiplier = 1.1f * moveSpeedMultiplier,
+                    experienceMultiplier = 2.5f * experienceMultiplier,
+                    dropChanceMultiplier = dropChanceMultiplier,
                 };
 
             default:
-                return EnemySpawnContext.Default;
+                return new EnemySpawnContext
+                {
+                    rarity = EnemyRarity.Normal,
+                    healthMultiplier = healthMultiplier,
+                    damageMultiplier = damageMultiplier,
+                    moveSpeedMultiplier = moveSpeedMultiplier,
+                    experienceMultiplier = experienceMultiplier,
+                    dropChanceMultiplier = dropChanceMultiplier,
+                };
         }
     }
 
@@ -174,6 +190,22 @@ public class EnemySpawner : MonoBehaviour
         }
 
         return EnemyRarity.Normal;
+    }
+
+    private void ApplyRunModifiers()
+    {
+        modifiers.quantity = 1f + GetMapModifier(MapStatType.EnemyQuantity);
+        modifiers.quality = 1f + GetMapModifier(MapStatType.EnemyQuality);
+    }
+
+    private float GetMapModifier(MapStatType statType)
+    {
+        if (RunData.SelectedMap == null)
+        {
+            return 0f;
+        }
+
+        return RunData.SelectedMap.GetModifier(statType) / 100f;
     }
 
     private Vector2 RandomSpawnPoint()

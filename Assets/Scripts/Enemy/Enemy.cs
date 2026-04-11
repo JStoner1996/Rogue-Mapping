@@ -138,7 +138,9 @@ public class Enemy : MonoBehaviour
     {
         foreach (LootItem lootItem in lootTable)
         {
-            if (Random.Range(0f, 100f) > lootItem.dropChance)
+            float dropChance = lootItem.dropChance * spawnContext.dropChanceMultiplier;
+
+            if (Random.Range(0f, 100f) > dropChance)
             {
                 continue;
             }

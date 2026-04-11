@@ -87,7 +87,6 @@ public class WeaponSelectManager : MonoBehaviour
         }
 
         RunData.SelectedWeapon = selectedWeapon;
-
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene("Map Select");
     }
 }

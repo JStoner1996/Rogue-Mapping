@@ -5,6 +5,7 @@ public struct EnemySpawnContext
     public float damageMultiplier;
     public float moveSpeedMultiplier;
     public float experienceMultiplier;
+    public float dropChanceMultiplier;
 
     public static EnemySpawnContext Default => new EnemySpawnContext
     {
@@ -13,5 +14,6 @@ public struct EnemySpawnContext
         damageMultiplier = 1f,
         moveSpeedMultiplier = 1f,
         experienceMultiplier = 1f,
+        dropChanceMultiplier = 1f,
     };
 }
