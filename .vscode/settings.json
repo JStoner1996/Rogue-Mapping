@@ -71,12 +71,15 @@
   "dotnet.enableWorkspaceBasedDevelopment": false,
   "cSpell.words": [
     "Behaviour",
+    "CGPROGRAM",
     "cooldown",
     "Despawn",
     "Dont",
     "Knockback",
     "Mathf",
+    "PIXELSNAP",
     "Rigidbody",
-    "Scriptable"
+    "Scriptable",
+    "texel"
   ]
 }

@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private GameObject destroyEffect;
-    [SerializeField] private SpriteRenderer rarityOutlineRenderer;
+    [SerializeField] private Material rarityOutlineMaterial;
 
     [Header("Enemy Stats")]
     [SerializeField] private int experienceWorth;
@@ -19,9 +19,16 @@ public class Enemy : MonoBehaviour
     [SerializeField, Range(0f, 100f)]
     private float knockbackResistance = 0f;
 
+    [Header("Rarity Visuals")]
+    [SerializeField] private Color uncommonOutlineColor = new Color(0.2f, 0.55f, 1f, 1f);
+    [SerializeField] private Color rareOutlineColor = new Color(1f, 0.8f, 0.15f, 1f);
+    [SerializeField] private float uncommonOutlineThickness = 1.2f;
+    [SerializeField] private float rareOutlineThickness = 1.4f;
+
     private Vector2 knockbackVelocity;
     private float knockbackTimer;
-
+    private Material defaultMaterial;
+    private MaterialPropertyBlock rarityPropertyBlock;
 
     [Header("Loot")]
     public List<LootItem> lootTable = new List<LootItem>();
@@ -35,6 +42,7 @@ public class Enemy : MonoBehaviour
 
     void Awake()
     {
+        EnsureRarityMaterial();
         ResetRuntimeState();
     }
 
@@ -189,6 +197,66 @@ public class Enemy : MonoBehaviour
         currentHealth = health * spawnContext.healthMultiplier;
         knockbackTimer = 0f;
         knockbackVelocity = Vector2.zero;
+        ApplyRarityVisuals();
     }
 
+    private void EnsureRarityMaterial()
+    {
+        if (spriteRenderer == null)
+        {
+            return;
+        }
+
+        defaultMaterial = spriteRenderer.sharedMaterial;
+        rarityPropertyBlock ??= new MaterialPropertyBlock();
+
+        if (rarityOutlineMaterial != null)
+        {
+            return;
+        }
+
+        Shader outlineShader = Shader.Find("Custom/SpriteRarityOutline");
+
+        if (outlineShader != null)
+        {
+            rarityOutlineMaterial = new Material(outlineShader);
+        }
+    }
+
+    private void ApplyRarityVisuals()
+    {
+        if (spriteRenderer == null)
+        {
+            return;
+        }
+
+        Color outlineColor = Color.white;
+        float outlineThickness = 0f;
+
+        switch (Rarity)
+        {
+            case EnemyRarity.Uncommon:
+                outlineColor = uncommonOutlineColor;
+                outlineThickness = uncommonOutlineThickness;
+                break;
+
+            case EnemyRarity.Rare:
+                outlineColor = rareOutlineColor;
+                outlineThickness = rareOutlineThickness;
+                break;
+        }
+
+        if (rarityOutlineMaterial == null || outlineThickness <= 0f)
+        {
+            spriteRenderer.sharedMaterial = defaultMaterial;
+            spriteRenderer.SetPropertyBlock(null);
+            return;
+        }
+
+        spriteRenderer.sharedMaterial = rarityOutlineMaterial;
+        rarityPropertyBlock.Clear();
+        rarityPropertyBlock.SetColor("_OutlineColor", outlineColor);
+        rarityPropertyBlock.SetFloat("_OutlineThickness", outlineThickness);
+        spriteRenderer.SetPropertyBlock(rarityPropertyBlock);
+    }
 }

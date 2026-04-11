@@ -287,11 +287,16 @@ MonoBehaviour:
   spriteRenderer: {fileID: 3582648568308148033}
   rb: {fileID: 8061212314342040822}
   destroyEffect: {fileID: 1424168793998055834, guid: f587819a14468d74fa2f42eccf304135, type: 3}
+  rarityOutlineMaterial: {fileID: 0}
   experienceWorth: 150
   moveSpeed: 0.5
   damage: 25
   health: 2500
   knockbackResistance: 100
+  uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
+  rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}
+  uncommonOutlineThickness: 1.2
+  rareOutlineThickness: 1.4
   lootTable:
   - type: 0
     itemPrefab: {fileID: 1201580960227571414, guid: d524371948be3ec4b9ed62a65b9270f1, type: 3}
