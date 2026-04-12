@@ -25,8 +25,8 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private Button weaponsTabButton;
     [SerializeField] private Button mapsTabButton;
     [SerializeField] private Button equipmentTabButton;
-    [SerializeField] private Color activeTabColor = new Color(0.35f, 0.53f, 0.24f, 1f);
-    [SerializeField] private Color inactiveTabColor = new Color(0.17f, 0.17f, 0.17f, 0.95f);
+    [SerializeField] private Color activeTabColor = new Color(0.35f, 0.35f, 0.35f, 1f);
+    [SerializeField] private Color inactiveTabColor = new Color(0.17f, 0.17f, 0.17f, 0.1f);
 
     private readonly List<Button> tabButtons = new List<Button>();
     private readonly List<GeneratedMap> generatedMaps = new List<GeneratedMap>();
@@ -235,7 +235,7 @@ public class StagingManager : MonoBehaviour
         SwitchTab(StagingTab.Equipment);
     }
 
-    public void ConfirmSelection()
+    public void StartRun()
     {
         if (selectedWeapon == null)
         {
