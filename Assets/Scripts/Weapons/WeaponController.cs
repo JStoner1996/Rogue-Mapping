@@ -8,6 +8,7 @@ public class WeaponController : MonoBehaviour
 
     [Header("Starting Weapons")]
     [SerializeField] private List<WeaponData> startingWeapons;
+    [SerializeField] private PlayerStats playerStats;
     public int maxWeapons = 3;
     public List<Weapon> activeWeapons = new List<Weapon>();
 
@@ -58,6 +59,7 @@ public class WeaponController : MonoBehaviour
 
         Weapon weapon = Instantiate(weaponData.prefab, transform);
         weapon.Initialize(weaponData);
+        playerStats?.ApplyToWeapon(weapon);
 
         activeWeapons.Add(weapon);
     }
@@ -65,5 +67,18 @@ public class WeaponController : MonoBehaviour
     public bool CanAddWeapon()
     {
         return activeWeapons.Count < maxWeapons;
+    }
+
+    public void Configure(PlayerStats configuredPlayerStats)
+    {
+        playerStats = configuredPlayerStats;
+    }
+
+    public void ApplyGlobalPlayerStat(PlayerStatType statType, float value)
+    {
+        foreach (Weapon weapon in activeWeapons)
+        {
+            weapon.ApplyGlobalPlayerStat(statType, value);
+        }
     }
 }

@@ -5,6 +5,9 @@ public class PlayerCollector : MonoBehaviour
     [Header("Collector Settings")]
     [SerializeField] private CircleCollider2D collectorCollider;
     [SerializeField] private float pickupRadius = 2f;
+    private float pickupRangeMultiplier;
+
+    public float PickupRadius => pickupRadius * (1f + pickupRangeMultiplier);
 
     private void Awake()
     {
@@ -16,7 +19,23 @@ public class PlayerCollector : MonoBehaviour
 
     private void Start()
     {
-        collectorCollider.radius = pickupRadius;
+        RefreshPickupRadius();
+    }
+
+    public void ApplyPickupRangeModifier(float value)
+    {
+        pickupRangeMultiplier += value;
+        RefreshPickupRadius();
+    }
+
+    private void RefreshPickupRadius()
+    {
+        if (collectorCollider == null)
+        {
+            return;
+        }
+
+        collectorCollider.radius = PickupRadius;
     }
 
     private void OnTriggerEnter2D(Collider2D collider)

@@ -15,7 +15,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealthComponent;
     [SerializeField] private PlayerExperience playerExperienceComponent;
     [SerializeField] private PlayerLevelUpController playerLevelUpController;
+    [SerializeField] private PlayerCollector playerCollector;
     [SerializeField] private PlayerMagnet playerMagnet;
+    [SerializeField] private PlayerStats playerStatsComponent;
 
     [Header("Player Movement Config")]
     [SerializeField] private InputActionReference move;
@@ -57,7 +59,9 @@ public class PlayerController : MonoBehaviour
         playerHealthComponent = GetOrAddComponent(playerHealthComponent);
         playerExperienceComponent = GetOrAddComponent(playerExperienceComponent);
         playerLevelUpController = GetOrAddComponent(playerLevelUpController);
+        playerCollector = GetOrAddComponent(playerCollector);
         playerMagnet = GetOrAddComponent(playerMagnet);
+        playerStatsComponent = GetOrAddComponent(playerStatsComponent);
     }
 
     private void ConfigureComponents()
@@ -65,7 +69,9 @@ public class PlayerController : MonoBehaviour
         playerMovement.Configure(rb, animator, move, moveSpeed);
         playerHealthComponent.Configure(maxHealth, immunityDuration);
         playerExperienceComponent.Configure(startingLevel, maxLevel, levelThresholds, startingExperience);
-        playerLevelUpController.Configure(playerExperienceComponent, weaponController, allWeapons);
+        playerStatsComponent.Configure(playerMovement, playerHealthComponent, playerCollector, weaponController);
+        weaponController.Configure(playerStatsComponent);
+        playerLevelUpController.Configure(playerExperienceComponent, weaponController, playerStatsComponent, allWeapons);
         playerLevelUpController.RebindExperience();
     }
 

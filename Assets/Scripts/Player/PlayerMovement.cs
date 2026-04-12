@@ -7,17 +7,24 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
     private InputActionReference moveAction;
-    private float moveSpeed;
+    private float baseMoveSpeed;
+    private float moveSpeedMultiplier;
 
     public Vector3 MoveDirection { get; private set; }
-    public float MoveSpeed => moveSpeed;
+    public float MoveSpeed => baseMoveSpeed * (1f + moveSpeedMultiplier);
 
     public void Configure(Rigidbody2D rbComponent, Animator animatorComponent, InputActionReference moveReference, float configuredMoveSpeed)
     {
         rb = rbComponent;
         animator = animatorComponent;
         moveAction = moveReference;
-        moveSpeed = configuredMoveSpeed;
+        baseMoveSpeed = configuredMoveSpeed;
+        moveSpeedMultiplier = 0f;
+    }
+
+    public void ApplyMoveSpeedModifier(float value)
+    {
+        moveSpeedMultiplier += value;
     }
 
     void Update()
@@ -47,8 +54,8 @@ public class PlayerMovement : MonoBehaviour
         }
 
         rb.linearVelocity = new Vector2(
-            MoveDirection.x * moveSpeed,
-            MoveDirection.y * moveSpeed
+            MoveDirection.x * MoveSpeed,
+            MoveDirection.y * MoveSpeed
         );
     }
 }

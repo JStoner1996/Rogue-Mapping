@@ -5,15 +5,17 @@ using UnityEngine;
 public class PlayerLevelUpController : MonoBehaviour
 {
     [SerializeField] private WeaponController weaponController;
+    [SerializeField] private PlayerStats playerStats;
 
     private PlayerExperience playerExperience;
     private List<WeaponData> allWeapons = new List<WeaponData>();
     private bool initialized;
 
-    public void Configure(PlayerExperience experienceComponent, WeaponController configuredWeaponController, List<WeaponData> configuredWeapons)
+    public void Configure(PlayerExperience experienceComponent, WeaponController configuredWeaponController, PlayerStats configuredPlayerStats, List<WeaponData> configuredWeapons)
     {
         playerExperience = experienceComponent;
         weaponController = configuredWeaponController;
+        playerStats = configuredPlayerStats;
         allWeapons = configuredWeapons != null && configuredWeapons.Count > 0
             ? new List<WeaponData>(configuredWeapons)
             : new List<WeaponData>(Resources.LoadAll<WeaponData>("WeaponData"));
@@ -73,6 +75,7 @@ public class PlayerLevelUpController : MonoBehaviour
         LevelUpButton[] buttons = UIController.Instance.levelUpButtons;
         HashSet<Weapon> usedWeapons = new HashSet<Weapon>();
         HashSet<WeaponData> offeredNewWeapons = new HashSet<WeaponData>();
+        HashSet<PlayerStatType> offeredPlayerStats = new HashSet<PlayerStatType>();
         List<WeaponData> availableWeapons = GetAvailableWeapons();
 
         for (int i = 0; i < buttons.Length; i++)
@@ -80,6 +83,7 @@ public class PlayerLevelUpController : MonoBehaviour
             bool assigned = false;
             bool canAddWeapon = weaponController.CanAddWeapon();
             bool offerNewWeapon = canAddWeapon && Random.value < 0.25f;
+            bool offerPlayerUpgrade = playerStats != null && Random.value < 0.35f;
 
             if (offerNewWeapon)
             {
@@ -99,6 +103,22 @@ public class PlayerLevelUpController : MonoBehaviour
                 continue;
             }
 
+            if (offerPlayerUpgrade)
+            {
+                PlayerStatUpgradeResult playerUpgrade = RollPlayerUpgrade(offeredPlayerStats);
+
+                if (playerUpgrade != null)
+                {
+                    foreach (PlayerStatType statType in playerUpgrade.stats.Keys)
+                    {
+                        offeredPlayerStats.Add(statType);
+                    }
+
+                    buttons[i].ActivatePlayerStatButton(playerStats, playerUpgrade);
+                    continue;
+                }
+            }
+
             Weapon selectedWeapon = GetRandomUniqueWeapon(weapons, usedWeapons) ?? weapons[Random.Range(0, weapons.Count)];
             usedWeapons.Add(selectedWeapon);
 
@@ -109,7 +129,7 @@ public class PlayerLevelUpController : MonoBehaviour
             }
 
             List<StatRoll> allRolls = selectedWeapon.Data.upgradePreset.rolls;
-            HashSet<StatType> allowed = new HashSet<StatType>(selectedWeapon.Data.allowedStats);
+            HashSet<StatType> allowed = GetAllowedStats(selectedWeapon);
             List<StatRoll> filteredRolls = UpgradeCalculator.FilterRolls(allRolls, allowed);
 
             if (filteredRolls.Count == 0)
@@ -153,5 +173,48 @@ public class PlayerLevelUpController : MonoBehaviour
         }
 
         return available;
+    }
+
+    private PlayerStatUpgradeResult RollPlayerUpgrade(HashSet<PlayerStatType> alreadyOfferedStats)
+    {
+        if (playerStats == null || playerStats.UpgradeRolls.Count == 0)
+        {
+            return null;
+        }
+
+        List<PlayerStatRoll> availableRolls = new List<PlayerStatRoll>();
+
+        foreach (PlayerStatRoll roll in playerStats.UpgradeRolls)
+        {
+            if (!alreadyOfferedStats.Contains(roll.statType))
+            {
+                availableRolls.Add(roll);
+            }
+        }
+
+        if (availableRolls.Count == 0)
+        {
+            return null;
+        }
+
+        UpgradeRarity rarity = UpgradeCalculator.RollRarity();
+        return PlayerUpgradeCalculator.RollUpgrade(availableRolls, rarity);
+    }
+
+    private HashSet<StatType> GetAllowedStats(Weapon weapon)
+    {
+        HashSet<StatType> allowed = new HashSet<StatType>(weapon.Data.allowedStats);
+
+        if (weapon.Data.weaponName == "Area Weapon")
+        {
+            allowed.Remove(StatType.Cooldown);
+
+            if (weapon.stats.duration >= 5f)
+            {
+                allowed.Remove(StatType.Duration);
+            }
+        }
+
+        return allowed;
     }
 }

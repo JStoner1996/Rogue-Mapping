@@ -41,6 +41,10 @@ public class Weapon : MonoBehaviour
         stats.attackSpeedMultiplier = 0f;
         stats.knockbackMultiplier = 0f;
         stats.rangeMultiplier = 0f;
+        stats.globalDamageMultiplier = 0f;
+        stats.globalAttackSpeedMultiplier = 0f;
+        stats.globalKnockbackMultiplier = 0f;
+        stats.globalRangeMultiplier = 0f;
     }
 
     public virtual void ManualUpdate(float deltaTime)
@@ -72,7 +76,8 @@ public class Weapon : MonoBehaviour
                     break;
 
                 case StatType.Duration:
-                    stats.duration += stat.Value;
+                    float maxDuration = data != null && data.weaponName == "Area Weapon" ? 5f : float.MaxValue;
+                    stats.duration = Mathf.Min(stats.duration + stat.Value, maxDuration);
                     break;
 
                 case StatType.Cooldown:
@@ -83,6 +88,28 @@ public class Weapon : MonoBehaviour
                     stats.bounceCount += (int)stat.Value;
                     break;
             }
+        }
+    }
+
+    public void ApplyGlobalPlayerStat(PlayerStatType statType, float value)
+    {
+        switch (statType)
+        {
+            case PlayerStatType.Damage:
+                stats.globalDamageMultiplier += value;
+                break;
+
+            case PlayerStatType.AttackSpeed:
+                stats.globalAttackSpeedMultiplier += value;
+                break;
+
+            case PlayerStatType.Range:
+                stats.globalRangeMultiplier += value;
+                break;
+
+            case PlayerStatType.Knockback:
+                stats.globalKnockbackMultiplier += value;
+                break;
         }
     }
 }

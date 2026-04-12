@@ -3,22 +3,33 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class PlayerHealth : MonoBehaviour
 {
-    private float maxHealth;
+    private float baseMaxHealth;
+    private float maxHealthMultiplier;
     private float immunityDuration;
     private bool initialized;
 
     private bool isImmune;
     private float immunityTimer;
 
-    public float MaxHealth => maxHealth;
+    public float MaxHealth => baseMaxHealth * (1f + maxHealthMultiplier);
     public float CurrentHealth { get; private set; }
 
     public void Configure(float configuredMaxHealth, float configuredImmunityDuration)
     {
-        maxHealth = configuredMaxHealth;
+        baseMaxHealth = configuredMaxHealth;
+        maxHealthMultiplier = 0f;
         immunityDuration = configuredImmunityDuration;
-        CurrentHealth = maxHealth;
+        CurrentHealth = MaxHealth;
         initialized = true;
+    }
+
+    public void ApplyMaxHealthModifier(float value)
+    {
+        float previousMaxHealth = MaxHealth;
+        maxHealthMultiplier += value;
+        float newMaxHealth = MaxHealth;
+        CurrentHealth = Mathf.Min(CurrentHealth + (newMaxHealth - previousMaxHealth), newMaxHealth);
+        UIController.Instance.UpdateHealthSlider();
     }
 
     void Start()
@@ -76,7 +87,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void GainHealth(int healthAmount)
     {
-        CurrentHealth = Mathf.Min(CurrentHealth + healthAmount, maxHealth);
+        CurrentHealth = Mathf.Min(CurrentHealth + healthAmount, MaxHealth);
         UIController.Instance.UpdateHealthSlider();
     }
 }
