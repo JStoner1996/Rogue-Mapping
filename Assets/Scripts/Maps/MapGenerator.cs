@@ -3,20 +3,38 @@ using UnityEngine;
 
 public static class MapGenerator
 {
-    private static readonly string[] BaseMapNames =
+    private static readonly int[] TimeMinutesByRarity =
     {
-        "Shrine",
-        "Waterways",
-        "Fields",
-        "Valley",
-        "Catacombs",
-        "Grove",
-        "Crossroads",
-        "Sanctum",
-        "Marsh",
-        "Ruins",
-        "Hollow",
-        "Terrace",
+        2,
+        4,
+        6,
+    };
+
+    private static readonly int[] KillsByRarity =
+    {
+        50,
+        75,
+        100,
+    };
+
+    private const int TimeMinutesPerTier = 2;
+    private const int KillsPerTier = 25;
+
+    private static readonly List<MapBaseDefinition> BaseMaps = new List<MapBaseDefinition>
+    {
+        new MapBaseDefinition("default_map", "Default Map", 0, MapTilesetTheme.Default, "Game"),
+        new MapBaseDefinition("shrine", "Shrine", 1, MapTilesetTheme.Shrine, "Game"),
+        new MapBaseDefinition("waterways", "Waterways", 2, MapTilesetTheme.Waterways, "Game"),
+        new MapBaseDefinition("fields", "Fields", 3, MapTilesetTheme.Fields, "Game"),
+        new MapBaseDefinition("valley", "Valley", 4, MapTilesetTheme.Valley, "Game"),
+        new MapBaseDefinition("catacombs", "Catacombs", 5, MapTilesetTheme.Catacombs, "Game"),
+        new MapBaseDefinition("grove", "Grove", 6, MapTilesetTheme.Grove, "Game"),
+        new MapBaseDefinition("crossroads", "Crossroads", 7, MapTilesetTheme.Crossroads, "Game"),
+        new MapBaseDefinition("sanctum", "Sanctum", 8, MapTilesetTheme.Sanctum, "Game"),
+        new MapBaseDefinition("marsh", "Marsh", 9, MapTilesetTheme.Marsh, "Game"),
+        new MapBaseDefinition("ruins", "Ruins", 10, MapTilesetTheme.Ruins, "Game"),
+        new MapBaseDefinition("hollow", "Hollow", 10, MapTilesetTheme.Hollow, "Game"),
+        new MapBaseDefinition("terrace", "Terrace", 10, MapTilesetTheme.Terrace, "Game"),
     };
 
     private static readonly List<MapAffixDefinition> Prefixes = new List<MapAffixDefinition>
@@ -96,9 +114,9 @@ public static class MapGenerator
             new MapModifierRange(MapStatType.ExperienceWorth, 12f, 18f)),
     };
 
-    public static List<GeneratedMap> GenerateChoices(int count)
+    public static List<MapInstance> GenerateChoices(int count)
     {
-        List<GeneratedMap> results = new List<GeneratedMap>(count);
+        List<MapInstance> results = new List<MapInstance>(count);
 
         if (count <= 0)
         {
@@ -107,45 +125,73 @@ public static class MapGenerator
 
         results.Add(CreateDefaultMap());
 
-        List<string> availableNames = new List<string>(BaseMapNames);
-        availableNames.Remove("Shrine");
+        List<MapBaseDefinition> availableBaseMaps = new List<MapBaseDefinition>(BaseMaps);
+        availableBaseMaps.RemoveAll(map => map.id == "default_map");
 
         for (int i = 1; i < count; i++)
         {
-            if (availableNames.Count == 0)
+            if (availableBaseMaps.Count == 0)
             {
-                availableNames = new List<string>(BaseMapNames);
-                availableNames.Remove("Shrine");
+                availableBaseMaps = new List<MapBaseDefinition>(BaseMaps);
+                availableBaseMaps.RemoveAll(map => map.id == "default_map");
             }
 
-            int nameIndex = Random.Range(0, availableNames.Count);
-            string baseName = availableNames[nameIndex];
-            availableNames.RemoveAt(nameIndex);
+            int baseMapIndex = Random.Range(0, availableBaseMaps.Count);
+            MapBaseDefinition baseMap = availableBaseMaps[baseMapIndex];
+            availableBaseMaps.RemoveAt(baseMapIndex);
 
             MapAffixDefinition prefix = RollAffix(Prefixes);
             MapAffixDefinition suffix = RollAffix(Suffixes);
 
-            GeneratedMap map = new GeneratedMap
+            MapInstance map = new MapInstance
             {
-                baseName = baseName,
+                baseMap = baseMap,
                 prefix = prefix,
                 suffix = suffix,
             };
 
             RollModifiersInto(prefix, map.modifiers);
             RollModifiersInto(suffix, map.modifiers);
+            AssignVictoryCondition(map);
             results.Add(map);
         }
 
         return results;
     }
 
-    private static GeneratedMap CreateDefaultMap()
+    public static MapInstance CreateDefaultMap(
+        VictoryConditionType victoryConditionType = VictoryConditionType.Kills,
+        int victoryTarget = 10)
     {
-        return new GeneratedMap
+        return new MapInstance
         {
-            baseName = "Default Map",
+            baseMap = BaseMaps.Find(map => map.id == "default_map"),
+            VictoryConditionType = victoryConditionType,
+            VictoryTarget = Mathf.Max(1, victoryTarget),
         };
+    }
+
+    private static void AssignVictoryCondition(MapInstance map)
+    {
+        map.VictoryConditionType = RollVictoryConditionType();
+        map.VictoryTarget = map.VictoryConditionType == VictoryConditionType.Time
+            ? GetTimeMinutesTarget(map.Tier, map.Rarity)
+            : GetKillTarget(map.Tier, map.Rarity);
+    }
+
+    private static VictoryConditionType RollVictoryConditionType()
+    {
+        return Random.value < 0.5f ? VictoryConditionType.Time : VictoryConditionType.Kills;
+    }
+
+    private static int GetTimeMinutesTarget(int tier, MapAffixTier rarity)
+    {
+        return TimeMinutesByRarity[(int)rarity] + (tier * TimeMinutesPerTier);
+    }
+
+    private static int GetKillTarget(int tier, MapAffixTier rarity)
+    {
+        return KillsByRarity[(int)rarity] + (tier * KillsPerTier);
     }
 
     private static MapAffixDefinition RollAffix(List<MapAffixDefinition> source)

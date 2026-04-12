@@ -11,6 +11,7 @@ public class UIController : MonoBehaviour
     [SerializeField] private Slider playerExperienceSlider;
     [SerializeField] private TMP_Text experienceText;
     [SerializeField] private TMP_Text timerText;
+    [SerializeField] private TMP_Text killText;
 
 
     public GameObject gameOverPanel;
@@ -65,10 +66,43 @@ public class UIController : MonoBehaviour
 
     public void UpdateTimer(float timer)
     {
-        float min = Mathf.FloorToInt(timer / 60f);
-        float sec = Mathf.FloorToInt(timer % 60f);
+        if (RunData.SelectedMap == null)
+        {
+            timerText.text = FormatTime(timer);
 
-        timerText.text = min + ":" + sec.ToString("00");
+            if (killText != null)
+            {
+                killText.text = GameManager.Instance != null ? GameManager.Instance.enemyKills.ToString() : "0";
+            }
+
+            return;
+        }
+
+        if (RunData.SelectedMap.VictoryConditionType == VictoryConditionType.Time)
+        {
+            timerText.text = $"{FormatTime(timer)} / {FormatTime(RunData.SelectedMap.VictoryTarget * 60f)}";
+
+            if (killText != null && GameManager.Instance != null)
+            {
+                killText.text = GameManager.Instance.enemyKills.ToString();
+            }
+
+            return;
+        }
+
+        timerText.text = FormatTime(timer);
+
+        if (killText != null && GameManager.Instance != null)
+        {
+            killText.text = $"{GameManager.Instance.enemyKills} / {RunData.SelectedMap.VictoryTarget}";
+        }
+    }
+
+    private string FormatTime(float timer)
+    {
+        int min = Mathf.FloorToInt(timer / 60f);
+        int sec = Mathf.FloorToInt(timer % 60f);
+        return min + ":" + sec.ToString("00");
     }
 
     public void LevelUpPanelOpen()

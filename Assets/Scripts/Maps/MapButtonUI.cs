@@ -10,12 +10,12 @@ public class MapButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text nameText;
 
-    private GeneratedMap map;
-    private Action<GeneratedMap> onClick;
-    private Action<GeneratedMap> onHoverEnter;
+    private MapInstance map;
+    private Action<MapInstance> onClick;
+    private Action<MapInstance> onHoverEnter;
     private Action onHoverExit;
 
-    public void Setup(GeneratedMap data, Action<GeneratedMap> clickCallback, Action<GeneratedMap> hoverEnterCallback, Action hoverExitCallback)
+    public void Setup(MapInstance data, Action<MapInstance> clickCallback, Action<MapInstance> hoverEnterCallback, Action hoverExitCallback)
     {
         map = data;
         onClick = clickCallback;
@@ -26,7 +26,8 @@ public class MapButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if (iconImage != null)
         {
-            iconImage.enabled = false;
+            iconImage.sprite = data.Icon;
+            iconImage.enabled = data.Icon != null;
         }
 
         button.onClick.RemoveAllListeners();

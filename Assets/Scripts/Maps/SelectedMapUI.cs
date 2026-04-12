@@ -5,7 +5,7 @@ public class SelectedMapUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text infoText;
 
-    public void SetMap(GeneratedMap map)
+    public void SetMap(MapInstance map)
     {
         if (map == null)
         {

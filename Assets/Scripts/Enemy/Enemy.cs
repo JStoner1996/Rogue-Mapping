@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    public static event System.Action EnemyKilled;
+
     [Header("Enemy Components")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Rigidbody2D rb;
@@ -128,6 +130,7 @@ public class Enemy : MonoBehaviour
     private void Die()
     {
         DropLoot();
+        EnemyKilled?.Invoke();
 
         Destroy(gameObject);
         Instantiate(destroyEffect, transform.position, transform.rotation);

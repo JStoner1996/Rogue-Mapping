@@ -32419,6 +32419,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelUpButton
   borderImage: {fileID: 99177655}
   backgroundImage: {fileID: 405930781}
+  playerUpgradeIcon: {fileID: -480808811739928509, guid: 7124aaeb869ea3f40981e8a925e66676, type: 3}
   weaponName: {fileID: 279087107}
   weaponIcon: {fileID: 889716623}
   rarityText: {fileID: 2013401890}
@@ -34060,6 +34061,7 @@ GameObject:
   - component: {fileID: 946145819}
   - component: {fileID: 946145814}
   - component: {fileID: 946145816}
+  - component: {fileID: 946145823}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -34183,7 +34185,9 @@ MonoBehaviour:
   playerHealthComponent: {fileID: 946145820}
   playerExperienceComponent: {fileID: 946145819}
   playerLevelUpController: {fileID: 946145821}
+  playerCollector: {fileID: 732863954}
   playerMagnet: {fileID: 946145817}
+  playerStatsComponent: {fileID: 946145823}
   move: {fileID: -7155802127004010268, guid: 26165b8c2c39faa468faf264aa1f8abb, type: 3}
   moveSpeed: 5
   startingLevel: 1
@@ -34358,6 +34362,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLevelUpController
   weaponController: {fileID: 0}
+  playerStats: {fileID: 0}
 --- !u!114 &946145822
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34370,6 +34375,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68d6a6f700a95014ca4bd5f7c5cbf4cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+--- !u!114 &946145823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 946145809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c595c276746cfec419309de225f15635, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  upgradeRolls: []
 --- !u!1 &964823226
 GameObject:
   m_ObjectHideFlags: 0
@@ -34784,6 +34802,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelUpButton
   borderImage: {fileID: 1181084683}
   backgroundImage: {fileID: 1045818288}
+  playerUpgradeIcon: {fileID: -480808811739928509, guid: 7124aaeb869ea3f40981e8a925e66676, type: 3}
   weaponName: {fileID: 1593672483}
   weaponIcon: {fileID: 908555766}
   rarityText: {fileID: 2015472697}
@@ -35548,6 +35567,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelUpButton
   borderImage: {fileID: 1108865392}
   backgroundImage: {fileID: 1312184022}
+  playerUpgradeIcon: {fileID: -480808811739928509, guid: 7124aaeb869ea3f40981e8a925e66676, type: 3}
   weaponName: {fileID: 1393453101}
   weaponIcon: {fileID: 1701788651}
   rarityText: {fileID: 201561039}
@@ -35886,6 +35906,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
   startingWeapons:
   - {fileID: 11400000, guid: 2a1340224fffee042a388a2ebe43cd06, type: 2}
+  playerStats: {fileID: 0}
   maxWeapons: 3
   activeWeapons: []
 --- !u!1 &1338702976

@@ -28,12 +28,16 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private Color activeTabColor = new Color(0.35f, 0.35f, 0.35f, 1f);
     [SerializeField] private Color inactiveTabColor = new Color(0.17f, 0.17f, 0.17f, 0.1f);
 
+    [Header("Default Map")]
+    [SerializeField] private VictoryConditionType defaultMapVictoryCondition = VictoryConditionType.Kills;
+    [SerializeField] private int defaultMapVictoryTarget = 10;
+
     private readonly List<Button> tabButtons = new List<Button>();
-    private readonly List<GeneratedMap> generatedMaps = new List<GeneratedMap>();
+    private readonly List<MapInstance> generatedMaps = new List<MapInstance>();
     private List<WeaponData> allWeapons = new List<WeaponData>();
 
     private WeaponData selectedWeapon;
-    private GeneratedMap selectedMap;
+    private MapInstance selectedMap;
     private StagingTab currentTab;
 
     void Start()
@@ -54,6 +58,20 @@ public class StagingManager : MonoBehaviour
     {
         generatedMaps.Clear();
         generatedMaps.AddRange(MapGenerator.GenerateChoices(4));
+        ApplyDefaultMapSettings();
+    }
+
+    private void ApplyDefaultMapSettings()
+    {
+        MapInstance defaultMap = generatedMaps.Find(map => map.BaseMapId == "default_map");
+
+        if (defaultMap == null)
+        {
+            return;
+        }
+
+        defaultMap.VictoryConditionType = defaultMapVictoryCondition;
+        defaultMap.VictoryTarget = Mathf.Max(1, defaultMapVictoryTarget);
     }
 
     private void InitializeDefaults()
@@ -145,13 +163,13 @@ public class StagingManager : MonoBehaviour
             case StagingTab.Maps:
                 ClearButtons(mapButtonParent);
 
-                foreach (GeneratedMap map in generatedMaps)
+                foreach (MapInstance map in generatedMaps)
                 {
-                    GeneratedMap localMap = map;
+                    MapInstance localMap = map;
                     StagingOptionButtonUI button = Instantiate(buttonPrefab, mapButtonParent);
                     button.Setup(
                         localMap.DisplayName,
-                        null,
+                        localMap.Icon,
                         () => SelectMap(localMap),
                         () => mapPreviewUI.ShowMap(localMap),
                         RefreshPreview
@@ -213,7 +231,7 @@ public class StagingManager : MonoBehaviour
         weaponPreviewUI.ShowWeapon(weapon);
     }
 
-    private void SelectMap(GeneratedMap map)
+    private void SelectMap(MapInstance map)
     {
         selectedMap = map;
         RunData.SelectedMap = map;

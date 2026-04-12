@@ -40,7 +40,7 @@ public class StagingPreviewUI : MonoBehaviour
         statsText.text = sb.ToString().TrimEnd();
     }
 
-    public void ShowMap(GeneratedMap map)
+    public void ShowMap(MapInstance map)
     {
         if (map == null)
         {
@@ -49,8 +49,8 @@ public class StagingPreviewUI : MonoBehaviour
         }
 
         titleText.text = map.DisplayName;
-        icon.sprite = defaultMapIcon;
-        icon.enabled = defaultMapIcon != null;
+        icon.sprite = map.Icon != null ? map.Icon : defaultMapIcon;
+        icon.enabled = icon.sprite != null;
         statsText.text = MapDescriptionFormatter.BuildStats(map);
     }
 

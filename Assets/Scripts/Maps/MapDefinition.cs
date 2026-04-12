@@ -20,6 +20,31 @@ public enum MapStatType
 }
 
 [System.Serializable]
+public enum VictoryConditionType
+{
+    Time,
+    Kills,
+}
+
+[System.Serializable]
+public enum MapTilesetTheme
+{
+    Default,
+    Shrine,
+    Waterways,
+    Fields,
+    Valley,
+    Catacombs,
+    Grove,
+    Crossroads,
+    Sanctum,
+    Marsh,
+    Ruins,
+    Hollow,
+    Terrace,
+}
+
+[System.Serializable]
 public struct MapModifierValue
 {
     public MapStatType statType;
@@ -68,12 +93,64 @@ public struct MapModifierRange
 }
 
 [System.Serializable]
-public class GeneratedMap
+public class MapBaseDefinition
 {
-    public string baseName;
+    public string id;
+    public string displayName;
+    public int tier;
+    public MapTilesetTheme tilesetTheme;
+    public string sceneName;
+    public Sprite icon;
+
+    public MapBaseDefinition(string id, string displayName, int tier, MapTilesetTheme tilesetTheme, string sceneName = "", Sprite icon = null)
+    {
+        this.id = id;
+        this.displayName = displayName;
+        this.tier = tier;
+        this.tilesetTheme = tilesetTheme;
+        this.sceneName = sceneName;
+        this.icon = icon;
+    }
+}
+
+[System.Serializable]
+public class MapInstance
+{
+    public MapBaseDefinition baseMap;
     public MapAffixDefinition prefix;
     public MapAffixDefinition suffix;
     public List<MapModifierValue> modifiers = new List<MapModifierValue>();
+
+    public string BaseMapId => baseMap != null ? baseMap.id : string.Empty;
+    public string BaseMapName => baseMap != null ? baseMap.displayName : "Unknown Map";
+    public int Tier => baseMap != null ? baseMap.tier : 0;
+    public MapTilesetTheme TilesetTheme => baseMap != null ? baseMap.tilesetTheme : MapTilesetTheme.Default;
+    public string SceneName => baseMap != null ? baseMap.sceneName : string.Empty;
+    public Sprite Icon => baseMap != null ? baseMap.icon : null;
+    public VictoryConditionType VictoryConditionType { get; set; }
+    public int VictoryTarget { get; set; }
+
+    public MapAffixTier Rarity
+    {
+        get
+        {
+            MapAffixTier rarity = MapAffixTier.Common;
+
+            if (prefix != null && prefix.tier > rarity)
+            {
+                rarity = prefix.tier;
+            }
+
+            if (suffix != null && suffix.tier > rarity)
+            {
+                rarity = suffix.tier;
+            }
+
+            return rarity;
+        }
+    }
+
+    public bool IsBaseMapCompleted => MapProgressionData.IsCompleted(BaseMapId);
 
     public string DisplayName
     {
@@ -81,7 +158,7 @@ public class GeneratedMap
         {
             string prefixName = prefix != null ? prefix.name + " " : string.Empty;
             string suffixName = suffix != null ? " " + suffix.name : string.Empty;
-            return prefixName + baseName + suffixName;
+            return prefixName + BaseMapName + suffixName;
         }
     }
 

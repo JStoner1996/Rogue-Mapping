@@ -12,8 +12,8 @@ public class MapSelectManager : MonoBehaviour
     [Header("Generation")]
     [SerializeField] private int mapCount = 4;
 
-    private List<GeneratedMap> generatedMaps = new List<GeneratedMap>();
-    private GeneratedMap selectedMap;
+    private List<MapInstance> generatedMaps = new List<MapInstance>();
+    private MapInstance selectedMap;
 
     void Start()
     {
@@ -42,20 +42,20 @@ public class MapSelectManager : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        foreach (GeneratedMap map in generatedMaps)
+        foreach (MapInstance map in generatedMaps)
         {
             MapButtonUI button = Instantiate(buttonPrefab, buttonParent);
             button.Setup(map, OnMapSelected, PreviewMap, RestoreSelectedMapPreview);
         }
     }
 
-    private void OnMapSelected(GeneratedMap map)
+    private void OnMapSelected(MapInstance map)
     {
         selectedMap = map;
         selectedMapUI.SetMap(map);
     }
 
-    private void PreviewMap(GeneratedMap map)
+    private void PreviewMap(MapInstance map)
     {
         selectedMapUI.SetMap(map);
     }

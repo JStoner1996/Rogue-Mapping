@@ -10,6 +10,9 @@ public class GameManager : MonoBehaviour
 
     public float gameTime;
     public bool gameActive;
+    public int enemyKills { get; private set; }
+
+    private bool runCompleted;
 
     void Awake()
     {
@@ -24,7 +27,20 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        RunData.GetSelectedMapOrDefault();
         gameActive = true;
+        enemyKills = 0;
+        runCompleted = false;
+    }
+
+    void OnEnable()
+    {
+        Enemy.EnemyKilled += OnEnemyKilled;
+    }
+
+    void OnDisable()
+    {
+        Enemy.EnemyKilled -= OnEnemyKilled;
     }
 
     void Update()
@@ -36,6 +52,7 @@ public class GameManager : MonoBehaviour
 
         gameTime += Time.deltaTime;
         UIController.Instance.UpdateTimer(gameTime);
+        CheckVictoryCondition();
 
         if (pause.action.WasPressedThisFrame())
         {
@@ -49,11 +66,42 @@ public class GameManager : MonoBehaviour
         StartCoroutine(ShowGameOverScreen());
     }
 
+    public void CompleteRun()
+    {
+        if (runCompleted)
+        {
+            return;
+        }
+
+        runCompleted = true;
+        gameActive = false;
+
+        bool grantedAtlasPoint = false;
+
+        if (RunData.SelectedMap != null)
+        {
+            grantedAtlasPoint = MapProgressionData.MarkCompleted(RunData.SelectedMap.BaseMapId);
+        }
+
+        Debug.Log(grantedAtlasPoint
+            ? $"Completed {RunData.SelectedMap?.BaseMapName}. Atlas point awarded."
+            : $"Completed {RunData.SelectedMap?.BaseMapName}. No atlas point awarded.");
+
+        StartCoroutine(ReturnToStagingAfterCompletion());
+    }
+
     IEnumerator ShowGameOverScreen()
     {
         yield return new WaitForSeconds(0.5f);
         UIController.Instance.gameOverPanel.SetActive(true);
         AudioManager.Instance.Play(SoundType.GameOver);
+    }
+
+    IEnumerator ReturnToStagingAfterCompletion()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Staging");
     }
 
     public void Restart()
@@ -90,5 +138,36 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.LoadScene("Main Menu");
         Time.timeScale = 1f;
+    }
+
+    private void OnEnemyKilled()
+    {
+        enemyKills++;
+        CheckVictoryCondition();
+    }
+
+    private void CheckVictoryCondition()
+    {
+        if (!gameActive || runCompleted || RunData.SelectedMap == null)
+        {
+            return;
+        }
+
+        switch (RunData.SelectedMap.VictoryConditionType)
+        {
+            case VictoryConditionType.Time:
+                if (gameTime >= RunData.SelectedMap.VictoryTarget * 60f)
+                {
+                    CompleteRun();
+                }
+                break;
+
+            case VictoryConditionType.Kills:
+                if (enemyKills >= RunData.SelectedMap.VictoryTarget)
+                {
+                    CompleteRun();
+                }
+                break;
+        }
     }
 }

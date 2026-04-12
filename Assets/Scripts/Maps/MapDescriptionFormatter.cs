@@ -14,7 +14,7 @@ public static class MapDescriptionFormatter
         { MapStatType.ExperienceWorth, "Experience Worth" },
     };
 
-    public static string Build(GeneratedMap map)
+    public static string Build(MapInstance map)
     {
         StringBuilder builder = new StringBuilder();
         builder.AppendLine($"<b>{map.DisplayName}</b>");
@@ -23,9 +23,25 @@ public static class MapDescriptionFormatter
         return builder.ToString().TrimEnd();
     }
 
-    public static string BuildStats(GeneratedMap map)
+    public static string BuildStats(MapInstance map)
     {
         StringBuilder builder = new StringBuilder();
+
+        builder.AppendLine($"Tier: {map.Tier}");
+        builder.AppendLine($"Rarity: {map.Rarity}");
+        builder.AppendLine($"Tileset: {StringUtils.SplitCamelCase(map.TilesetTheme.ToString())}");
+        builder.AppendLine($"Completed: {(map.IsBaseMapCompleted ? "Yes" : "No")}");
+        builder.AppendLine($"Victory: {FormatVictoryCondition(map)}");
+
+        if (map.modifiers.Count > 0)
+        {
+            builder.AppendLine();
+        }
+        else
+        {
+            builder.AppendLine();
+            builder.AppendLine("No modifiers");
+        }
 
         foreach (MapModifierValue modifier in map.modifiers)
         {
@@ -36,5 +52,20 @@ public static class MapDescriptionFormatter
         }
 
         return builder.ToString().TrimEnd();
+    }
+
+    public static string FormatVictoryCondition(MapInstance map)
+    {
+        switch (map.VictoryConditionType)
+        {
+            case VictoryConditionType.Time:
+                return $"Survive {map.VictoryTarget} minute{(map.VictoryTarget == 1 ? string.Empty : "s")}";
+
+            case VictoryConditionType.Kills:
+                return $"Defeat {map.VictoryTarget} enemies";
+
+            default:
+                return "Unknown";
+        }
     }
 }
