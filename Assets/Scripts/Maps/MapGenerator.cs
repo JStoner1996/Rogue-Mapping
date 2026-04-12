@@ -99,13 +99,23 @@ public static class MapGenerator
     public static List<GeneratedMap> GenerateChoices(int count)
     {
         List<GeneratedMap> results = new List<GeneratedMap>(count);
-        List<string> availableNames = new List<string>(BaseMapNames);
 
-        for (int i = 0; i < count; i++)
+        if (count <= 0)
+        {
+            return results;
+        }
+
+        results.Add(CreateDefaultMap());
+
+        List<string> availableNames = new List<string>(BaseMapNames);
+        availableNames.Remove("Shrine");
+
+        for (int i = 1; i < count; i++)
         {
             if (availableNames.Count == 0)
             {
                 availableNames = new List<string>(BaseMapNames);
+                availableNames.Remove("Shrine");
             }
 
             int nameIndex = Random.Range(0, availableNames.Count);
@@ -128,6 +138,14 @@ public static class MapGenerator
         }
 
         return results;
+    }
+
+    private static GeneratedMap CreateDefaultMap()
+    {
+        return new GeneratedMap
+        {
+            baseName = "Default Map",
+        };
     }
 
     private static MapAffixDefinition RollAffix(List<MapAffixDefinition> source)
