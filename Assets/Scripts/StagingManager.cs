@@ -33,7 +33,7 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private int defaultMapVictoryTarget = 10;
 
     private readonly List<Button> tabButtons = new List<Button>();
-    private readonly List<MapInstance> generatedMaps = new List<MapInstance>();
+    private readonly List<MapInstance> availableMaps = new List<MapInstance>();
     private List<WeaponData> allWeapons = new List<WeaponData>();
 
     private WeaponData selectedWeapon;
@@ -42,8 +42,9 @@ public class StagingManager : MonoBehaviour
 
     void Start()
     {
+        MetaProgressionService.EnsureLoaded();
         LoadWeapons();
-        GenerateMaps();
+        LoadMaps();
         InitializeDefaults();
         RegisterTabButtons();
         SwitchTab(StagingTab.Weapons);
@@ -54,24 +55,11 @@ public class StagingManager : MonoBehaviour
         allWeapons = new List<WeaponData>(Resources.LoadAll<WeaponData>("WeaponData"));
     }
 
-    private void GenerateMaps()
+    private void LoadMaps()
     {
-        generatedMaps.Clear();
-        generatedMaps.AddRange(MapGenerator.GenerateChoices(4));
-        ApplyDefaultMapSettings();
-    }
-
-    private void ApplyDefaultMapSettings()
-    {
-        MapInstance defaultMap = generatedMaps.Find(map => map.BaseMapId == "default_map");
-
-        if (defaultMap == null)
-        {
-            return;
-        }
-
-        defaultMap.VictoryConditionType = defaultMapVictoryCondition;
-        defaultMap.VictoryTarget = Mathf.Max(1, defaultMapVictoryTarget);
+        MetaProgressionService.EnsureStarterMaps(4, defaultMapVictoryCondition, defaultMapVictoryTarget);
+        availableMaps.Clear();
+        availableMaps.AddRange(MetaProgressionService.GetOwnedMaps());
     }
 
     private void InitializeDefaults()
@@ -83,9 +71,9 @@ public class StagingManager : MonoBehaviour
             selectedWeapon = allWeapons[0];
         }
 
-        if (generatedMaps.Count > 0)
+        if (availableMaps.Count > 0)
         {
-            selectedMap = generatedMaps[0];
+            selectedMap = availableMaps[0];
         }
 
         RunData.SelectedWeapon = selectedWeapon;
@@ -163,7 +151,7 @@ public class StagingManager : MonoBehaviour
             case StagingTab.Maps:
                 ClearButtons(mapButtonParent);
 
-                foreach (MapInstance map in generatedMaps)
+                foreach (MapInstance map in availableMaps)
                 {
                     MapInstance localMap = map;
                     StagingOptionButtonUI button = Instantiate(buttonPrefab, mapButtonParent);

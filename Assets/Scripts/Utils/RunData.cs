@@ -5,7 +5,7 @@ public static class RunData
 
     public static MapInstance GetSelectedMapOrDefault()
     {
-        SelectedMap ??= MapGenerator.CreateDefaultMap();
+        SelectedMap ??= MetaProgressionService.GetDefaultMap();
         return SelectedMap;
     }
 }

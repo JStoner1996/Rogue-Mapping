@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        MetaProgressionService.EnsureLoaded();
         RunData.GetSelectedMapOrDefault();
         gameActive = true;
         enemyKills = 0;
