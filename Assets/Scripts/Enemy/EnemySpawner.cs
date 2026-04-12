@@ -3,6 +3,25 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    private struct MapSpawnModifiers
+    {
+        public float quantity;
+        public float quality;
+        public float damage;
+        public float health;
+        public float moveSpeed;
+        public float experience;
+        public float dropChance;
+    }
+
+    private struct RarityProfile
+    {
+        public float healthMultiplier;
+        public float damageMultiplier;
+        public float moveSpeedMultiplier;
+        public float experienceMultiplier;
+    }
+
     [System.Serializable]
     public class Wave
     {
@@ -32,6 +51,7 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private EnemySpawnModifiers modifiers = new EnemySpawnModifiers();
 
     private readonly List<SpawnRuntimeState> runtimeStates = new List<SpawnRuntimeState>();
+    private MapSpawnModifiers mapModifiers;
     public int waveNumber;
     private PlayerController player;
 
@@ -43,26 +63,19 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        if (player == null)
-        {
-            player = PlayerController.Instance;
-        }
-
-        if (player == null || !player.gameObject.activeSelf || waves.Count == 0)
+        if (!CanRunSpawner())
         {
             return;
         }
 
         Wave currentWave = waves[waveNumber];
         SpawnRuntimeState currentState = runtimeStates[waveNumber];
-        currentState.spawnTimer += Time.deltaTime;
 
-        if (currentState.spawnTimer < currentState.currentSpawnInterval)
+        if (!ShouldSpawn(currentState))
         {
             return;
         }
 
-        currentState.spawnTimer = 0f;
         SpawnPack(currentWave);
         currentState.completedSpawnCycles++;
 
@@ -72,6 +85,29 @@ public class EnemySpawner : MonoBehaviour
         }
 
         AdvanceToNextWave(currentWave, currentState);
+    }
+
+    private bool CanRunSpawner()
+    {
+        if (player == null)
+        {
+            player = PlayerController.Instance;
+        }
+
+        return player != null && player.gameObject.activeSelf && waves.Count > 0;
+    }
+
+    private bool ShouldSpawn(SpawnRuntimeState currentState)
+    {
+        currentState.spawnTimer += Time.deltaTime;
+
+        if (currentState.spawnTimer < currentState.currentSpawnInterval)
+        {
+            return false;
+        }
+
+        currentState.spawnTimer = 0f;
+        return true;
     }
 
     private void BuildRuntimeStates()
@@ -101,7 +137,8 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnEnemy(Wave wave)
     {
-        GameObject enemyObject = Instantiate(wave.enemyPrefab, RandomSpawnPoint(), transform.rotation);
+        Vector2 spawnPoint = GetSpawnPoint();
+        GameObject enemyObject = Instantiate(wave.enemyPrefab, spawnPoint, transform.rotation);
         Enemy enemy = enemyObject.GetComponent<Enemy>();
 
         if (enemy != null)
@@ -129,47 +166,17 @@ public class EnemySpawner : MonoBehaviour
     private EnemySpawnContext BuildSpawnContext()
     {
         EnemyRarity rarity = RollRarity();
-        float damageMultiplier = 1f + GetMapModifier(MapStatType.EnemyDamage);
-        float healthMultiplier = 1f + GetMapModifier(MapStatType.EnemyHealth);
-        float moveSpeedMultiplier = 1f + GetMapModifier(MapStatType.EnemyMoveSpeed);
-        float experienceMultiplier = 1f + GetMapModifier(MapStatType.ExperienceWorth);
-        float dropChanceMultiplier = 1f + GetMapModifier(MapStatType.DropChance);
+        RarityProfile rarityProfile = GetRarityProfile(rarity);
 
-        switch (rarity)
+        return new EnemySpawnContext
         {
-            case EnemyRarity.Uncommon:
-                return new EnemySpawnContext
-                {
-                    rarity = rarity,
-                    healthMultiplier = 1.5f * healthMultiplier,
-                    damageMultiplier = 1.2f * damageMultiplier,
-                    moveSpeedMultiplier = 1.05f * moveSpeedMultiplier,
-                    experienceMultiplier = 1.5f * experienceMultiplier,
-                    dropChanceMultiplier = dropChanceMultiplier,
-                };
-
-            case EnemyRarity.Rare:
-                return new EnemySpawnContext
-                {
-                    rarity = rarity,
-                    healthMultiplier = 2.5f * healthMultiplier,
-                    damageMultiplier = 1.5f * damageMultiplier,
-                    moveSpeedMultiplier = 1.1f * moveSpeedMultiplier,
-                    experienceMultiplier = 2.5f * experienceMultiplier,
-                    dropChanceMultiplier = dropChanceMultiplier,
-                };
-
-            default:
-                return new EnemySpawnContext
-                {
-                    rarity = EnemyRarity.Normal,
-                    healthMultiplier = healthMultiplier,
-                    damageMultiplier = damageMultiplier,
-                    moveSpeedMultiplier = moveSpeedMultiplier,
-                    experienceMultiplier = experienceMultiplier,
-                    dropChanceMultiplier = dropChanceMultiplier,
-                };
-        }
+            rarity = rarity,
+            healthMultiplier = rarityProfile.healthMultiplier * mapModifiers.health,
+            damageMultiplier = rarityProfile.damageMultiplier * mapModifiers.damage,
+            moveSpeedMultiplier = rarityProfile.moveSpeedMultiplier * mapModifiers.moveSpeed,
+            experienceMultiplier = rarityProfile.experienceMultiplier * mapModifiers.experience,
+            dropChanceMultiplier = mapModifiers.dropChance,
+        };
     }
 
     private EnemyRarity RollRarity()
@@ -192,10 +199,58 @@ public class EnemySpawner : MonoBehaviour
         return EnemyRarity.Normal;
     }
 
+    private RarityProfile GetRarityProfile(EnemyRarity rarity)
+    {
+        switch (rarity)
+        {
+            case EnemyRarity.Uncommon:
+                return new RarityProfile
+                {
+                    healthMultiplier = 1.5f,
+                    damageMultiplier = 1.2f,
+                    moveSpeedMultiplier = 1.05f,
+                    experienceMultiplier = 1.5f,
+                };
+
+            case EnemyRarity.Rare:
+                return new RarityProfile
+                {
+                    healthMultiplier = 2.5f,
+                    damageMultiplier = 1.5f,
+                    moveSpeedMultiplier = 1.1f,
+                    experienceMultiplier = 2.5f,
+                };
+
+            default:
+                return new RarityProfile
+                {
+                    healthMultiplier = 1f,
+                    damageMultiplier = 1f,
+                    moveSpeedMultiplier = 1f,
+                    experienceMultiplier = 1f,
+                };
+        }
+    }
+
     private void ApplyRunModifiers()
     {
-        modifiers.quantity = 1f + GetMapModifier(MapStatType.EnemyQuantity);
-        modifiers.quality = 1f + GetMapModifier(MapStatType.EnemyQuality);
+        mapModifiers = BuildMapSpawnModifiers();
+        modifiers.quantity = mapModifiers.quantity;
+        modifiers.quality = mapModifiers.quality;
+    }
+
+    private MapSpawnModifiers BuildMapSpawnModifiers()
+    {
+        return new MapSpawnModifiers
+        {
+            quantity = 1f + GetMapModifier(MapStatType.EnemyQuantity),
+            quality = 1f + GetMapModifier(MapStatType.EnemyQuality),
+            damage = 1f + GetMapModifier(MapStatType.EnemyDamage),
+            health = 1f + GetMapModifier(MapStatType.EnemyHealth),
+            moveSpeed = 1f + GetMapModifier(MapStatType.EnemyMoveSpeed),
+            experience = 1f + GetMapModifier(MapStatType.ExperienceWorth),
+            dropChance = 1f + GetMapModifier(MapStatType.DropChance),
+        };
     }
 
     private float GetMapModifier(MapStatType statType)
@@ -208,7 +263,7 @@ public class EnemySpawner : MonoBehaviour
         return RunData.SelectedMap.GetModifier(statType) / 100f;
     }
 
-    private Vector2 RandomSpawnPoint()
+    private Vector2 GetSpawnPoint()
     {
         Vector2 spawnPoint;
 
