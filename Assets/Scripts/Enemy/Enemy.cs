@@ -5,6 +5,17 @@ public class Enemy : MonoBehaviour
 {
     public static event System.Action EnemyKilled;
 
+    private const float KnockbackDuration = 0.1f;
+
+    private struct RuntimeStats
+    {
+        public float maxHealth;
+        public float moveSpeed;
+        public float contactDamage;
+        public int experienceWorth;
+        public float dropChanceMultiplier;
+    }
+
     [Header("Enemy Components")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Rigidbody2D rb;
@@ -38,9 +49,9 @@ public class Enemy : MonoBehaviour
     public EnemyRarity Rarity { get; private set; } = EnemyRarity.Normal;
     private PlayerController player;
     private PlayerHealth playerHealth;
+    private RuntimeStats runtimeStats;
     private float currentHealth;
     private EnemySpawnContext spawnContext = EnemySpawnContext.Default;
-
 
     void Awake()
     {
@@ -55,49 +66,29 @@ public class Enemy : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (player == null)
+        if (!TryGetActivePlayer())
         {
-            CachePlayerReferences();
-        }
-
-        if (player == null || !player.gameObject.activeSelf)
-        {
-            rb.linearVelocity = Vector2.zero;
+            StopMoving();
             return;
         }
 
-        // Face the player
-        if (player.transform.position.x > transform.position.x)
-            spriteRenderer.flipX = true;
-        else
-            spriteRenderer.flipX = false;
-
-        Vector2 finalVelocity;
-        if (knockbackTimer > 0)
-        {
-            knockbackTimer -= Time.deltaTime;
-            finalVelocity = knockbackVelocity;
-        }
-        else
-        {
-            Vector2 direction = (player.transform.position - transform.position).normalized;
-            finalVelocity = direction * CurrentMoveSpeed;
-        }
-
-        rb.linearVelocity = finalVelocity;
+        UpdateFacing();
+        rb.linearVelocity = GetMovementVelocity();
     }
 
     void OnCollisionStay2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (!collision.gameObject.CompareTag("Player"))
         {
-            if (playerHealth == null)
-            {
-                CachePlayerReferences();
-            }
-
-            playerHealth?.TakeDamage(CurrentContactDamage);
+            return;
         }
+
+        if (playerHealth == null)
+        {
+            CachePlayerReferences();
+        }
+
+        playerHealth?.TakeDamage(runtimeStats.contactDamage);
     }
 
     public void TakeDamage(float damage, Vector2? hitDirection = null, float knockbackForce = 0f)
@@ -123,25 +114,19 @@ public class Enemy : MonoBehaviour
         ResetRuntimeState();
     }
 
-    private float CurrentMoveSpeed => moveSpeed * spawnContext.moveSpeedMultiplier;
-    private float CurrentContactDamage => damage * spawnContext.damageMultiplier;
-    private int CurrentExperienceWorth => Mathf.RoundToInt(experienceWorth * spawnContext.experienceMultiplier);
-
     private void Die()
     {
         DropLoot();
         EnemyKilled?.Invoke();
-
+        PlayDeathEffects();
         Destroy(gameObject);
-        Instantiate(destroyEffect, transform.position, transform.rotation);
-        AudioManager.Instance.Play(SoundType.EnemyDie);
     }
 
     private void DropLoot()
     {
         foreach (LootItem lootItem in lootTable)
         {
-            float dropChance = lootItem.dropChance * spawnContext.dropChanceMultiplier;
+            float dropChance = lootItem.dropChance * runtimeStats.dropChanceMultiplier;
 
             if (Random.Range(0f, 100f) > dropChance)
             {
@@ -158,7 +143,7 @@ public class Enemy : MonoBehaviour
         float finalForce = force * (1f - resistance);
 
         knockbackVelocity = hitDirection.normalized * finalForce;
-        knockbackTimer = 0.1f;
+        knockbackTimer = KnockbackDuration;
     }
 
     private void SpawnLoot(LootItem lootItem)
@@ -172,7 +157,7 @@ public class Enemy : MonoBehaviour
             case LootType.Experience:
                 ExpCrystal xp = PickupPools.Instance.GetXP();
                 xp.transform.position = transform.position;
-                xp.Init(CurrentExperienceWorth);
+                xp.Init(runtimeStats.experienceWorth);
                 break;
 
             case LootType.Magnet:
@@ -199,10 +184,73 @@ public class Enemy : MonoBehaviour
 
     private void ResetRuntimeState()
     {
-        currentHealth = health * spawnContext.healthMultiplier;
+        runtimeStats = BuildRuntimeStats();
+        currentHealth = runtimeStats.maxHealth;
         knockbackTimer = 0f;
         knockbackVelocity = Vector2.zero;
         ApplyRarityVisuals();
+    }
+
+    private RuntimeStats BuildRuntimeStats()
+    {
+        return new RuntimeStats
+        {
+            maxHealth = health * spawnContext.healthMultiplier,
+            moveSpeed = moveSpeed * spawnContext.moveSpeedMultiplier,
+            contactDamage = damage * spawnContext.damageMultiplier,
+            experienceWorth = Mathf.RoundToInt(experienceWorth * spawnContext.experienceMultiplier),
+            dropChanceMultiplier = spawnContext.dropChanceMultiplier,
+        };
+    }
+
+    private bool TryGetActivePlayer()
+    {
+        if (player == null)
+        {
+            CachePlayerReferences();
+        }
+
+        return player != null && player.gameObject.activeSelf;
+    }
+
+    private void StopMoving()
+    {
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+    }
+
+    private void UpdateFacing()
+    {
+        if (spriteRenderer == null || player == null)
+        {
+            return;
+        }
+
+        spriteRenderer.flipX = player.transform.position.x > transform.position.x;
+    }
+
+    private Vector2 GetMovementVelocity()
+    {
+        if (knockbackTimer > 0f)
+        {
+            knockbackTimer -= Time.deltaTime;
+            return knockbackVelocity;
+        }
+
+        Vector2 direction = (player.transform.position - transform.position).normalized;
+        return direction * runtimeStats.moveSpeed;
+    }
+
+    private void PlayDeathEffects()
+    {
+        if (destroyEffect != null)
+        {
+            Instantiate(destroyEffect, transform.position, transform.rotation);
+        }
+
+        AudioManager.Instance.Play(SoundType.EnemyDie);
     }
 
     private void EnsureRarityMaterial()
