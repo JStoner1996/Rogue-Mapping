@@ -18,7 +18,12 @@ public class UIController : MonoBehaviour
     public GameObject pausePanel;
     public GameObject levelUpPanel;
 
-    public LevelUpButton[] levelUpButtons;
+    [Header("Level Up")]
+    [SerializeField] private Transform levelUpButtonParent;
+    [SerializeField] private LevelUpButton levelUpButtonPrefab;
+    [SerializeField] private int levelUpButtonCount = 3;
+
+    private LevelUpButton[] levelUpButtons = System.Array.Empty<LevelUpButton>();
 
     private PlayerHealth playerHealth;
     private PlayerExperience playerExperience;
@@ -36,6 +41,7 @@ public class UIController : MonoBehaviour
     void Start()
     {
         CachePlayerReferences();
+        BuildLevelUpButtons();
     }
 
     public void UpdateHealthSlider()
@@ -107,6 +113,7 @@ public class UIController : MonoBehaviour
 
     public void LevelUpPanelOpen()
     {
+        BuildLevelUpButtons();
         levelUpPanel.SetActive(true);
         Time.timeScale = 0f;
     }
@@ -126,5 +133,55 @@ public class UIController : MonoBehaviour
 
         playerHealth = PlayerController.Instance.GetComponent<PlayerHealth>();
         playerExperience = PlayerController.Instance.GetComponent<PlayerExperience>();
+    }
+
+    public LevelUpButton[] GetLevelUpButtons()
+    {
+        if (levelUpButtons == null || levelUpButtons.Length == 0)
+        {
+            BuildLevelUpButtons();
+        }
+
+        return levelUpButtons;
+    }
+
+    private void BuildLevelUpButtons()
+    {
+        if (levelUpButtonParent == null || levelUpButtonPrefab == null)
+        {
+            return;
+        }
+
+        int buttonCount = Mathf.Max(1, levelUpButtonCount);
+        bool needsRebuild = levelUpButtons == null || levelUpButtons.Length != buttonCount;
+
+        if (!needsRebuild)
+        {
+            for (int i = 0; i < levelUpButtons.Length; i++)
+            {
+                if (levelUpButtons[i] == null)
+                {
+                    needsRebuild = true;
+                    break;
+                }
+            }
+        }
+
+        if (!needsRebuild)
+        {
+            return;
+        }
+
+        foreach (Transform child in levelUpButtonParent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        levelUpButtons = new LevelUpButton[buttonCount];
+
+        for (int i = 0; i < buttonCount; i++)
+        {
+            levelUpButtons[i] = Instantiate(levelUpButtonPrefab, levelUpButtonParent);
+        }
     }
 }

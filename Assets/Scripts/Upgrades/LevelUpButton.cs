@@ -7,106 +7,77 @@ public class LevelUpButton : MonoBehaviour
     [Header("Components")]
     [SerializeField] private Image borderImage;
     [SerializeField] private Image backgroundImage;
-    [SerializeField] private Sprite playerUpgradeIcon;
 
+    [Header("Fallback Icons")]
+    [SerializeField] private Sprite playerUpgradeIcon;
     [Header("UI Elements")]
     public TMP_Text weaponName;
     public Image weaponIcon;
     public TMP_Text rarityText;
     public TMP_Text weaponDescription;
 
-    private Weapon assignedWeapon;
-    private WeaponUpgradeResult assignedUpgrade;
-    private PlayerStats assignedPlayerStats;
-    private PlayerStatUpgradeResult assignedPlayerUpgrade;
+    private LevelUpOptionData assignedOption;
     private PlayerLevelUpController playerLevelUpController;
-
-    private WeaponData newWeaponData;
-    private bool isNewWeapon;
-    private bool isPlayerUpgrade;
 
     void Start()
     {
         CachePlayerLevelUpController();
     }
 
-    public void ActivateButton(Weapon weapon, WeaponUpgradeResult upgrade)
+    public void SetOption(LevelUpOptionData option)
     {
-        // Reset state
-        isNewWeapon = false;
-        isPlayerUpgrade = false;
-        newWeaponData = null;
-        assignedPlayerStats = null;
-        assignedPlayerUpgrade = null;
+        assignedOption = option;
+        Sprite optionIcon = ResolveIcon(option);
 
-        assignedWeapon = weapon;
-        assignedUpgrade = upgrade;
+        weaponName.text = option.title;
+        weaponIcon.sprite = optionIcon;
+        weaponIcon.enabled = optionIcon != null;
+        rarityText.text = option.rarityLabel;
+        weaponDescription.text = option.description;
 
-        weaponName.text = weapon.Data.weaponName;
-        weaponIcon.sprite = weapon.Data.icon;
-        weaponIcon.enabled = weapon.Data.icon != null;
-        rarityText.text = upgrade.rarity.ToString();
-
-        weaponDescription.text = UpgradeDescriptionFormatter.Build(upgrade);
-
-        ApplyRarityVisuals(upgrade.rarity);
+        ApplyRarityVisuals(option.rarity);
     }
 
-    public void ActivateNewWeaponButton(WeaponData weaponData)
+    public void ClearOption()
     {
-        // Set new weapon mode
-        isNewWeapon = true;
-        isPlayerUpgrade = false;
-        newWeaponData = weaponData;
-        assignedPlayerStats = null;
-        assignedPlayerUpgrade = null;
-
-        assignedWeapon = null;
-        assignedUpgrade = null;
-
-        weaponName.text = weaponData.weaponName;
-        weaponIcon.sprite = weaponData.icon;
-        weaponIcon.enabled = weaponData.icon != null;
-
-        rarityText.text = "New Weapon";
-        weaponDescription.text = "Unlock this weapon";
-
-        ApplyRarityVisuals(UpgradeRarity.Legendary);
-    }
-
-    public void ActivatePlayerStatButton(PlayerStats playerStats, PlayerStatUpgradeResult upgrade)
-    {
-        isNewWeapon = false;
-        isPlayerUpgrade = true;
-        newWeaponData = null;
-
-        assignedWeapon = null;
-        assignedUpgrade = null;
-        assignedPlayerStats = playerStats;
-        assignedPlayerUpgrade = upgrade;
-
-        weaponName.text = "Player Upgrade";
-        weaponIcon.sprite = playerUpgradeIcon;
-        weaponIcon.enabled = playerUpgradeIcon != null;
-        rarityText.text = upgrade.rarity.ToString();
-        weaponDescription.text = PlayerUpgradeDescriptionFormatter.Build(upgrade);
-
-        ApplyRarityVisuals(upgrade.rarity);
+        assignedOption = null;
+        weaponName.text = string.Empty;
+        weaponIcon.sprite = null;
+        weaponIcon.enabled = false;
+        rarityText.text = string.Empty;
+        weaponDescription.text = string.Empty;
+        ApplyRarityVisuals(UpgradeRarity.Common);
     }
 
     public void SelectUpgrade()
     {
-        if (isNewWeapon && newWeaponData != null)
+        if (assignedOption == null)
         {
-            WeaponController.Instance.AddWeapon(newWeaponData);
+            return;
         }
-        else if (isPlayerUpgrade && assignedPlayerStats != null && assignedPlayerUpgrade != null)
+
+        switch (assignedOption.optionType)
         {
-            assignedPlayerStats.ApplyUpgrade(assignedPlayerUpgrade);
-        }
-        else if (assignedWeapon != null && assignedUpgrade != null)
-        {
-            assignedWeapon.ApplyUpgrade(assignedUpgrade);
+            case LevelUpOptionType.NewWeapon:
+                if (assignedOption.newWeaponData != null)
+                {
+                    WeaponController.Instance.AddWeapon(assignedOption.newWeaponData);
+                }
+                break;
+
+            case LevelUpOptionType.PlayerUpgrade:
+                if (assignedOption.playerStats != null && assignedOption.playerUpgrade != null)
+                {
+                    assignedOption.playerStats.ApplyUpgrade(assignedOption.playerUpgrade);
+                }
+                break;
+
+            case LevelUpOptionType.WeaponUpgrade:
+                if (assignedOption.weapon != null && assignedOption.weaponUpgrade != null)
+                {
+                    assignedOption.weapon.ApplyUpgrade(assignedOption.weaponUpgrade);
+                }
+                break;
         }
 
         AudioManager.Instance.Play(SoundType.SelectUpgrade);
@@ -163,5 +134,17 @@ public class LevelUpButton : MonoBehaviour
         }
 
         playerLevelUpController = PlayerController.Instance.GetComponent<PlayerLevelUpController>();
+    }
+
+    private Sprite ResolveIcon(LevelUpOptionData option)
+    {
+        if (option.icon != null)
+        {
+            return option.icon;
+        }
+
+        return option.optionType == LevelUpOptionType.PlayerUpgrade
+            ? playerUpgradeIcon
+            : null;
     }
 }
