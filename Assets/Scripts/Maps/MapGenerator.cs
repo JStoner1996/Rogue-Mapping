@@ -139,21 +139,7 @@ public static class MapGenerator
             int baseMapIndex = Random.Range(0, availableBaseMaps.Count);
             MapBaseDefinition baseMap = availableBaseMaps[baseMapIndex];
             availableBaseMaps.RemoveAt(baseMapIndex);
-
-            MapAffixDefinition prefix = RollAffix(Prefixes);
-            MapAffixDefinition suffix = RollAffix(Suffixes);
-
-            MapInstance map = new MapInstance
-            {
-                baseMap = baseMap,
-                prefix = prefix,
-                suffix = suffix,
-            };
-
-            RollModifiersInto(prefix, map.modifiers);
-            RollModifiersInto(suffix, map.modifiers);
-            AssignVictoryCondition(map);
-            results.Add(map);
+            results.Add(CreateGeneratedMap(baseMap));
         }
 
         return results;
@@ -169,6 +155,82 @@ public static class MapGenerator
             VictoryConditionType = victoryConditionType,
             VictoryTarget = Mathf.Max(1, victoryTarget),
         };
+    }
+
+    public static MapInstance CreateDroppedMap(int currentTier, MapDropSettings dropSettings)
+    {
+        MapDropSettings settings = dropSettings ?? new MapDropSettings();
+        int targetTier = RollDroppedMapTier(currentTier, settings);
+        List<MapBaseDefinition> candidates = GetBaseMapsForTier(targetTier);
+
+        if (candidates.Count == 0)
+        {
+            Debug.LogWarning($"Unable to create dropped map for tier {targetTier}. Falling back to default map.");
+            return CreateDefaultMap();
+        }
+
+        MapBaseDefinition baseMap = candidates[Random.Range(0, candidates.Count)];
+        return CreateGeneratedMap(baseMap);
+    }
+
+    public static OwnedMapRecord CreateOwnedMapRecord(MapInstance map)
+    {
+        if (map == null || map.baseMap == null)
+        {
+            return null;
+        }
+
+        return new OwnedMapRecord
+        {
+            instanceId = System.Guid.NewGuid().ToString("N"),
+            baseMapId = map.BaseMapId,
+            prefixName = map.prefix != null ? map.prefix.name : string.Empty,
+            suffixName = map.suffix != null ? map.suffix.name : string.Empty,
+            victoryConditionType = map.VictoryConditionType,
+            victoryTarget = Mathf.Max(1, map.VictoryTarget),
+            modifiers = new List<MapModifierValue>(map.modifiers),
+        };
+    }
+
+    public static MapInstance CreateMapInstanceFromRecord(OwnedMapRecord record)
+    {
+        if (record == null)
+        {
+            return null;
+        }
+
+        MapBaseDefinition baseMap = FindBaseMap(record.baseMapId);
+
+        if (baseMap == null)
+        {
+            Debug.LogWarning($"Unable to rebuild owned map. Unknown base map id: {record.baseMapId}");
+            return null;
+        }
+
+        return new MapInstance
+        {
+            baseMap = baseMap,
+            prefix = FindAffix(Prefixes, record.prefixName),
+            suffix = FindAffix(Suffixes, record.suffixName),
+            VictoryConditionType = record.victoryConditionType,
+            VictoryTarget = Mathf.Max(1, record.victoryTarget),
+            modifiers = new List<MapModifierValue>(record.modifiers ?? new List<MapModifierValue>()),
+        };
+    }
+
+    public static MapBaseDefinition FindBaseMap(string baseMapId)
+    {
+        return BaseMaps.Find(map => map.id == baseMapId);
+    }
+
+    public static IReadOnlyList<MapBaseDefinition> GetBaseMaps()
+    {
+        return BaseMaps;
+    }
+
+    public static List<MapBaseDefinition> GetBaseMapsForTier(int tier)
+    {
+        return BaseMaps.FindAll(map => map.id != "default_map" && map.tier == tier);
     }
 
     private static void AssignVictoryCondition(MapInstance map)
@@ -223,6 +285,92 @@ public static class MapGenerator
         foreach (MapModifierRange modifier in affix.modifiers)
         {
             output.Add(new MapModifierValue(modifier.statType, modifier.Roll()));
+        }
+    }
+
+    private static MapInstance CreateGeneratedMap(MapBaseDefinition baseMap)
+    {
+        MapAffixDefinition prefix = RollAffix(Prefixes);
+        MapAffixDefinition suffix = RollAffix(Suffixes);
+
+        MapInstance map = new MapInstance
+        {
+            baseMap = baseMap,
+            prefix = prefix,
+            suffix = suffix,
+        };
+
+        RollModifiersInto(prefix, map.modifiers);
+        RollModifiersInto(suffix, map.modifiers);
+        AssignVictoryCondition(map);
+        return map;
+    }
+
+    private static int RollDroppedMapTier(int currentTier, MapDropSettings settings)
+    {
+        List<TierWeightOption> candidates = new List<TierWeightOption>();
+
+        AddTierWeightCandidate(candidates, currentTier, settings.sameTierWeight);
+        AddTierWeightCandidate(candidates, currentTier + 1, settings.aboveTierWeight);
+        AddTierWeightCandidate(candidates, currentTier - 1, settings.belowTierWeight);
+
+        if (candidates.Count == 0)
+        {
+            return Mathf.Max(0, currentTier);
+        }
+
+        float totalWeight = 0f;
+
+        foreach (TierWeightOption candidate in candidates)
+        {
+            totalWeight += candidate.weight;
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        float runningWeight = 0f;
+
+        foreach (TierWeightOption candidate in candidates)
+        {
+            runningWeight += candidate.weight;
+
+            if (roll <= runningWeight)
+            {
+                return candidate.tier;
+            }
+        }
+
+        return candidates[candidates.Count - 1].tier;
+    }
+
+    private static void AddTierWeightCandidate(List<TierWeightOption> candidates, int tier, float weight)
+    {
+        if (weight <= 0f || tier < 0 || GetBaseMapsForTier(tier).Count == 0)
+        {
+            return;
+        }
+
+        candidates.Add(new TierWeightOption(tier, weight));
+    }
+
+    private static MapAffixDefinition FindAffix(List<MapAffixDefinition> source, string affixName)
+    {
+        if (string.IsNullOrWhiteSpace(affixName))
+        {
+            return null;
+        }
+
+        return source.Find(affix => affix.name == affixName);
+    }
+
+    private struct TierWeightOption
+    {
+        public int tier;
+        public float weight;
+
+        public TierWeightOption(int tier, float weight)
+        {
+            this.tier = tier;
+            this.weight = weight;
         }
     }
 }

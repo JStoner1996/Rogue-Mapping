@@ -126,7 +126,7 @@ public class Enemy : MonoBehaviour
     {
         foreach (LootItem lootItem in lootTable)
         {
-            float dropChance = lootItem.dropChance * runtimeStats.dropChanceMultiplier;
+            float dropChance = lootItem.GetAdjustedDropChance(runtimeStats.dropChanceMultiplier);
 
             if (Random.Range(0f, 100f) > dropChance)
             {
@@ -168,6 +168,18 @@ public class Enemy : MonoBehaviour
             case LootType.Bomb:
                 Bomb bomb = PickupPools.Instance.GetBomb();
                 bomb.transform.position = transform.position;
+                break;
+
+            case LootType.Map:
+                MapInstance droppedMap = MapGenerator.CreateDroppedMap(
+                    RunData.GetSelectedMapOrDefault().Tier,
+                    lootItem.mapDropSettings);
+
+                if (droppedMap != null)
+                {
+                    MetaProgressionService.AddOwnedMap(droppedMap);
+                    Debug.Log($"Added map to inventory: {droppedMap.DisplayName} (Tier {droppedMap.Tier})");
+                }
                 break;
         }
     }

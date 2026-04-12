@@ -301,12 +301,35 @@ MonoBehaviour:
   - type: 0
     itemPrefab: {fileID: 1201580960227571414, guid: d524371948be3ec4b9ed62a65b9270f1, type: 3}
     dropChance: 20
+    mapDropSettings:
+      sameTierWeight: 60
+      aboveTierWeight: 30
+      belowTierWeight: 10
   - type: 1
     itemPrefab: {fileID: 8067296989678784352, guid: 4667355e2dc201a48b8be11181222934, type: 3}
     dropChance: 100
+    mapDropSettings:
+      sameTierWeight: 60
+      aboveTierWeight: 30
+      belowTierWeight: 10
   - type: 2
     itemPrefab: {fileID: 9035283693994141731, guid: 4fb41613d8e46dc419e79cf646ad86d8, type: 3}
     dropChance: 20
+    mapDropSettings:
+      sameTierWeight: 60
+      aboveTierWeight: 30
+      belowTierWeight: 10
   - type: 3
     itemPrefab: {fileID: 6203677586702522537, guid: 77f29ea490283e64c9da1aa297d252ed, type: 3}
     dropChance: 30
+    mapDropSettings:
+      sameTierWeight: 60
+      aboveTierWeight: 30
+      belowTierWeight: 10
+  - type: 4
+    itemPrefab: {fileID: 6203677586702522537, guid: 77f29ea490283e64c9da1aa297d252ed, type: 3}
+    dropChance: 100
+    mapDropSettings:
+      sameTierWeight: 60
+      aboveTierWeight: 30
+      belowTierWeight: 10
