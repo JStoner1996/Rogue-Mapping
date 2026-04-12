@@ -7,7 +7,7 @@ public class MenuManager : MonoBehaviour
     {
         RunData.SelectedWeapon = null;
         RunData.SelectedMap = null;
-        SceneManager.LoadScene("Weapon Select");
+        SceneManager.LoadScene("Staging");
     }
 
     public void QuitGame()

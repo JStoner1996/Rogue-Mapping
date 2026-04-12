@@ -19,6 +19,13 @@ public static class MapDescriptionFormatter
         StringBuilder builder = new StringBuilder();
         builder.AppendLine($"<b>{map.DisplayName}</b>");
         builder.AppendLine();
+        builder.Append(BuildStats(map));
+        return builder.ToString().TrimEnd();
+    }
+
+    public static string BuildStats(GeneratedMap map)
+    {
+        StringBuilder builder = new StringBuilder();
 
         foreach (MapModifierValue modifier in map.modifiers)
         {
