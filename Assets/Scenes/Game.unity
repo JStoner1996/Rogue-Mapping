@@ -37197,7 +37197,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4090537636507128926, guid: 28e1d856895cfb4428676e1c1fa219e7, type: 3}
   m_PrefabInstance: {fileID: 2129384963}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1429942240}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 78fea8ddc7ea6f044bc3f2c8c48f5f2c, type: 3}
@@ -39074,6 +39074,27 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &1429942240 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8311679907997659860, guid: 28e1d856895cfb4428676e1c1fa219e7, type: 3}
+  m_PrefabInstance: {fileID: 2129384963}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1429942241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1429942240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b2c3ad0609460f439cbc073daba9467, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HoverPopupFollowerUI
+  popupRoot: {fileID: 1028540353}
+  canvas: {fileID: 1521094509}
+  screenOffset: {x: 16, y: -16}
+  clampToCanvas: 1
 --- !u!1 &1521094505
 GameObject:
   m_ObjectHideFlags: 0
@@ -42548,7 +42569,6 @@ GameObject:
   - component: {fileID: 1858229299}
   - component: {fileID: 1858229302}
   - component: {fileID: 1858229301}
-  - component: {fileID: 1858229300}
   m_Layer: 5
   m_Name: WeaponDpsPanel (1)
   m_TagString: Untagged
@@ -42576,22 +42596,6 @@ RectTransform:
   m_AnchoredPosition: {x: 767, y: -47}
   m_SizeDelta: {x: 725, y: -654}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1858229300
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1858229298}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd7f8d7fdc234bb0bffdd7670a6b1c50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StagingPreviewUI
-  panelRoot: {fileID: 0}
-  titleText: {fileID: 373116148}
-  icon: {fileID: 0}
-  statsText: {fileID: 0}
 --- !u!114 &1858229301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47126,7 +47130,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1707484139149053686, guid: 28e1d856895cfb4428676e1c1fa219e7, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 424.67
+      value: 560
       objectReference: {fileID: 0}
     - target: {fileID: 1707484139149053686, guid: 28e1d856895cfb4428676e1c1fa219e7, type: 3}
       propertyPath: m_LocalPosition.x
@@ -47196,6 +47200,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -70
       objectReference: {fileID: 0}
+    - target: {fileID: 4090537636507128926, guid: 28e1d856895cfb4428676e1c1fa219e7, type: 3}
+      propertyPath: hoverFollower
+      value: 
+      objectReference: {fileID: 1429942241}
     - target: {fileID: 6184719086830056205, guid: 28e1d856895cfb4428676e1c1fa219e7, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -47247,7 +47255,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8311679907997659860, guid: 28e1d856895cfb4428676e1c1fa219e7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1429942241}
   m_SourcePrefab: {fileID: 100100000, guid: 28e1d856895cfb4428676e1c1fa219e7, type: 3}
 --- !u!224 &2141125111 stripped
 RectTransform:
