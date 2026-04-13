@@ -65,26 +65,6 @@ public static class MetaProgressionService
         EnsureLoaded();
         EnsureDefaultMap(defaultVictoryCondition, defaultVictoryTarget);
 
-        while (saveData.ownedMaps.Count < desiredCount)
-        {
-            List<MapInstance> candidates = MapGenerator.GenerateChoices(4);
-
-            foreach (MapInstance map in candidates)
-            {
-                if (map == null || map.BaseMapId == "default_map")
-                {
-                    continue;
-                }
-
-                AddOwnedMap(map, false);
-
-                if (saveData.ownedMaps.Count >= desiredCount)
-                {
-                    break;
-                }
-            }
-        }
-
         Save();
     }
 
