@@ -1,10 +1,11 @@
 using UnityEngine;
 
 [System.Serializable]
-public class LootItem
+public class MetaLootItem
 {
-    public PowerUpLootType type;
+    public MetaLootType type;
     [Range(0, 100)] public float dropChance;
+    public MapDropSettings mapDropSettings = new MapDropSettings();
 
     public float GetAdjustedDropChance(float multiplier)
     {

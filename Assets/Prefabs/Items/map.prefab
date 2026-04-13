@@ -82,7 +82,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1914677509
   m_SortingLayer: 3
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: c212cca4f860ac842817ce07bf9ec063, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -158,4 +158,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapPickup
   spriteRenderer: {fileID: 1177912691786619906}
+  dropSound: 12
   pickupSound: 13

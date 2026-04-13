@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb62365f8dc8a2e49a73d0e36d314df2, type: 3}
   m_Name: mapDrop_Sound
   m_EditorClassIdentifier: Assembly-CSharp::SoundData
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 3a3038f245decdf4a99309e00c0f7408, type: 3}
   volume: 1
   randomizeVolume: 0
   volumeRange: {x: 0.8, y: 1}
-  randomizePitch: 1
+  randomizePitch: 0
   pitchRange: {x: 0.9, y: 1.1}
   loop: 0

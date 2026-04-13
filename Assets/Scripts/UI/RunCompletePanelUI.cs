@@ -7,6 +7,7 @@ public class RunCompletePanelUI : MonoBehaviour
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private TMP_Text mapNameText;
     [SerializeField] private InventoryGridUI lootGrid;
+    [SerializeField] private Sprite defaultMapIcon;
 
     void OnEnable()
     {
@@ -62,7 +63,7 @@ public class RunCompletePanelUI : MonoBehaviour
             {
                 id = entry.id,
                 label = entry.displayName,
-                icon = entry.icon,
+                icon = GetDisplayIcon(entry),
                 isEmpty = false,
                 isSelected = false,
                 isDiscarded = entry.isDiscarded,
@@ -88,5 +89,25 @@ public class RunCompletePanelUI : MonoBehaviour
         }
 
         RunLootService.ToggleDiscard(data.id);
+    }
+
+    private Sprite GetDisplayIcon(RunLootEntry entry)
+    {
+        if (entry == null)
+        {
+            return null;
+        }
+
+        if (entry.icon != null)
+        {
+            return entry.icon;
+        }
+
+        if (entry.lootType == RunLootType.Map)
+        {
+            return defaultMapIcon;
+        }
+
+        return null;
     }
 }

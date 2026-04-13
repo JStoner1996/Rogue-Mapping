@@ -37,11 +37,15 @@ MonoBehaviour:
     sound: {fileID: 11400000, guid: 415e095195cea8f44ac9b7eb95b5e313, type: 2}
   - type: 11
     sound: {fileID: 11400000, guid: 2d0e3b113ed1654408b2fa5f02e5e323, type: 2}
-  - type: 12
+  - type: 16
     sound: {fileID: 11400000, guid: 800bc89b0934f2e43a84ccf37f430c30, type: 2}
-  - type: 13
+  - type: 17
     sound: {fileID: 11400000, guid: e3ca903d834189c4491807c74c0c2c24, type: 2}
-  - type: 14
+  - type: 18
     sound: {fileID: 11400000, guid: f29bffd24a3f8a24db9e411f6ec27670, type: 2}
-  - type: 15
+  - type: 19
     sound: {fileID: 11400000, guid: add662664993a284bbcdc1c97e271598, type: 2}
+  - type: 12
+    sound: {fileID: 11400000, guid: 118b7d992ddf410419d6fce74a5c845d, type: 2}
+  - type: 13
+    sound: {fileID: 11400000, guid: 91eb49a2e44f0bf4899e680050378086, type: 2}

@@ -126,7 +126,7 @@ public class MapInstance
     public int Tier => baseMap != null ? baseMap.tier : 0;
     public MapTilesetTheme TilesetTheme => baseMap != null ? baseMap.tilesetTheme : MapTilesetTheme.Default;
     public string SceneName => baseMap != null ? baseMap.sceneName : string.Empty;
-    public Sprite Icon => baseMap != null ? baseMap.icon : null;
+    public Sprite Icon => baseMap != null ? MapIconCatalog.ResolveIcon(baseMap.icon) : MapIconCatalog.PlaceholderMapIcon;
     public VictoryConditionType VictoryConditionType { get; set; }
     public int VictoryTarget { get; set; }
 

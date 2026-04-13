@@ -43,8 +43,9 @@ public class Enemy : MonoBehaviour
     private Material defaultMaterial;
     private MaterialPropertyBlock rarityPropertyBlock;
 
-    [Header("Loot")]
-    public List<LootItem> lootTable = new List<LootItem>();
+    [Header("Drops")]
+    [SerializeField] private List<LootItem> powerUpLootTable = new List<LootItem>();
+    [SerializeField] private List<MetaLootItem> metaLootTable = new List<MetaLootItem>();
 
     public EnemyRarity Rarity { get; private set; } = EnemyRarity.Normal;
     private PlayerController player;
@@ -116,16 +117,30 @@ public class Enemy : MonoBehaviour
 
     private void Die()
     {
-        DropLoot();
+        DropExperience();
+        DropPowerUps();
+        DropMetaItems();
         EnemyKilled?.Invoke();
         PlayDeathEffects();
         Destroy(gameObject);
     }
 
-    private void DropLoot()
+    private void DropExperience()
     {
-        foreach (LootItem lootItem in lootTable)
+        ExpCrystal xp = PickupPools.Instance.GetXP();
+        xp.transform.position = transform.position;
+        xp.Init(runtimeStats.experienceWorth);
+    }
+
+    private void DropPowerUps()
+    {
+        foreach (LootItem lootItem in powerUpLootTable)
         {
+            if (lootItem == null)
+            {
+                continue;
+            }
+
             float dropChance = lootItem.GetAdjustedDropChance(runtimeStats.dropChanceMultiplier);
 
             if (Random.Range(0f, 100f) > dropChance)
@@ -134,6 +149,26 @@ public class Enemy : MonoBehaviour
             }
 
             SpawnLoot(lootItem);
+        }
+    }
+
+    private void DropMetaItems()
+    {
+        foreach (MetaLootItem lootItem in metaLootTable)
+        {
+            if (lootItem == null)
+            {
+                continue;
+            }
+
+            float dropChance = lootItem.GetAdjustedDropChance(runtimeStats.dropChanceMultiplier);
+
+            if (Random.Range(0f, 100f) > dropChance)
+            {
+                continue;
+            }
+
+            SpawnMetaLoot(lootItem);
         }
     }
 
@@ -155,33 +190,34 @@ public class Enemy : MonoBehaviour
 
         switch (lootItem.type)
         {
-            case LootType.Health:
+            case PowerUpLootType.Health:
                 HealthPickup health = PickupPools.Instance.GetHealth();
                 health.transform.position = transform.position;
                 break;
-            case LootType.Experience:
-                ExpCrystal xp = PickupPools.Instance.GetXP();
-                xp.transform.position = transform.position;
-                xp.Init(runtimeStats.experienceWorth);
-                break;
 
-            case LootType.Magnet:
+            case PowerUpLootType.Magnet:
                 Magnet magnet = PickupPools.Instance.GetMagnet();
                 magnet.transform.position = transform.position;
                 break;
 
-            case LootType.Bomb:
+            case PowerUpLootType.Bomb:
                 Bomb bomb = PickupPools.Instance.GetBomb();
                 bomb.transform.position = transform.position;
                 break;
+        }
+    }
 
-            case LootType.Map:
+    private void SpawnMetaLoot(MetaLootItem lootItem)
+    {
+        switch (lootItem.type)
+        {
+            case MetaLootType.Map:
                 SpawnMapLoot(lootItem);
                 break;
         }
     }
 
-    private void SpawnMapLoot(LootItem lootItem)
+    private void SpawnMapLoot(MetaLootItem lootItem)
     {
         MapInstance droppedMap = MapGenerator.CreateDroppedMap(
             RunData.GetSelectedMapOrDefault().Tier,
@@ -192,24 +228,9 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        if (lootItem.itemPrefab == null)
-        {
-            Debug.LogWarning("Map loot item is missing a pickup prefab. Adding directly to run loot as a fallback.");
-            RunLootService.AddMap(droppedMap);
-            return;
-        }
-
-        GameObject lootObject = Instantiate(lootItem.itemPrefab, transform.position, Quaternion.identity);
-
-        if (lootObject.TryGetComponent(out MapPickup mapPickup))
-        {
-            mapPickup.Initialize(droppedMap);
-            return;
-        }
-
-        Debug.LogWarning($"Map pickup prefab {lootItem.itemPrefab.name} is missing a MapPickup component.");
-        Destroy(lootObject);
-        RunLootService.AddMap(droppedMap);
+        MapPickup mapPickup = PickupPools.Instance.GetMapPickup();
+        mapPickup.transform.position = transform.position;
+        mapPickup.Initialize(droppedMap);
     }
 
     private void CachePlayerReferences()

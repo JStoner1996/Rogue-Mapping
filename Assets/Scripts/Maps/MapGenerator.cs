@@ -3,6 +3,8 @@ using UnityEngine;
 
 public static class MapGenerator
 {
+    private const string MapCatalogResourcePath = "Maps/MapCatalog";
+
     private static readonly int[] TimeMinutesByRarity =
     {
         2,
@@ -20,7 +22,7 @@ public static class MapGenerator
     private const int TimeMinutesPerTier = 2;
     private const int KillsPerTier = 25;
 
-    private static readonly List<MapBaseDefinition> BaseMaps = new List<MapBaseDefinition>
+    private static readonly List<MapBaseDefinition> FallbackBaseMaps = new List<MapBaseDefinition>
     {
         new MapBaseDefinition("default_map", "Default Map", 0, MapTilesetTheme.Default, "Game"),
         new MapBaseDefinition("shrine", "Shrine", 1, MapTilesetTheme.Shrine, "Game"),
@@ -36,6 +38,8 @@ public static class MapGenerator
         new MapBaseDefinition("hollow", "Hollow", 10, MapTilesetTheme.Hollow, "Game"),
         new MapBaseDefinition("terrace", "Terrace", 10, MapTilesetTheme.Terrace, "Game"),
     };
+
+    private static MapCatalog loadedMapCatalog;
 
     private static readonly List<MapAffixDefinition> Prefixes = new List<MapAffixDefinition>
     {
@@ -125,14 +129,14 @@ public static class MapGenerator
 
         results.Add(CreateDefaultMap());
 
-        List<MapBaseDefinition> availableBaseMaps = new List<MapBaseDefinition>(BaseMaps);
+        List<MapBaseDefinition> availableBaseMaps = new List<MapBaseDefinition>(GetBaseMapsInternal());
         availableBaseMaps.RemoveAll(map => map.id == "default_map");
 
         for (int i = 1; i < count; i++)
         {
             if (availableBaseMaps.Count == 0)
             {
-                availableBaseMaps = new List<MapBaseDefinition>(BaseMaps);
+                availableBaseMaps = new List<MapBaseDefinition>(GetBaseMapsInternal());
                 availableBaseMaps.RemoveAll(map => map.id == "default_map");
             }
 
@@ -151,7 +155,7 @@ public static class MapGenerator
     {
         return new MapInstance
         {
-            baseMap = BaseMaps.Find(map => map.id == "default_map"),
+            baseMap = FindBaseMap("default_map"),
             VictoryConditionType = victoryConditionType,
             VictoryTarget = Mathf.Max(1, victoryTarget),
         };
@@ -220,17 +224,17 @@ public static class MapGenerator
 
     public static MapBaseDefinition FindBaseMap(string baseMapId)
     {
-        return BaseMaps.Find(map => map.id == baseMapId);
+        return GetBaseMapsInternal().Find(map => map.id == baseMapId);
     }
 
     public static IReadOnlyList<MapBaseDefinition> GetBaseMaps()
     {
-        return BaseMaps;
+        return GetBaseMapsInternal();
     }
 
     public static List<MapBaseDefinition> GetBaseMapsForTier(int tier)
     {
-        return BaseMaps.FindAll(map => map.id != "default_map" && map.tier == tier);
+        return GetBaseMapsInternal().FindAll(map => map.id != "default_map" && map.tier == tier);
     }
 
     private static void AssignVictoryCondition(MapInstance map)
@@ -308,15 +312,44 @@ public static class MapGenerator
 
     private static int RollDroppedMapTier(int currentTier, MapDropSettings settings)
     {
+        if (currentTier <= 0)
+        {
+            return GetNearestAvailableTierAtOrAbove(1);
+        }
+
+        if (currentTier == 1)
+        {
+            return RollTierFromCandidates(new List<TierWeightOption>
+            {
+                new TierWeightOption(1, settings.sameTierWeight),
+                new TierWeightOption(2, settings.aboveTierWeight),
+            });
+        }
+
         List<TierWeightOption> candidates = new List<TierWeightOption>();
 
         AddTierWeightCandidate(candidates, currentTier, settings.sameTierWeight);
         AddTierWeightCandidate(candidates, currentTier + 1, settings.aboveTierWeight);
         AddTierWeightCandidate(candidates, currentTier - 1, settings.belowTierWeight);
 
-        if (candidates.Count == 0)
+        return RollTierFromCandidates(candidates, currentTier);
+    }
+
+    private static void AddTierWeightCandidate(List<TierWeightOption> candidates, int tier, float weight)
+    {
+        if (weight <= 0f || tier < 0 || GetBaseMapsForTier(tier).Count == 0)
         {
-            return Mathf.Max(0, currentTier);
+            return;
+        }
+
+        candidates.Add(new TierWeightOption(tier, weight));
+    }
+
+    private static int RollTierFromCandidates(List<TierWeightOption> candidates, int fallbackTier = 0)
+    {
+        if (candidates == null || candidates.Count == 0)
+        {
+            return GetNearestAvailableTierAtOrAbove(fallbackTier);
         }
 
         float totalWeight = 0f;
@@ -342,14 +375,21 @@ public static class MapGenerator
         return candidates[candidates.Count - 1].tier;
     }
 
-    private static void AddTierWeightCandidate(List<TierWeightOption> candidates, int tier, float weight)
+    private static int GetNearestAvailableTierAtOrAbove(int minimumTier)
     {
-        if (weight <= 0f || tier < 0 || GetBaseMapsForTier(tier).Count == 0)
+        int targetTier = Mathf.Max(0, minimumTier);
+
+        while (targetTier <= 100)
         {
-            return;
+            if (GetBaseMapsForTier(targetTier).Count > 0)
+            {
+                return targetTier;
+            }
+
+            targetTier++;
         }
 
-        candidates.Add(new TierWeightOption(tier, weight));
+        return Mathf.Max(0, minimumTier);
     }
 
     private static MapAffixDefinition FindAffix(List<MapAffixDefinition> source, string affixName)
@@ -360,6 +400,28 @@ public static class MapGenerator
         }
 
         return source.Find(affix => affix.name == affixName);
+    }
+
+    private static List<MapBaseDefinition> GetBaseMapsInternal()
+    {
+        EnsureCatalogLoaded();
+
+        if (loadedMapCatalog != null && loadedMapCatalog.BaseMaps != null && loadedMapCatalog.BaseMaps.Count > 0)
+        {
+            return new List<MapBaseDefinition>(loadedMapCatalog.BaseMaps);
+        }
+
+        return FallbackBaseMaps;
+    }
+
+    private static void EnsureCatalogLoaded()
+    {
+        if (loadedMapCatalog != null)
+        {
+            return;
+        }
+
+        loadedMapCatalog = Resources.Load<MapCatalog>(MapCatalogResourcePath);
     }
 
     private struct TierWeightOption
