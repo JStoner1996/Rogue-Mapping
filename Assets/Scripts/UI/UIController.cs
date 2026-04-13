@@ -4,6 +4,26 @@ using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
+    private enum VictoryDisplayMode
+    {
+        Timer,
+        Counter
+    }
+
+    private struct VictoryDisplayData
+    {
+        public VictoryDisplayMode DisplayMode;
+        public string PrimaryText;
+        public string SecondaryText;
+
+        public VictoryDisplayData(VictoryDisplayMode displayMode, string primaryText, string secondaryText = "")
+        {
+            DisplayMode = displayMode;
+            PrimaryText = primaryText;
+            SecondaryText = secondaryText;
+        }
+    }
+
     public static UIController Instance;
 
     [SerializeField] private Slider playerHealthSlider;
@@ -73,36 +93,7 @@ public class UIController : MonoBehaviour
 
     public void UpdateTimer(float timer)
     {
-        if (RunData.SelectedMap == null)
-        {
-            timerText.text = FormatTime(timer);
-
-            if (killText != null)
-            {
-                killText.text = GameManager.Instance != null ? GameManager.Instance.enemyKills.ToString() : "0";
-            }
-
-            return;
-        }
-
-        if (RunData.SelectedMap.VictoryConditionType == VictoryConditionType.Time)
-        {
-            timerText.text = $"{FormatTime(timer)} / {FormatTime(RunData.SelectedMap.VictoryTarget * 60f)}";
-
-            if (killText != null && GameManager.Instance != null)
-            {
-                killText.text = GameManager.Instance.enemyKills.ToString();
-            }
-
-            return;
-        }
-
-        timerText.text = FormatTime(timer);
-
-        if (killText != null && GameManager.Instance != null)
-        {
-            killText.text = $"{GameManager.Instance.enemyKills} / {RunData.SelectedMap.VictoryTarget}";
-        }
+        UpdateVictoryConditionUI(timer);
     }
 
     private string FormatTime(float timer)
@@ -135,6 +126,72 @@ public class UIController : MonoBehaviour
     {
         runCompletePanel?.Hide();
         Time.timeScale = 1f;
+    }
+
+    public void UpdateVictoryConditionUI(float elapsedTime)
+    {
+        VictoryDisplayData displayData = BuildVictoryDisplayData(elapsedTime);
+        ApplyVictoryDisplay(displayData);
+    }
+
+    private VictoryDisplayData BuildVictoryDisplayData(float elapsedTime)
+    {
+        MapInstance selectedMap = RunData.SelectedMap;
+        int enemyKills = GameManager.Instance != null ? GameManager.Instance.enemyKills : 0;
+
+        if (selectedMap == null)
+        {
+            return new VictoryDisplayData(
+                VictoryDisplayMode.Timer,
+                FormatTime(elapsedTime),
+                enemyKills.ToString());
+        }
+
+        return selectedMap.VictoryConditionType switch
+        {
+            VictoryConditionType.Time => new VictoryDisplayData(
+                VictoryDisplayMode.Timer,
+                $"{FormatTime(elapsedTime)} / {FormatTime(selectedMap.VictoryTarget * 60f)}"),
+
+            VictoryConditionType.Kills => new VictoryDisplayData(
+                VictoryDisplayMode.Counter,
+                $"{enemyKills} / {selectedMap.VictoryTarget}"),
+
+            _ => new VictoryDisplayData(
+                VictoryDisplayMode.Timer,
+                FormatTime(elapsedTime))
+        };
+    }
+
+    private void ApplyVictoryDisplay(VictoryDisplayData displayData)
+    {
+        bool showTimer = displayData.DisplayMode == VictoryDisplayMode.Timer;
+        bool showCounter = displayData.DisplayMode == VictoryDisplayMode.Counter;
+
+        if (timerText != null)
+        {
+            timerText.enabled = showTimer;
+
+            if (showTimer)
+            {
+                timerText.text = displayData.PrimaryText;
+            }
+        }
+
+        if (killText != null)
+        {
+            bool shouldShowSecondaryCounter = showCounter || !string.IsNullOrEmpty(displayData.SecondaryText);
+            killText.enabled = shouldShowSecondaryCounter;
+
+            if (showCounter)
+            {
+                killText.text = displayData.PrimaryText;
+            }
+            else if (shouldShowSecondaryCounter)
+            {
+                killText.text = displayData.SecondaryText;
+            }
+        }
     }
 
     private void CachePlayerReferences()
