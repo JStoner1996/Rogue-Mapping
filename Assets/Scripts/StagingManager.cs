@@ -13,12 +13,11 @@ public class StagingManager : MonoBehaviour
     }
 
     [Header("UI")]
-    [SerializeField] private StagingOptionButtonUI buttonPrefab;
     [SerializeField] private GameObject weaponsPanel;
     [SerializeField] private GameObject mapsPanel;
     [SerializeField] private GameObject equipmentPanel;
-    [SerializeField] private Transform weaponButtonParent;
-    [SerializeField] private Transform mapButtonParent;
+    [SerializeField] private InventoryGridUI weaponGrid;
+    [SerializeField] private InventoryGridUI mapGrid;
     [SerializeField] private StagingPreviewUI weaponPreviewUI;
     [SerializeField] private StagingPreviewUI mapPreviewUI;
     // [SerializeField] private StagingPreviewUI equipmentPreviewUI;
@@ -132,52 +131,76 @@ public class StagingManager : MonoBehaviour
         switch (currentTab)
         {
             case StagingTab.Weapons:
-                ClearButtons(weaponButtonParent);
-
-                foreach (WeaponData weapon in allWeapons)
-                {
-                    StagingOptionButtonUI button = Instantiate(buttonPrefab, weaponButtonParent);
-                    WeaponData localWeapon = weapon;
-                    button.Setup(
-                        localWeapon.weaponName,
-                        localWeapon.icon,
-                        () => SelectWeapon(localWeapon),
-                        () => weaponPreviewUI.ShowWeapon(localWeapon),
-                        RefreshPreview
-                    );
-                }
+                RefreshWeaponGrid();
                 break;
 
             case StagingTab.Maps:
-                ClearButtons(mapButtonParent);
+                RefreshMapGrid();
+                break;
 
-                foreach (MapInstance map in availableMaps)
-                {
-                    MapInstance localMap = map;
-                    StagingOptionButtonUI button = Instantiate(buttonPrefab, mapButtonParent);
-                    button.Setup(
-                        localMap.DisplayName,
-                        localMap.Icon,
-                        () => SelectMap(localMap),
-                        () => mapPreviewUI.ShowMap(localMap),
-                        RefreshPreview
-                    );
-                }
+            case StagingTab.Equipment:
                 break;
         }
     }
 
-    private void ClearButtons(Transform parent)
+    private void RefreshWeaponGrid()
     {
-        if (parent == null)
+        if (weaponGrid == null)
         {
             return;
         }
 
-        foreach (Transform child in parent)
+        List<InventorySlotViewData> items = new List<InventorySlotViewData>(allWeapons.Count);
+
+        foreach (WeaponData weapon in allWeapons)
         {
-            Destroy(child.gameObject);
+            if (weapon == null)
+            {
+                continue;
+            }
+
+            items.Add(new InventorySlotViewData
+            {
+                id = weapon.weaponName,
+                label = weapon.weaponName,
+                icon = weapon.icon,
+                isEmpty = false,
+                isSelected = weapon == selectedWeapon,
+                isInteractable = true,
+            });
         }
+
+        weaponGrid.SetItems(items, OnWeaponSlotClicked);
+    }
+
+    private void RefreshMapGrid()
+    {
+        if (mapGrid == null)
+        {
+            return;
+        }
+
+        List<InventorySlotViewData> items = new List<InventorySlotViewData>(availableMaps.Count);
+
+        foreach (MapInstance map in availableMaps)
+        {
+            if (map == null)
+            {
+                continue;
+            }
+
+            items.Add(new InventorySlotViewData
+            {
+                id = map.BaseMapId + "|" + map.DisplayName,
+                label = map.DisplayName,
+                icon = map.Icon,
+                isEmpty = false,
+                isSelected = map == selectedMap,
+                isInteractable = true,
+            });
+        }
+
+        mapGrid.SetItems(items, OnMapSlotClicked);
     }
 
     private void RefreshPreview()
@@ -217,6 +240,7 @@ public class StagingManager : MonoBehaviour
         selectedWeapon = weapon;
         RunData.SelectedWeapon = weapon;
         weaponPreviewUI.ShowWeapon(weapon);
+        RefreshWeaponGrid();
     }
 
     private void SelectMap(MapInstance map)
@@ -224,6 +248,27 @@ public class StagingManager : MonoBehaviour
         selectedMap = map;
         RunData.SelectedMap = map;
         mapPreviewUI.ShowMap(map);
+        RefreshMapGrid();
+    }
+
+    private void OnWeaponSlotClicked(int index, InventorySlotViewData data)
+    {
+        if (index < 0 || index >= allWeapons.Count)
+        {
+            return;
+        }
+
+        SelectWeapon(allWeapons[index]);
+    }
+
+    private void OnMapSlotClicked(int index, InventorySlotViewData data)
+    {
+        if (index < 0 || index >= availableMaps.Count)
+        {
+            return;
+        }
+
+        SelectMap(availableMaps[index]);
     }
 
     public void ShowWeaponsTab()
