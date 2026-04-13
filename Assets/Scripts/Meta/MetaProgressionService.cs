@@ -76,6 +76,24 @@ public static class MetaProgressionService
         return saveData.equipmentLoadout;
     }
 
+    public static string GetEquippedItemId(EquipmentSlotType slotType)
+    {
+        return GetEquippedItemId(slotType.ToString());
+    }
+
+    public static string GetEquippedItemId(string loadoutSlotId)
+    {
+        EnsureLoaded();
+
+        if (string.IsNullOrWhiteSpace(loadoutSlotId))
+        {
+            return string.Empty;
+        }
+
+        EquipmentLoadoutSlot equippedSlot = saveData.equipmentLoadout.equippedItems.Find(slot => slot.slotId == loadoutSlotId);
+        return equippedSlot != null ? equippedSlot.equipmentInstanceId : string.Empty;
+    }
+
     public static void EnsureStarterMaps(
         int desiredCount,
         VictoryConditionType defaultVictoryCondition,
@@ -223,6 +241,48 @@ public static class MetaProgressionService
         EnsureLoaded();
         saveData.equipmentLoadout = new EquipmentLoadoutData();
         Save();
+    }
+
+    public static void SetEquippedItem(EquipmentSlotType slotType, string equipmentInstanceId, bool saveImmediately = true)
+    {
+        SetEquippedItem(slotType.ToString(), equipmentInstanceId, saveImmediately);
+    }
+
+    public static void SetEquippedItem(string loadoutSlotId, string equipmentInstanceId, bool saveImmediately = true)
+    {
+        EnsureLoaded();
+
+        if (string.IsNullOrWhiteSpace(loadoutSlotId))
+        {
+            return;
+        }
+
+        EquipmentLoadoutSlot existingSlot = saveData.equipmentLoadout.equippedItems.Find(slot => slot.slotId == loadoutSlotId);
+
+        if (string.IsNullOrWhiteSpace(equipmentInstanceId))
+        {
+            if (existingSlot != null)
+            {
+                saveData.equipmentLoadout.equippedItems.Remove(existingSlot);
+            }
+        }
+        else if (existingSlot != null)
+        {
+            existingSlot.equipmentInstanceId = equipmentInstanceId;
+        }
+        else
+        {
+            saveData.equipmentLoadout.equippedItems.Add(new EquipmentLoadoutSlot
+            {
+                slotId = loadoutSlotId,
+                equipmentInstanceId = equipmentInstanceId,
+            });
+        }
+
+        if (saveImmediately)
+        {
+            Save();
+        }
     }
 
     public static void ResetAllProgress()

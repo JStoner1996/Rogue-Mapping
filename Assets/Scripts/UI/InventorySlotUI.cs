@@ -8,6 +8,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 {
     [Header("Components")]
     [SerializeField] private Button button;
+    [SerializeField] private DraggableItemUI draggableItem;
     [SerializeField] private Image iconImage;
     [SerializeField] private Image borderImage;
     [SerializeField] private GameObject selectedOutline;
@@ -32,6 +33,11 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(HandleClick);
+        }
+
+        if (draggableItem != null)
+        {
+            draggableItem.ConfigurePayloadResolver(BuildDragPayload);
         }
     }
 
@@ -124,5 +130,23 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             button.interactable = !isEmpty && currentData.isInteractable;
         }
+    }
+
+    private DragItemPayload BuildDragPayload()
+    {
+        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
+        {
+            return null;
+        }
+
+        return new DragItemPayload
+        {
+            itemId = currentData.id,
+            label = currentData.label,
+            icon = currentData.icon,
+            itemType = currentData.dragItemType,
+            hasEquipmentSlotType = currentData.hasEquipmentSlotType,
+            equipmentSlotType = currentData.equipmentSlotType,
+        };
     }
 }

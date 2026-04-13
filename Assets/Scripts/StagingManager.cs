@@ -22,6 +22,7 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private ItemDetailsPanelUI weaponPreviewUI;
     [SerializeField] private ItemDetailsPanelUI mapPreviewUI;
     [SerializeField] private ItemDetailsPanelUI equipmentPreviewUI;
+    [SerializeField] private List<EquipmentSlotDropTargetUI> equipmentDropTargets = new List<EquipmentSlotDropTargetUI>();
     [SerializeField] private Button weaponsTabButton;
     [SerializeField] private Button mapsTabButton;
     [SerializeField] private Button equipmentTabButton;
@@ -53,6 +54,7 @@ public class StagingManager : MonoBehaviour
         LoadEquipment();
         InitializeDefaults();
         RegisterTabButtons();
+        RegisterEquipmentDropTargets();
         SwitchTab(StagingTab.Weapons);
     }
 
@@ -115,6 +117,22 @@ public class StagingManager : MonoBehaviour
         button.onClick.RemoveListener(onClick);
         button.onClick.AddListener(onClick);
         tabButtons.Add(button);
+    }
+
+    private void RegisterEquipmentDropTargets()
+    {
+        foreach (EquipmentSlotDropTargetUI dropTarget in equipmentDropTargets)
+        {
+            if (dropTarget == null)
+            {
+                continue;
+            }
+
+            dropTarget.DropReceived -= HandleEquipmentDropped;
+            dropTarget.DropReceived += HandleEquipmentDropped;
+        }
+
+        RefreshEquippedSlotVisuals();
     }
 
     private void SwitchTab(StagingTab tab)
@@ -280,6 +298,9 @@ public class StagingManager : MonoBehaviour
                 isSelected = equipment == selectedEquipment,
                 isFocused = equipment == focusedEquipment,
                 isInteractable = true,
+                dragItemType = DragItemType.Equipment,
+                hasEquipmentSlotType = true,
+                equipmentSlotType = equipment.SlotType,
             });
         }
 
@@ -328,6 +349,42 @@ public class StagingManager : MonoBehaviour
         }
 
         RefreshEquipmentGrid();
+    }
+
+    private void HandleEquipmentDropped(EquipmentSlotDropTargetUI dropTarget, DragItemPayload payload)
+    {
+        if (dropTarget == null || payload == null || string.IsNullOrWhiteSpace(payload.itemId))
+        {
+            return;
+        }
+
+        EquipmentInstance equipment = availableEquipment.Find(item => item != null && item.InstanceId == payload.itemId);
+
+        if (equipment == null || equipment.SlotType != dropTarget.SlotType)
+        {
+            return;
+        }
+
+        MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId);
+        SelectEquipment(equipment);
+        RefreshEquippedSlotVisuals();
+    }
+
+    private void RefreshEquippedSlotVisuals()
+    {
+        for (int i = 0; i < equipmentDropTargets.Count; i++)
+        {
+            EquipmentSlotDropTargetUI dropTarget = equipmentDropTargets[i];
+
+            if (dropTarget == null)
+            {
+                continue;
+            }
+
+            string equippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
+            EquipmentInstance equippedItem = availableEquipment.Find(item => item != null && item.InstanceId == equippedItemId);
+            dropTarget.SetDisplayedEquipment(equippedItem);
+        }
     }
 
     private void OnWeaponSlotClicked(int index, InventorySlotViewData data)

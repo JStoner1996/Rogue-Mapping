@@ -87,12 +87,12 @@ GameObject:
   - component: {fileID: 2937247099552296188}
   - component: {fileID: 7211228715486454764}
   m_Layer: 5
-  m_Name: ItemNameText
+  m_Name: SlotLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3148485678959052897
 RectTransform:
   m_ObjectHideFlags: 0
@@ -140,7 +140,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Item Name
+  m_text: Slot Name
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e352206794c302c4f8db851100d72c2a, type: 2}
   m_sharedMaterial: {fileID: 1219257910295242230, guid: e352206794c302c4f8db851100d72c2a, type: 2}
@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 4948496469402604776}
   - component: {fileID: 1339656186448522625}
   m_Layer: 5
-  m_Name: SelectedOutline
+  m_Name: Highlight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -373,11 +373,9 @@ GameObject:
   - component: {fileID: 2641482399249534844}
   - component: {fileID: 6946332957173605995}
   - component: {fileID: 1501290490041374390}
-  - component: {fileID: 5299090504300779864}
-  - component: {fileID: 3529648385437859060}
-  - component: {fileID: 9127368913032032786}
+  - component: {fileID: -7934570793923925794}
   m_Layer: 5
-  m_Name: Inventory Slot
+  m_Name: Equipment Slot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -445,7 +443,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &5299090504300779864
+--- !u!114 &-7934570793923925794
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -454,76 +452,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 5805406916629768659}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e0d9c6a3e81d0e4792259e6674ec915, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1501290490041374390}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &3529648385437859060
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5805406916629768659}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7ceefa3cd9507b4daa422891e1696ab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventorySlotUI
-  button: {fileID: 5299090504300779864}
-  draggableItem: {fileID: 9127368913032032786}
-  iconImage: {fileID: 8937345598428607126}
-  borderImage: {fileID: 1365086071045002284}
-  selectedOutline: {fileID: 3378232851290904719}
-  discardOverlay: {fileID: 782845242734518078}
-  itemNameText: {fileID: 7211228715486454764}
-  emptyBorderColor: {r: 1, g: 1, b: 1, a: 0.2}
-  filledBorderColor: {r: 1, g: 1, b: 1, a: 0.8}
-  selectedBorderColor: {r: 1, g: 0.85, b: 0.2, a: 1}
---- !u!114 &9127368913032032786
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5805406916629768659}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99fafe9718423aa4a84c645bc2c50463, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DraggableItemUI
-  dragEnabled: 1
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentSlotDropTargetUI
+  slotType: 0
+  highlightImage: {fileID: 1339656186448522625}
+  equippedItemIcon: {fileID: 8937345598428607126}
+  validHighlightColor: {r: 1, g: 0.85, b: 0.2, a: 0.8}
+  equippedHighlightColor: {r: 0.35, g: 1, b: 0.45, a: 0.8}
 --- !u!1 &6678822954943638546
 GameObject:
   m_ObjectHideFlags: 0

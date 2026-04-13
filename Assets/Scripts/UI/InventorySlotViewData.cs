@@ -12,6 +12,9 @@ public class InventorySlotViewData
     public bool isFocused;
     public bool isDiscarded;
     public bool isInteractable = true;
+    public DragItemType dragItemType;
+    public bool hasEquipmentSlotType;
+    public EquipmentSlotType equipmentSlotType;
 
     public static InventorySlotViewData Empty()
     {
@@ -19,6 +22,7 @@ public class InventorySlotViewData
         {
             isEmpty = true,
             isInteractable = false,
+            dragItemType = DragItemType.Unknown,
         };
     }
 }
