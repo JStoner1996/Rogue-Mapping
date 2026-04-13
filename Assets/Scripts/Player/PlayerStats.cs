@@ -102,6 +102,14 @@ public class PlayerStats : MonoBehaviour
                 playerHealth?.ApplyMaxHealthModifier(value);
                 break;
 
+            case PlayerStatType.Armor:
+                playerHealth?.ApplyArmorModifier(value);
+                break;
+
+            case PlayerStatType.HealthRegen:
+                playerHealth?.ApplyHealthRegenModifier(value);
+                break;
+
             case PlayerStatType.MovementSpeed:
                 playerMovement?.ApplyMoveSpeedModifier(value);
                 break;

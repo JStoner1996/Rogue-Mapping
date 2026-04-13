@@ -3,22 +3,30 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class PlayerHealth : MonoBehaviour
 {
+    private const float ArmorMitigationDenominator = 100f;
+
     private float baseMaxHealth;
     private float maxHealthMultiplier;
     private float immunityDuration;
     private bool initialized;
+    private float armor;
+    private float healthRegenPerSecond;
 
     private bool isImmune;
     private float immunityTimer;
 
     public float MaxHealth => baseMaxHealth * (1f + maxHealthMultiplier);
     public float CurrentHealth { get; private set; }
+    public float Armor => armor;
+    public float HealthRegenPerSecond => healthRegenPerSecond;
 
     public void Configure(float configuredMaxHealth, float configuredImmunityDuration)
     {
         baseMaxHealth = configuredMaxHealth;
         maxHealthMultiplier = 0f;
         immunityDuration = configuredImmunityDuration;
+        armor = 5f;
+        healthRegenPerSecond = .05f;
         CurrentHealth = MaxHealth;
         initialized = true;
     }
@@ -30,6 +38,16 @@ public class PlayerHealth : MonoBehaviour
         float newMaxHealth = MaxHealth;
         CurrentHealth = Mathf.Min(CurrentHealth + (newMaxHealth - previousMaxHealth), newMaxHealth);
         UIController.Instance.UpdateHealthSlider();
+    }
+
+    public void ApplyArmorModifier(float value)
+    {
+        armor = Mathf.Max(0f, armor + value);
+    }
+
+    public void ApplyHealthRegenModifier(float value)
+    {
+        healthRegenPerSecond = Mathf.Max(0f, healthRegenPerSecond + value);
     }
 
     void Start()
@@ -44,6 +62,8 @@ public class PlayerHealth : MonoBehaviour
 
     void Update()
     {
+        RegenerateHealth();
+
         if (immunityTimer > 0f)
         {
             immunityTimer -= Time.deltaTime;
@@ -72,7 +92,7 @@ public class PlayerHealth : MonoBehaviour
 
         isImmune = true;
         immunityTimer = immunityDuration;
-        CurrentHealth -= damage;
+        CurrentHealth -= GetMitigatedDamage(damage);
 
         UIController.Instance.UpdateHealthSlider();
 
@@ -89,5 +109,37 @@ public class PlayerHealth : MonoBehaviour
     {
         CurrentHealth = Mathf.Min(CurrentHealth + healthAmount, MaxHealth);
         UIController.Instance.UpdateHealthSlider();
+    }
+
+    private void RegenerateHealth()
+    {
+        if (healthRegenPerSecond <= 0f || CurrentHealth <= 0f || CurrentHealth >= MaxHealth)
+        {
+            return;
+        }
+
+        float previousHealth = CurrentHealth;
+        CurrentHealth = Mathf.Min(CurrentHealth + healthRegenPerSecond * Time.deltaTime, MaxHealth);
+
+        if (!Mathf.Approximately(previousHealth, CurrentHealth))
+        {
+            UIController.Instance.UpdateHealthSlider();
+        }
+    }
+
+    private float GetMitigatedDamage(float incomingDamage)
+    {
+        if (incomingDamage <= 0f)
+        {
+            return 0f;
+        }
+
+        if (armor <= 0f)
+        {
+            return incomingDamage;
+        }
+
+        float mitigatedDamage = incomingDamage * (ArmorMitigationDenominator / (ArmorMitigationDenominator + armor));
+        return Mathf.Max(1f, mitigatedDamage);
     }
 }

@@ -20,6 +20,12 @@ public static class PlayerUpgradeDescriptionFormatter
     private static string FormatStat(PlayerStatType statType, float value)
     {
         string statName = StringUtils.SplitCamelCase(statType.ToString());
-        return $"{statName} +{value * 100f:F0}%";
+
+        return statType switch
+        {
+            PlayerStatType.Armor => $"{statName} +{value:F0}",
+            PlayerStatType.HealthRegen => $"{statName} +{value:F1}/s",
+            _ => $"{statName} +{value * 100f:F0}%"
+        };
     }
 }
