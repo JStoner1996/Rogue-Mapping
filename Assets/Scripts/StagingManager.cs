@@ -18,9 +18,9 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private GameObject equipmentPanel;
     [SerializeField] private InventoryGridUI weaponGrid;
     [SerializeField] private InventoryGridUI mapGrid;
-    [SerializeField] private StagingPreviewUI weaponPreviewUI;
-    [SerializeField] private StagingPreviewUI mapPreviewUI;
-    // [SerializeField] private StagingPreviewUI equipmentPreviewUI;
+    [SerializeField] private ItemDetailsPanelUI weaponPreviewUI;
+    [SerializeField] private ItemDetailsPanelUI mapPreviewUI;
+    // [SerializeField] private ItemDetailsPanelUI equipmentPreviewUI;
     [SerializeField] private Button weaponsTabButton;
     [SerializeField] private Button mapsTabButton;
     [SerializeField] private Button equipmentTabButton;

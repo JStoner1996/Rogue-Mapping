@@ -2,15 +2,18 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class StagingPreviewUI : MonoBehaviour
+public class ItemDetailsPanelUI : MonoBehaviour
 {
+    [SerializeField] private GameObject panelRoot;
+    [SerializeField] private HoverPopupFollowerUI hoverFollower;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text statsText;
-    [SerializeField] private Sprite defaultMapIcon;
 
     public void ShowWeapon(WeaponData data)
     {
+        ShowPanel();
+
         if (data == null)
         {
             Clear("No Weapon Selected");
@@ -42,6 +45,8 @@ public class StagingPreviewUI : MonoBehaviour
 
     public void ShowMap(MapInstance map)
     {
+        ShowPanel();
+
         if (map == null)
         {
             Clear("No Map Selected");
@@ -49,17 +54,38 @@ public class StagingPreviewUI : MonoBehaviour
         }
 
         titleText.text = map.DisplayName;
-        icon.sprite = map.Icon != null ? map.Icon : defaultMapIcon;
+        icon.sprite = map.Icon;
         icon.enabled = icon.sprite != null;
         statsText.text = MapDescriptionFormatter.BuildStats(map);
     }
 
     public void ShowEquipment()
     {
+        ShowPanel();
         titleText.text = "Character Equipment";
         icon.sprite = null;
         icon.enabled = false;
         statsText.text = "Coming soon.\n\nThis tab is reserved for future character equipment and loadout logic.";
+    }
+
+    public void ShowPanel()
+    {
+        if (panelRoot != null)
+        {
+            panelRoot.SetActive(true);
+        }
+
+        hoverFollower?.BeginFollowing();
+    }
+
+    public void HidePanel()
+    {
+        hoverFollower?.StopFollowing();
+
+        if (panelRoot != null)
+        {
+            panelRoot.SetActive(false);
+        }
     }
 
     public void Clear(string message)

@@ -7,7 +7,7 @@ public class RunCompletePanelUI : MonoBehaviour
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private TMP_Text mapNameText;
     [SerializeField] private InventoryGridUI lootGrid;
-    [SerializeField] private Sprite defaultMapIcon;
+    [SerializeField] private ItemDetailsPanelUI hoverPreviewUI;
 
     void OnEnable()
     {
@@ -31,6 +31,7 @@ public class RunCompletePanelUI : MonoBehaviour
             mapNameText.text = completedMap != null ? completedMap.DisplayName : "Map Complete";
         }
 
+        hoverPreviewUI?.HidePanel();
         Refresh();
     }
 
@@ -40,6 +41,8 @@ public class RunCompletePanelUI : MonoBehaviour
         {
             panelRoot.SetActive(false);
         }
+
+        hoverPreviewUI?.HidePanel();
     }
 
     public void Refresh()
@@ -63,7 +66,7 @@ public class RunCompletePanelUI : MonoBehaviour
             {
                 id = entry.id,
                 label = entry.displayName,
-                icon = GetDisplayIcon(entry),
+                icon = entry.icon,
                 isEmpty = false,
                 isSelected = false,
                 isDiscarded = entry.isDiscarded,
@@ -71,7 +74,7 @@ public class RunCompletePanelUI : MonoBehaviour
             });
         }
 
-        lootGrid.SetItems(slotData, OnLootSlotClicked);
+        lootGrid.SetItems(slotData, OnLootSlotClicked, OnLootSlotHoverEnter, OnLootSlotHoverExit);
     }
 
     public void OnCompleteRunPressed()
@@ -91,23 +94,30 @@ public class RunCompletePanelUI : MonoBehaviour
         RunLootService.ToggleDiscard(data.id);
     }
 
-    private Sprite GetDisplayIcon(RunLootEntry entry)
+    private void OnLootSlotHoverEnter(int index, InventorySlotViewData data)
     {
+        if (hoverPreviewUI == null || index < 0 || index >= RunLootService.Entries.Count)
+        {
+            return;
+        }
+
+        RunLootEntry entry = RunLootService.Entries[index];
+
         if (entry == null)
         {
-            return null;
+            return;
         }
 
-        if (entry.icon != null)
+        switch (entry.lootType)
         {
-            return entry.icon;
+            case RunLootType.Map:
+                hoverPreviewUI.ShowMap(entry.map);
+                break;
         }
+    }
 
-        if (entry.lootType == RunLootType.Map)
-        {
-            return defaultMapIcon;
-        }
-
-        return null;
+    private void OnLootSlotHoverExit(int index, InventorySlotViewData data)
+    {
+        hoverPreviewUI?.HidePanel();
     }
 }
