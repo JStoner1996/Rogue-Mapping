@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         MetaProgressionService.EnsureLoaded();
+        RunLootService.Clear();
         RunData.GetSelectedMapOrDefault();
         gameActive = true;
         enemyKills = 0;
@@ -64,6 +65,7 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         gameActive = false;
+        RunLootService.Clear();
         StartCoroutine(ShowGameOverScreen());
     }
 
@@ -87,8 +89,7 @@ public class GameManager : MonoBehaviour
         Debug.Log(grantedAtlasPoint
             ? $"Completed {RunData.SelectedMap?.BaseMapName}. Atlas point awarded."
             : $"Completed {RunData.SelectedMap?.BaseMapName}. No atlas point awarded.");
-
-        StartCoroutine(ReturnToStagingAfterCompletion());
+        UIController.Instance.ShowRunCompletePanel(RunData.SelectedMap);
     }
 
     IEnumerator ShowGameOverScreen()
@@ -98,10 +99,10 @@ public class GameManager : MonoBehaviour
         AudioManager.Instance.Play(SoundType.GameOver);
     }
 
-    IEnumerator ReturnToStagingAfterCompletion()
+    public void FinalizeCompletedRun()
     {
-        yield return new WaitForSeconds(0.5f);
         Time.timeScale = 1f;
+        RunData.SelectedMap = null;
         SceneManager.LoadScene("Staging");
     }
 

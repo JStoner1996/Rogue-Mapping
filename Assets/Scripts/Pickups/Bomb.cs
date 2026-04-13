@@ -9,7 +9,6 @@ public class Bomb : MonoBehaviour, IItem
     {
         Explode();
         AudioManager.Instance.Play(SoundType.Bomb);
-
     }
 
     private void Explode()
@@ -22,5 +21,13 @@ public class Bomb : MonoBehaviour, IItem
         }
 
         PickupPools.Instance.ReturnBomb(this);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            Collect();
+        }
     }
 }

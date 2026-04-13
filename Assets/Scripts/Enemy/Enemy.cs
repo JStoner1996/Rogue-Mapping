@@ -148,6 +148,11 @@ public class Enemy : MonoBehaviour
 
     private void SpawnLoot(LootItem lootItem)
     {
+        if (lootItem == null)
+        {
+            return;
+        }
+
         switch (lootItem.type)
         {
             case LootType.Health:
@@ -171,17 +176,40 @@ public class Enemy : MonoBehaviour
                 break;
 
             case LootType.Map:
-                MapInstance droppedMap = MapGenerator.CreateDroppedMap(
-                    RunData.GetSelectedMapOrDefault().Tier,
-                    lootItem.mapDropSettings);
-
-                if (droppedMap != null)
-                {
-                    MetaProgressionService.AddOwnedMap(droppedMap);
-                    Debug.Log($"Added map to inventory: {droppedMap.DisplayName} (Tier {droppedMap.Tier})");
-                }
+                SpawnMapLoot(lootItem);
                 break;
         }
+    }
+
+    private void SpawnMapLoot(LootItem lootItem)
+    {
+        MapInstance droppedMap = MapGenerator.CreateDroppedMap(
+            RunData.GetSelectedMapOrDefault().Tier,
+            lootItem.mapDropSettings);
+
+        if (droppedMap == null)
+        {
+            return;
+        }
+
+        if (lootItem.itemPrefab == null)
+        {
+            Debug.LogWarning("Map loot item is missing a pickup prefab. Adding directly to run loot as a fallback.");
+            RunLootService.AddMap(droppedMap);
+            return;
+        }
+
+        GameObject lootObject = Instantiate(lootItem.itemPrefab, transform.position, Quaternion.identity);
+
+        if (lootObject.TryGetComponent(out MapPickup mapPickup))
+        {
+            mapPickup.Initialize(droppedMap);
+            return;
+        }
+
+        Debug.LogWarning($"Map pickup prefab {lootItem.itemPrefab.name} is missing a MapPickup component.");
+        Destroy(lootObject);
+        RunLootService.AddMap(droppedMap);
     }
 
     private void CachePlayerReferences()

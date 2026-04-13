@@ -40,9 +40,9 @@ public class PlayerCollector : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collider)
     {
-        if (collider.TryGetComponent(out IItem item))
+        if (collider.TryGetComponent(out ExpCrystal crystal))
         {
-            item.Collect();
+            crystal.Collect();
         }
     }
 }

@@ -17,6 +17,7 @@ public class UIController : MonoBehaviour
     public GameObject gameOverPanel;
     public GameObject pausePanel;
     public GameObject levelUpPanel;
+    [SerializeField] private RunCompletePanelUI runCompletePanel;
 
     [Header("Level Up")]
     [SerializeField] private Transform levelUpButtonParent;
@@ -121,6 +122,18 @@ public class UIController : MonoBehaviour
     public void LevelUpPanelClosed()
     {
         levelUpPanel.SetActive(false);
+        Time.timeScale = 1f;
+    }
+
+    public void ShowRunCompletePanel(MapInstance completedMap)
+    {
+        runCompletePanel?.Show(completedMap);
+        Time.timeScale = 0f;
+    }
+
+    public void HideRunCompletePanel()
+    {
+        runCompletePanel?.Hide();
         Time.timeScale = 1f;
     }
 

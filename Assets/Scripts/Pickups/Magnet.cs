@@ -18,4 +18,12 @@ public class Magnet : MonoBehaviour, IItem
         PickupPools.Instance.ReturnMagnet(this);
         AudioManager.Instance.Play(SoundType.Magnet);
     }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            Collect();
+        }
+    }
 }
