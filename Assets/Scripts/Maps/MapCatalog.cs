@@ -7,4 +7,9 @@ public class MapCatalog : ScriptableObject
     [SerializeField] private List<MapBaseDefinition> baseMaps = new List<MapBaseDefinition>();
 
     public IReadOnlyList<MapBaseDefinition> BaseMaps => baseMaps;
+
+    public void SetBaseMaps(List<MapBaseDefinition> definitions)
+    {
+        baseMaps = definitions ?? new List<MapBaseDefinition>();
+    }
 }

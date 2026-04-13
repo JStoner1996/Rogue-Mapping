@@ -61,6 +61,7 @@ public class InventorySlotUI : MonoBehaviour
 
         if (iconImage != null)
         {
+            iconImage.gameObject.SetActive(hasIcon);
             iconImage.sprite = hasIcon ? currentData.icon : null;
             iconImage.enabled = hasIcon;
         }

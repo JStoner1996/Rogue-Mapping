@@ -22,23 +22,6 @@ public static class MapGenerator
     private const int TimeMinutesPerTier = 2;
     private const int KillsPerTier = 25;
 
-    private static readonly List<MapBaseDefinition> FallbackBaseMaps = new List<MapBaseDefinition>
-    {
-        new MapBaseDefinition("default_map", "Default Map", 0, MapTilesetTheme.Default, "Game"),
-        new MapBaseDefinition("shrine", "Shrine", 1, MapTilesetTheme.Shrine, "Game"),
-        new MapBaseDefinition("waterways", "Waterways", 2, MapTilesetTheme.Waterways, "Game"),
-        new MapBaseDefinition("fields", "Fields", 3, MapTilesetTheme.Fields, "Game"),
-        new MapBaseDefinition("valley", "Valley", 4, MapTilesetTheme.Valley, "Game"),
-        new MapBaseDefinition("catacombs", "Catacombs", 5, MapTilesetTheme.Catacombs, "Game"),
-        new MapBaseDefinition("grove", "Grove", 6, MapTilesetTheme.Grove, "Game"),
-        new MapBaseDefinition("crossroads", "Crossroads", 7, MapTilesetTheme.Crossroads, "Game"),
-        new MapBaseDefinition("sanctum", "Sanctum", 8, MapTilesetTheme.Sanctum, "Game"),
-        new MapBaseDefinition("marsh", "Marsh", 9, MapTilesetTheme.Marsh, "Game"),
-        new MapBaseDefinition("ruins", "Ruins", 10, MapTilesetTheme.Ruins, "Game"),
-        new MapBaseDefinition("hollow", "Hollow", 10, MapTilesetTheme.Hollow, "Game"),
-        new MapBaseDefinition("terrace", "Terrace", 10, MapTilesetTheme.Terrace, "Game"),
-    };
-
     private static MapCatalog loadedMapCatalog;
 
     private static readonly List<MapAffixDefinition> Prefixes = new List<MapAffixDefinition>
@@ -411,7 +394,8 @@ public static class MapGenerator
             return new List<MapBaseDefinition>(loadedMapCatalog.BaseMaps);
         }
 
-        return FallbackBaseMaps;
+        Debug.LogError($"MapCatalog asset not found or empty at Resources/{MapCatalogResourcePath}. Map generation requires a valid catalog.");
+        return new List<MapBaseDefinition>();
     }
 
     private static void EnsureCatalogLoaded()

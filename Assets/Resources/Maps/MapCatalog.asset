@@ -12,4 +12,82 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6001b0ad88b2e1041ae664013798233b, type: 3}
   m_Name: MapCatalog
   m_EditorClassIdentifier: Assembly-CSharp::MapCatalog
-  baseMaps: []
+  baseMaps:
+  - id: default_map
+    displayName: Default Map
+    tier: 0
+    tilesetTheme: 0
+    sceneName: Game
+    icon: {fileID: 21300000, guid: c212cca4f860ac842817ce07bf9ec063, type: 3}
+  - id: shrine
+    displayName: Shrine
+    tier: 1
+    tilesetTheme: 1
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: waterways
+    displayName: Waterways
+    tier: 2
+    tilesetTheme: 2
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: fields
+    displayName: Fields
+    tier: 3
+    tilesetTheme: 3
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: valley
+    displayName: Valley
+    tier: 4
+    tilesetTheme: 4
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: catacombs
+    displayName: Catacombs
+    tier: 5
+    tilesetTheme: 5
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: grove
+    displayName: Grove
+    tier: 6
+    tilesetTheme: 6
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: crossroads
+    displayName: Crossroads
+    tier: 7
+    tilesetTheme: 7
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: sanctum
+    displayName: Sanctum
+    tier: 8
+    tilesetTheme: 8
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: marsh
+    displayName: Marsh
+    tier: 9
+    tilesetTheme: 9
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: ruins
+    displayName: Ruins
+    tier: 10
+    tilesetTheme: 10
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: hollow
+    displayName: Hollow
+    tier: 10
+    tilesetTheme: 11
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}
+  - id: terrace
+    displayName: Terrace
+    tier: 10
+    tilesetTheme: 12
+    sceneName: Game
+    icon: {fileID: 21300000, guid: 08ba0797a6cab0b42bb0fb8ce2fef4ea, type: 3}

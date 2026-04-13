@@ -38462,6 +38462,7 @@ MonoBehaviour:
   panelRoot: {fileID: 1307191338}
   mapNameText: {fileID: 133823487}
   lootGrid: {fileID: 1737502156}
+  defaultMapIcon: {fileID: 21300000, guid: c212cca4f860ac842817ce07bf9ec063, type: 3}
 --- !u!1 &1312184017
 GameObject:
   m_ObjectHideFlags: 0
@@ -41601,6 +41602,8 @@ MonoBehaviour:
   magnetPoolSize: 3
   bombPrefab: {fileID: 7569470617867634613, guid: 77f29ea490283e64c9da1aa297d252ed, type: 3}
   bombPoolSize: 3
+  mapPickupPrefab: {fileID: 2066601071888850287, guid: df2da134bb066264f97d967cb153490a, type: 3}
+  mapPickupPoolSize: 10
 --- !u!1 &1701788648
 GameObject:
   m_ObjectHideFlags: 0
