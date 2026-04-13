@@ -37,6 +37,8 @@ public class StagingManager : MonoBehaviour
 
     private WeaponData selectedWeapon;
     private MapInstance selectedMap;
+    private WeaponData hoveredWeapon;
+    private MapInstance hoveredMap;
     private StagingTab currentTab;
 
     void Start()
@@ -151,6 +153,7 @@ public class StagingManager : MonoBehaviour
         }
 
         List<InventorySlotViewData> items = new List<InventorySlotViewData>(allWeapons.Count);
+        WeaponData focusedWeapon = hoveredWeapon != null ? hoveredWeapon : selectedWeapon;
 
         foreach (WeaponData weapon in allWeapons)
         {
@@ -166,11 +169,12 @@ public class StagingManager : MonoBehaviour
                 icon = weapon.icon,
                 isEmpty = false,
                 isSelected = weapon == selectedWeapon,
+                isFocused = weapon == focusedWeapon,
                 isInteractable = true,
             });
         }
 
-        weaponGrid.SetItems(items, OnWeaponSlotClicked);
+        weaponGrid.SetItems(items, OnWeaponSlotClicked, OnWeaponSlotHoverEnter, OnWeaponSlotHoverExit);
     }
 
     private void RefreshMapGrid()
@@ -181,6 +185,7 @@ public class StagingManager : MonoBehaviour
         }
 
         List<InventorySlotViewData> items = new List<InventorySlotViewData>(availableMaps.Count);
+        MapInstance focusedMap = hoveredMap != null ? hoveredMap : selectedMap;
 
         foreach (MapInstance map in availableMaps)
         {
@@ -196,11 +201,12 @@ public class StagingManager : MonoBehaviour
                 icon = map.Icon,
                 isEmpty = false,
                 isSelected = map == selectedMap,
+                isFocused = map == focusedMap,
                 isInteractable = true,
             });
         }
 
-        mapGrid.SetItems(items, OnMapSlotClicked);
+        mapGrid.SetItems(items, OnMapSlotClicked, OnMapSlotHoverEnter, OnMapSlotHoverExit);
     }
 
     private void RefreshPreview()
@@ -208,11 +214,11 @@ public class StagingManager : MonoBehaviour
         switch (currentTab)
         {
             case StagingTab.Weapons:
-                weaponPreviewUI.ShowWeapon(selectedWeapon);
+                weaponPreviewUI.ShowWeapon(hoveredWeapon != null ? hoveredWeapon : selectedWeapon);
                 break;
 
             case StagingTab.Maps:
-                mapPreviewUI.ShowMap(selectedMap);
+                mapPreviewUI.ShowMap(hoveredMap != null ? hoveredMap : selectedMap);
                 break;
 
             case StagingTab.Equipment:
@@ -238,6 +244,7 @@ public class StagingManager : MonoBehaviour
     private void SelectWeapon(WeaponData weapon)
     {
         selectedWeapon = weapon;
+        hoveredWeapon = null;
         RunData.SelectedWeapon = weapon;
         weaponPreviewUI.ShowWeapon(weapon);
         RefreshWeaponGrid();
@@ -246,6 +253,7 @@ public class StagingManager : MonoBehaviour
     private void SelectMap(MapInstance map)
     {
         selectedMap = map;
+        hoveredMap = null;
         RunData.SelectedMap = map;
         mapPreviewUI.ShowMap(map);
         RefreshMapGrid();
@@ -261,6 +269,25 @@ public class StagingManager : MonoBehaviour
         SelectWeapon(allWeapons[index]);
     }
 
+    private void OnWeaponSlotHoverEnter(int index, InventorySlotViewData data)
+    {
+        if (index < 0 || index >= allWeapons.Count)
+        {
+            return;
+        }
+
+        hoveredWeapon = allWeapons[index];
+        weaponPreviewUI.ShowWeapon(hoveredWeapon);
+        RefreshWeaponGrid();
+    }
+
+    private void OnWeaponSlotHoverExit(int index, InventorySlotViewData data)
+    {
+        hoveredWeapon = null;
+        RefreshPreview();
+        RefreshWeaponGrid();
+    }
+
     private void OnMapSlotClicked(int index, InventorySlotViewData data)
     {
         if (index < 0 || index >= availableMaps.Count)
@@ -269,6 +296,25 @@ public class StagingManager : MonoBehaviour
         }
 
         SelectMap(availableMaps[index]);
+    }
+
+    private void OnMapSlotHoverEnter(int index, InventorySlotViewData data)
+    {
+        if (index < 0 || index >= availableMaps.Count)
+        {
+            return;
+        }
+
+        hoveredMap = availableMaps[index];
+        mapPreviewUI.ShowMap(hoveredMap);
+        RefreshMapGrid();
+    }
+
+    private void OnMapSlotHoverExit(int index, InventorySlotViewData data)
+    {
+        hoveredMap = null;
+        RefreshPreview();
+        RefreshMapGrid();
     }
 
     public void ShowWeaponsTab()

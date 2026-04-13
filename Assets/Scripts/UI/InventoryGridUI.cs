@@ -29,7 +29,11 @@ public class InventoryGridUI : MonoBehaviour
         }
     }
 
-    public void SetItems(IReadOnlyList<InventorySlotViewData> items, Action<int, InventorySlotViewData> onSlotClicked = null)
+    public void SetItems(
+        IReadOnlyList<InventorySlotViewData> items,
+        Action<int, InventorySlotViewData> onSlotClicked = null,
+        Action<int, InventorySlotViewData> onSlotHoverEnter = null,
+        Action<int, InventorySlotViewData> onSlotHoverExit = null)
     {
         EnsureSlotCount();
 
@@ -38,7 +42,11 @@ public class InventoryGridUI : MonoBehaviour
             if (items != null && i < items.Count && items[i] != null)
             {
                 int localIndex = i;
-                spawnedSlots[i].Bind(items[i], (_, data) => onSlotClicked?.Invoke(localIndex, data));
+                spawnedSlots[i].Bind(
+                    items[i],
+                    (_, data) => onSlotClicked?.Invoke(localIndex, data),
+                    (_, data) => onSlotHoverEnter?.Invoke(localIndex, data),
+                    (_, data) => onSlotHoverExit?.Invoke(localIndex, data));
                 continue;
             }
 

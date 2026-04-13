@@ -9,6 +9,7 @@ public class InventorySlotViewData
     public Sprite icon;
     public bool isEmpty;
     public bool isSelected;
+    public bool isFocused;
     public bool isDiscarded;
     public bool isInteractable = true;
 

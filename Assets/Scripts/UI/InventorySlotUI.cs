@@ -1,9 +1,10 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventorySlotUI : MonoBehaviour
+public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Components")]
     [SerializeField] private Button button;
@@ -20,6 +21,8 @@ public class InventorySlotUI : MonoBehaviour
 
     private InventorySlotViewData currentData;
     private Action<InventorySlotUI, InventorySlotViewData> onClick;
+    private Action<InventorySlotUI, InventorySlotViewData> onHoverEnter;
+    private Action<InventorySlotUI, InventorySlotViewData> onHoverExit;
 
     public InventorySlotViewData CurrentData => currentData;
 
@@ -32,16 +35,42 @@ public class InventorySlotUI : MonoBehaviour
         }
     }
 
-    public void Bind(InventorySlotViewData data, Action<InventorySlotUI, InventorySlotViewData> clickCallback = null)
+    public void Bind(
+        InventorySlotViewData data,
+        Action<InventorySlotUI, InventorySlotViewData> clickCallback = null,
+        Action<InventorySlotUI, InventorySlotViewData> hoverEnterCallback = null,
+        Action<InventorySlotUI, InventorySlotViewData> hoverExitCallback = null)
     {
         currentData = data ?? InventorySlotViewData.Empty();
         onClick = clickCallback;
+        onHoverEnter = hoverEnterCallback;
+        onHoverExit = hoverExitCallback;
         RefreshVisuals();
     }
 
     public void SetEmpty(Action<InventorySlotUI, InventorySlotViewData> clickCallback = null)
     {
         Bind(InventorySlotViewData.Empty(), clickCallback);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
+        {
+            return;
+        }
+
+        onHoverEnter?.Invoke(this, currentData);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
+        {
+            return;
+        }
+
+        onHoverExit?.Invoke(this, currentData);
     }
 
     private void HandleClick()
@@ -86,7 +115,7 @@ public class InventorySlotUI : MonoBehaviour
         {
             borderImage.color = isEmpty
                 ? emptyBorderColor
-                : currentData.isSelected
+                : currentData.isFocused
                     ? selectedBorderColor
                     : filledBorderColor;
         }
