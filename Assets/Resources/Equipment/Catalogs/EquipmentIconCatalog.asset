@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9eba47df8c1340647b9bfa31885993e9, type: 3}
+  m_Name: EquipmentIconCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentIconCatalog
+  headIcon: {fileID: 21300000, guid: c484149f0713f0649a2ddbd9f27603aa, type: 3}
+  chestIcon: {fileID: 21300000, guid: 7ecfa3f69d3f0eb4699ced33f4d4c6f7, type: 3}
+  legsIcon: {fileID: 21300000, guid: ffd0be8aa0f145445b8061d55b1832d9, type: 3}
+  feetIcon: {fileID: 21300000, guid: fa3c928654e5c7644b80d79b01c956cf, type: 3}
+  necklaceIcon: {fileID: 21300000, guid: 8db4e73be5de51a4799a997e249cd07d, type: 3}
+  handsIcon: {fileID: 21300000, guid: 71cbe3a6f18da0a43a7fbcee2bab4b34, type: 3}
+  ringIcon: {fileID: 21300000, guid: f745b8d4e9fed7941a04398846033cfe, type: 3}

@@ -10,5 +10,5 @@ public class RunLootEntry
     public Sprite icon;
     public bool isDiscarded;
     public MapInstance map;
-    public OwnedEquipmentRecord equipment;
+    public EquipmentInstance equipment;
 }

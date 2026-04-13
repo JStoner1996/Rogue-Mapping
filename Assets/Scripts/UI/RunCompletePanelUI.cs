@@ -113,6 +113,10 @@ public class RunCompletePanelUI : MonoBehaviour
             case RunLootType.Map:
                 hoverPreviewUI.ShowMap(entry.map);
                 break;
+
+            case RunLootType.Equipment:
+                hoverPreviewUI.ShowEquipment(entry.equipment);
+                break;
         }
     }
 

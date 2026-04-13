@@ -22,6 +22,23 @@ public static class EquipmentGenerator
             DefaultRareWeight);
     }
 
+    public static EquipmentInstance GenerateForSlot(
+        EquipmentBaseCatalog baseCatalog,
+        EquipmentAffixCatalog affixCatalog,
+        EquipmentSlotType slotType,
+        int itemTier)
+    {
+        EquipmentGenerationRequest request = new EquipmentGenerationRequest
+        {
+            minItemTier = itemTier,
+            maxItemTier = itemTier,
+            forceSlotType = true,
+            forcedSlotType = slotType,
+        };
+
+        return Generate(baseCatalog, affixCatalog, request);
+    }
+
     public static EquipmentInstance Generate(
         EquipmentBaseCatalog baseCatalog,
         EquipmentAffixCatalog affixCatalog,

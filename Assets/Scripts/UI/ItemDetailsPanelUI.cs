@@ -68,6 +68,22 @@ public class ItemDetailsPanelUI : MonoBehaviour
         statsText.text = "Coming soon.\n\nThis tab is reserved for future character equipment and loadout logic.";
     }
 
+    public void ShowEquipment(EquipmentInstance equipment)
+    {
+        ShowPanel();
+
+        if (equipment == null)
+        {
+            Clear("No Equipment Selected");
+            return;
+        }
+
+        titleText.text = equipment.DisplayName;
+        icon.sprite = equipment.Icon;
+        icon.enabled = icon.sprite != null;
+        statsText.text = EquipmentDescriptionFormatter.BuildStats(equipment);
+    }
+
     public void ShowPanel()
     {
         if (panelRoot != null)

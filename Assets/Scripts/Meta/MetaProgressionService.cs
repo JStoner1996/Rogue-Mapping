@@ -24,6 +24,7 @@ public static class MetaProgressionService
 
         saveData = MetaPersistence.Load();
         isLoaded = true;
+        EnsureEditorStarterEquipmentIfEmpty();
     }
 
     public static List<MapInstance> GetOwnedMaps()
@@ -49,6 +50,24 @@ public static class MetaProgressionService
     {
         EnsureLoaded();
         return new List<OwnedEquipmentRecord>(saveData.ownedEquipment);
+    }
+
+    public static List<EquipmentInstance> GetOwnedEquipmentInstances()
+    {
+        EnsureLoaded();
+        List<EquipmentInstance> equipment = new List<EquipmentInstance>(saveData.ownedEquipment.Count);
+
+        foreach (OwnedEquipmentRecord record in saveData.ownedEquipment)
+        {
+            EquipmentInstance instance = EquipmentRecordConverter.CreateInstance(record);
+
+            if (instance != null)
+            {
+                equipment.Add(instance);
+            }
+        }
+
+        return equipment;
     }
 
     public static EquipmentLoadoutData GetEquipmentLoadout()
@@ -126,6 +145,30 @@ public static class MetaProgressionService
         }
     }
 
+    public static void AddOwnedEquipment(EquipmentInstance equipment, bool saveImmediately = true)
+    {
+        if (equipment == null)
+        {
+            return;
+        }
+
+        EnsureLoaded();
+
+        OwnedEquipmentRecord record = EquipmentRecordConverter.CreateRecord(equipment);
+
+        if (record == null)
+        {
+            return;
+        }
+
+        saveData.ownedEquipment.Add(record);
+
+        if (saveImmediately)
+        {
+            Save();
+        }
+    }
+
     public static bool IsMapCompleted(string baseMapId)
     {
         EnsureLoaded();
@@ -186,6 +229,35 @@ public static class MetaProgressionService
     {
         saveData = MetaPersistence.CreateEmptySave();
         isLoaded = true;
+        EnsureEditorStarterEquipmentIfEmpty();
         Save();
+    }
+
+    private static void EnsureEditorStarterEquipmentIfEmpty()
+    {
+#if UNITY_EDITOR
+        if (saveData == null || saveData.ownedEquipment.Count > 0)
+        {
+            return;
+        }
+
+        EquipmentBaseCatalog baseCatalog = EquipmentCatalogResources.BaseCatalog;
+        EquipmentAffixCatalog affixCatalog = EquipmentCatalogResources.AffixCatalog;
+
+        if (baseCatalog == null || affixCatalog == null)
+        {
+            return;
+        }
+
+        foreach (EquipmentSlotType slotType in System.Enum.GetValues(typeof(EquipmentSlotType)))
+        {
+            EquipmentInstance starterItem = EquipmentGenerator.GenerateForSlot(baseCatalog, affixCatalog, slotType, 1);
+
+            if (starterItem != null)
+            {
+                AddOwnedEquipment(starterItem, false);
+            }
+        }
+#endif
     }
 }

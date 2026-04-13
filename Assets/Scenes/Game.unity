@@ -36256,6 +36256,61 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2641482399249534844, guid: a99c65b0092ff614ab4ab924bdce575f, type: 3}
   m_PrefabInstance: {fileID: 876957313}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &886677287
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 886677289}
+  - component: {fileID: 886677288}
+  m_Layer: 0
+  m_Name: EquipmentDebugGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &886677288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886677287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 554480c5aab26dc418663992aaef52a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentDebugGenerator
+  baseCatalog: {fileID: 11400000, guid: c49776b7d95237e41aac8cf9ef4a4216, type: 2}
+  affixCatalog: {fileID: 11400000, guid: 9ba0aca4a74677d48b476bd5c6b18426, type: 2}
+  request:
+    minItemTier: 1
+    maxItemTier: 1
+    forceSlotType: 0
+    forcedSlotType: 0
+    requiredAffixStats: 
+  commonWeight: 0
+  uncommonWeight: 0
+  rareWeight: 100
+--- !u!4 &886677289
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886677287}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.37103, y: -0.54232, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &908555764
 GameObject:
   m_ObjectHideFlags: 0
@@ -47377,3 +47432,4 @@ SceneRoots:
   - {fileID: 1230208791}
   - {fileID: 1247759623}
   - {fileID: 1851667643}
+  - {fileID: 886677289}

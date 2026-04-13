@@ -27,7 +27,7 @@ public class EquipmentInstance
 
     public EquipmentSlotType SlotType => baseDefinition != null ? baseDefinition.SlotType : default;
     public string BaseName => baseDefinition != null ? baseDefinition.BaseName : string.Empty;
-    public Sprite Icon => baseDefinition != null ? baseDefinition.Icon : null;
+    public Sprite Icon => EquipmentIconResolver.ResolveIcon(baseDefinition);
 
     public string DisplayName
     {
@@ -50,6 +50,28 @@ public class EquipmentInstance
         List<EquipmentModifierRoll> suffixRolls)
     {
         instanceId = Guid.NewGuid().ToString("N");
+        this.rarity = rarity;
+        this.itemTier = itemTier;
+        this.baseDefinition = baseDefinition;
+        this.prefixAffix = prefixAffix;
+        this.suffixAffix = suffixAffix;
+        this.implicitRolls = implicitRolls ?? new List<EquipmentModifierRoll>();
+        this.prefixRolls = prefixRolls ?? new List<EquipmentModifierRoll>();
+        this.suffixRolls = suffixRolls ?? new List<EquipmentModifierRoll>();
+    }
+
+    public EquipmentInstance(
+        string instanceId,
+        EquipmentRarity rarity,
+        int itemTier,
+        EquipmentBaseDefinition baseDefinition,
+        EquipmentAffixDefinition prefixAffix,
+        EquipmentAffixDefinition suffixAffix,
+        List<EquipmentModifierRoll> implicitRolls,
+        List<EquipmentModifierRoll> prefixRolls,
+        List<EquipmentModifierRoll> suffixRolls)
+    {
+        this.instanceId = string.IsNullOrWhiteSpace(instanceId) ? Guid.NewGuid().ToString("N") : instanceId;
         this.rarity = rarity;
         this.itemTier = itemTier;
         this.baseDefinition = baseDefinition;

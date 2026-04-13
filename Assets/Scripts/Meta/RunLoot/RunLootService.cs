@@ -29,6 +29,26 @@ public static class RunLootService
         LootChanged?.Invoke();
     }
 
+    public static void AddEquipment(EquipmentInstance equipment)
+    {
+        if (equipment == null)
+        {
+            return;
+        }
+
+        RunLoot.Add(new RunLootEntry
+        {
+            id = Guid.NewGuid().ToString("N"),
+            lootType = RunLootType.Equipment,
+            displayName = equipment.DisplayName,
+            icon = equipment.Icon,
+            equipment = equipment,
+            isDiscarded = false,
+        });
+
+        LootChanged?.Invoke();
+    }
+
     public static void ToggleDiscard(string entryId)
     {
         RunLootEntry entry = RunLoot.Find(item => item.id == entryId);
@@ -58,6 +78,7 @@ public static class RunLootService
                     break;
 
                 case RunLootType.Equipment:
+                    MetaProgressionService.AddOwnedEquipment(entry.equipment);
                     break;
             }
         }

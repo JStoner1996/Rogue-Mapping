@@ -18,9 +18,10 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private GameObject equipmentPanel;
     [SerializeField] private InventoryGridUI weaponGrid;
     [SerializeField] private InventoryGridUI mapGrid;
+    [SerializeField] private InventoryGridUI equipmentGrid;
     [SerializeField] private ItemDetailsPanelUI weaponPreviewUI;
     [SerializeField] private ItemDetailsPanelUI mapPreviewUI;
-    // [SerializeField] private ItemDetailsPanelUI equipmentPreviewUI;
+    [SerializeField] private ItemDetailsPanelUI equipmentPreviewUI;
     [SerializeField] private Button weaponsTabButton;
     [SerializeField] private Button mapsTabButton;
     [SerializeField] private Button equipmentTabButton;
@@ -33,12 +34,15 @@ public class StagingManager : MonoBehaviour
 
     private readonly List<Button> tabButtons = new List<Button>();
     private readonly List<MapInstance> availableMaps = new List<MapInstance>();
+    private readonly List<EquipmentInstance> availableEquipment = new List<EquipmentInstance>();
     private List<WeaponData> allWeapons = new List<WeaponData>();
 
     private WeaponData selectedWeapon;
     private MapInstance selectedMap;
+    private EquipmentInstance selectedEquipment;
     private WeaponData hoveredWeapon;
     private MapInstance hoveredMap;
+    private EquipmentInstance hoveredEquipment;
     private StagingTab currentTab;
 
     void Start()
@@ -46,6 +50,7 @@ public class StagingManager : MonoBehaviour
         MetaProgressionService.EnsureLoaded();
         LoadWeapons();
         LoadMaps();
+        LoadEquipment();
         InitializeDefaults();
         RegisterTabButtons();
         SwitchTab(StagingTab.Weapons);
@@ -63,6 +68,12 @@ public class StagingManager : MonoBehaviour
         availableMaps.AddRange(MetaProgressionService.GetOwnedMaps());
     }
 
+    private void LoadEquipment()
+    {
+        availableEquipment.Clear();
+        availableEquipment.AddRange(MetaProgressionService.GetOwnedEquipmentInstances());
+    }
+
     private void InitializeDefaults()
     {
         selectedWeapon = allWeapons.Find(w => w.weaponName == "Area Weapon");
@@ -75,6 +86,11 @@ public class StagingManager : MonoBehaviour
         if (availableMaps.Count > 0)
         {
             selectedMap = availableMaps[0];
+        }
+
+        if (availableEquipment.Count > 0)
+        {
+            selectedEquipment = availableEquipment[0];
         }
 
         RunData.SelectedWeapon = selectedWeapon;
@@ -141,6 +157,7 @@ public class StagingManager : MonoBehaviour
                 break;
 
             case StagingTab.Equipment:
+                RefreshEquipmentGrid();
                 break;
         }
     }
@@ -222,9 +239,51 @@ public class StagingManager : MonoBehaviour
                 break;
 
             case StagingTab.Equipment:
-                // equipmentPreviewUI.ShowEquipment();
+                if (equipmentPreviewUI != null)
+                {
+                    if (hoveredEquipment != null || selectedEquipment != null)
+                    {
+                        equipmentPreviewUI.ShowEquipment(hoveredEquipment != null ? hoveredEquipment : selectedEquipment);
+                    }
+                    else
+                    {
+                        equipmentPreviewUI.ShowEquipment();
+                    }
+                }
                 break;
         }
+    }
+
+    private void RefreshEquipmentGrid()
+    {
+        if (equipmentGrid == null)
+        {
+            return;
+        }
+
+        List<InventorySlotViewData> items = new List<InventorySlotViewData>(availableEquipment.Count);
+        EquipmentInstance focusedEquipment = hoveredEquipment != null ? hoveredEquipment : selectedEquipment;
+
+        foreach (EquipmentInstance equipment in availableEquipment)
+        {
+            if (equipment == null)
+            {
+                continue;
+            }
+
+            items.Add(new InventorySlotViewData
+            {
+                id = equipment.InstanceId,
+                label = equipment.DisplayName,
+                icon = equipment.Icon,
+                isEmpty = false,
+                isSelected = equipment == selectedEquipment,
+                isFocused = equipment == focusedEquipment,
+                isInteractable = true,
+            });
+        }
+
+        equipmentGrid.SetItems(items, OnEquipmentSlotClicked, OnEquipmentSlotHoverEnter, OnEquipmentSlotHoverExit);
     }
 
     private void RefreshTabVisuals()
@@ -257,6 +316,18 @@ public class StagingManager : MonoBehaviour
         RunData.SelectedMap = map;
         mapPreviewUI.ShowMap(map);
         RefreshMapGrid();
+    }
+
+    private void SelectEquipment(EquipmentInstance equipment)
+    {
+        selectedEquipment = equipment;
+        hoveredEquipment = null;
+        if (equipmentPreviewUI != null)
+        {
+            equipmentPreviewUI.ShowEquipment(equipment);
+        }
+
+        RefreshEquipmentGrid();
     }
 
     private void OnWeaponSlotClicked(int index, InventorySlotViewData data)
@@ -315,6 +386,39 @@ public class StagingManager : MonoBehaviour
         hoveredMap = null;
         RefreshPreview();
         RefreshMapGrid();
+    }
+
+    private void OnEquipmentSlotClicked(int index, InventorySlotViewData data)
+    {
+        if (index < 0 || index >= availableEquipment.Count)
+        {
+            return;
+        }
+
+        SelectEquipment(availableEquipment[index]);
+    }
+
+    private void OnEquipmentSlotHoverEnter(int index, InventorySlotViewData data)
+    {
+        if (index < 0 || index >= availableEquipment.Count)
+        {
+            return;
+        }
+
+        hoveredEquipment = availableEquipment[index];
+        if (equipmentPreviewUI != null)
+        {
+            equipmentPreviewUI.ShowEquipment(hoveredEquipment);
+        }
+
+        RefreshEquipmentGrid();
+    }
+
+    private void OnEquipmentSlotHoverExit(int index, InventorySlotViewData data)
+    {
+        hoveredEquipment = null;
+        RefreshPreview();
+        RefreshEquipmentGrid();
     }
 
     public void ShowWeaponsTab()
