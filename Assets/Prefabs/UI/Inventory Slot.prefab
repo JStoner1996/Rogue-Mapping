@@ -506,11 +506,14 @@ MonoBehaviour:
   iconImage: {fileID: 8937345598428607126}
   borderImage: {fileID: 1365086071045002284}
   selectedOutline: {fileID: 3378232851290904719}
+  selectedOutlineImage: {fileID: 0}
   discardOverlay: {fileID: 782845242734518078}
   itemNameText: {fileID: 7211228715486454764}
   emptyBorderColor: {r: 1, g: 1, b: 1, a: 0.2}
   filledBorderColor: {r: 1, g: 1, b: 1, a: 0.8}
-  selectedBorderColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  selectedBorderColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  equippedOutlineColor: {r: 0.35, g: 1, b: 0.45, a: 1}
+  selectedOutlineColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!114 &9127368913032032786
 MonoBehaviour:
   m_ObjectHideFlags: 0

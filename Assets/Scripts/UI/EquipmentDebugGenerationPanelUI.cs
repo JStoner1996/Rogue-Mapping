@@ -159,7 +159,7 @@ public class EquipmentDebugGenerationPanelUI : MonoBehaviour
 
     private void RefreshStagingIfPresent()
     {
-        StagingManager stagingManager = FindObjectOfType<StagingManager>();
+        StagingManager stagingManager = FindAnyObjectByType<StagingManager>();
         if (stagingManager != null)
         {
             stagingManager.RefreshEquipmentDebugData();

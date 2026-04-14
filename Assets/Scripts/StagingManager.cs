@@ -214,8 +214,6 @@ public class StagingManager : MonoBehaviour
         }
 
         List<InventorySlotViewData> items = new List<InventorySlotViewData>(allWeapons.Count);
-        WeaponData focusedWeapon = hoveredWeapon != null ? hoveredWeapon : selectedWeapon;
-
         foreach (WeaponData weapon in allWeapons)
         {
             if (weapon == null)
@@ -230,7 +228,7 @@ public class StagingManager : MonoBehaviour
                 icon = weapon.icon,
                 isEmpty = false,
                 isSelected = weapon == selectedWeapon,
-                isFocused = weapon == focusedWeapon,
+                isFocused = weapon == hoveredWeapon,
                 isInteractable = true,
             });
         }
@@ -246,8 +244,6 @@ public class StagingManager : MonoBehaviour
         }
 
         List<InventorySlotViewData> items = new List<InventorySlotViewData>(availableMaps.Count);
-        MapInstance focusedMap = hoveredMap != null ? hoveredMap : selectedMap;
-
         foreach (MapInstance map in availableMaps)
         {
             if (map == null)
@@ -262,7 +258,7 @@ public class StagingManager : MonoBehaviour
                 icon = map.Icon,
                 isEmpty = false,
                 isSelected = map == selectedMap,
-                isFocused = map == focusedMap,
+                isFocused = map == hoveredMap,
                 isInteractable = true,
             });
         }
@@ -307,8 +303,6 @@ public class StagingManager : MonoBehaviour
 
         int slotCount = Mathf.Max(equipmentGrid.MaxSlots, equipmentInventoryLayout.Count);
         List<InventorySlotViewData> items = new List<InventorySlotViewData>(slotCount);
-        EquipmentInstance focusedEquipment = hoveredEquipment != null ? hoveredEquipment : selectedEquipment;
-
         for (int i = 0; i < slotCount; i++)
         {
             string equipmentId = i < equipmentInventoryLayout.Count ? equipmentInventoryLayout[i] : string.Empty;
@@ -329,7 +323,7 @@ public class StagingManager : MonoBehaviour
                 icon = equipment.Icon,
                 isEmpty = false,
                 isSelected = equipment == selectedEquipment,
-                isFocused = equipment == focusedEquipment,
+                isFocused = equipment == hoveredEquipment,
                 isEquipped = isEquipped,
                 isInteractable = true,
                 canDrag = !isEquipped,
@@ -411,7 +405,7 @@ public class StagingManager : MonoBehaviour
 
         MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId);
         RebuildEquipmentInventoryLayout();
-        SelectEquipment(equipment);
+        selectedEquipment = equipment;
         RefreshHoveredEquipmentFromCurrentIndex();
         RefreshEquippedSlotVisuals();
         RefreshEquipmentGrid();
@@ -586,7 +580,6 @@ public class StagingManager : MonoBehaviour
             return;
         }
 
-        SelectEquipment(equipment);
         EquipmentSlotDropTargetUI targetSlot = FindBestEquipTarget(equipment);
 
         if (targetSlot == null)
@@ -596,6 +589,7 @@ public class StagingManager : MonoBehaviour
 
         MetaProgressionService.SetEquippedItem(targetSlot.LoadoutSlotId, equipment.InstanceId);
         RebuildEquipmentInventoryLayout();
+        selectedEquipment = equipment;
         RefreshHoveredEquipmentFromCurrentIndex();
         RefreshEquippedSlotVisuals();
         RefreshEquipmentGrid();

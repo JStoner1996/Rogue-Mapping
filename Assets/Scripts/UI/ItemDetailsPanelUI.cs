@@ -65,7 +65,7 @@ public class ItemDetailsPanelUI : MonoBehaviour
         titleText.text = "Character Equipment";
         icon.sprite = null;
         icon.enabled = false;
-        statsText.text = "Coming soon.\n\nThis tab is reserved for future character equipment and loadout logic.";
+        statsText.text = "Please hover or click on equipment to see details here.";
     }
 
     public void ShowEquipment(EquipmentInstance equipment)
