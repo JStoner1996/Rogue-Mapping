@@ -16,6 +16,8 @@ public static class EquipmentRecordConverter
             rarity = equipment.Rarity,
             itemTier = equipment.ItemTier,
             baseName = equipment.BaseName,
+            prefixAffixes = CreateAffixRecords(equipment.PrefixAffixes),
+            suffixAffixes = CreateAffixRecords(equipment.SuffixAffixes),
             prefixAffixName = equipment.PrefixAffix != null ? equipment.PrefixAffix.AffixName : string.Empty,
             suffixAffixName = equipment.SuffixAffix != null ? equipment.SuffixAffix.AffixName : string.Empty,
             slotId = equipment.SlotType.ToString(),
@@ -49,19 +51,81 @@ public static class EquipmentRecordConverter
             return null;
         }
 
-        EquipmentAffixDefinition prefixAffix = FindAffixDefinition(affixCatalog, record.prefixAffixName, EquipmentAffixType.Prefix);
-        EquipmentAffixDefinition suffixAffix = FindAffixDefinition(affixCatalog, record.suffixAffixName, EquipmentAffixType.Suffix);
-
         return new EquipmentInstance(
             record.instanceId,
             record.rarity,
             Mathf.Max(1, record.itemTier),
             baseDefinition,
-            prefixAffix,
-            suffixAffix,
             new List<EquipmentModifierRoll>(record.implicitRolls ?? new List<EquipmentModifierRoll>()),
-            new List<EquipmentModifierRoll>(record.prefixRolls ?? new List<EquipmentModifierRoll>()),
-            new List<EquipmentModifierRoll>(record.suffixRolls ?? new List<EquipmentModifierRoll>()));
+            CreateRolledAffixes(record.prefixAffixes, record.prefixAffixName, record.prefixRolls, EquipmentAffixType.Prefix, affixCatalog),
+            CreateRolledAffixes(record.suffixAffixes, record.suffixAffixName, record.suffixRolls, EquipmentAffixType.Suffix, affixCatalog));
+    }
+
+    private static List<OwnedEquipmentAffixRecord> CreateAffixRecords(IReadOnlyList<EquipmentRolledAffix> affixes)
+    {
+        List<OwnedEquipmentAffixRecord> records = new List<OwnedEquipmentAffixRecord>();
+
+        if (affixes == null)
+        {
+            return records;
+        }
+
+        for (int i = 0; i < affixes.Count; i++)
+        {
+            EquipmentRolledAffix affix = affixes[i];
+            if (affix?.AffixDefinition == null)
+            {
+                continue;
+            }
+
+            records.Add(new OwnedEquipmentAffixRecord
+            {
+                affixName = affix.AffixName,
+                affixType = affix.AffixType,
+                modifierRolls = new List<EquipmentModifierRoll>(affix.ModifierRolls ?? new List<EquipmentModifierRoll>())
+            });
+        }
+
+        return records;
+    }
+
+    private static List<EquipmentRolledAffix> CreateRolledAffixes(
+        List<OwnedEquipmentAffixRecord> records,
+        string legacyAffixName,
+        List<EquipmentModifierRoll> legacyRolls,
+        EquipmentAffixType fallbackType,
+        EquipmentAffixCatalog affixCatalog)
+    {
+        List<EquipmentRolledAffix> rolledAffixes = new List<EquipmentRolledAffix>();
+
+        if (records != null && records.Count > 0)
+        {
+            for (int i = 0; i < records.Count; i++)
+            {
+                OwnedEquipmentAffixRecord record = records[i];
+                EquipmentAffixDefinition definition = FindAffixDefinition(affixCatalog, record.affixName, record.affixType);
+                if (definition == null)
+                {
+                    continue;
+                }
+
+                rolledAffixes.Add(new EquipmentRolledAffix(
+                    definition,
+                    new List<EquipmentModifierRoll>(record.modifierRolls ?? new List<EquipmentModifierRoll>())));
+            }
+
+            return rolledAffixes;
+        }
+
+        EquipmentAffixDefinition legacyDefinition = FindAffixDefinition(affixCatalog, legacyAffixName, fallbackType);
+        if (legacyDefinition != null)
+        {
+            rolledAffixes.Add(new EquipmentRolledAffix(
+                legacyDefinition,
+                new List<EquipmentModifierRoll>(legacyRolls ?? new List<EquipmentModifierRoll>())));
+        }
+
+        return rolledAffixes;
     }
 
     private static EquipmentBaseDefinition FindBaseDefinition(EquipmentBaseCatalog catalog, string baseName)

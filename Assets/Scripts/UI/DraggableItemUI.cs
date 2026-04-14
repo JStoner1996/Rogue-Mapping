@@ -13,6 +13,11 @@ public class DraggableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         payloadResolver = resolver;
     }
 
+    public void SetDragEnabled(bool enabled)
+    {
+        dragEnabled = enabled;
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (!dragEnabled || DragDropManagerUI.Instance == null)

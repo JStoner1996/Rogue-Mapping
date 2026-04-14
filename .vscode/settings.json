@@ -75,6 +75,7 @@
     "cooldown",
     "Despawn",
     "Dont",
+    "interactable",
     "Knockback",
     "Mathf",
     "PIXELSNAP",

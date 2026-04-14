@@ -41,8 +41,8 @@ public class EquipmentDebugGenerator : MonoBehaviour
         builder.AppendLine($"Slot: {item.SlotType}");
 
         AppendRolls(builder, "Implicit", item.ImplicitRolls);
-        AppendRolls(builder, "Prefix", item.PrefixRolls);
-        AppendRolls(builder, "Suffix", item.SuffixRolls);
+        AppendAffixes(builder, "Prefix", item.PrefixAffixes);
+        AppendAffixes(builder, "Suffix", item.SuffixAffixes);
 
         return builder.ToString();
     }
@@ -54,7 +54,10 @@ public class EquipmentDebugGenerator : MonoBehaviour
             return;
         }
 
-        builder.AppendLine($"{sectionName}:");
+        if (!string.IsNullOrWhiteSpace(sectionName))
+        {
+            builder.AppendLine($"{sectionName}:");
+        }
 
         for (int i = 0; i < rolls.Count; i++)
         {
@@ -64,6 +67,26 @@ public class EquipmentDebugGenerator : MonoBehaviour
                 : $"+{roll.value:F1}";
 
             builder.AppendLine($"- {roll.statType}: {formattedValue}");
+        }
+    }
+
+    private static void AppendAffixes(StringBuilder builder, string sectionName, System.Collections.Generic.IReadOnlyList<EquipmentRolledAffix> affixes)
+    {
+        if (affixes == null || affixes.Count == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < affixes.Count; i++)
+        {
+            EquipmentRolledAffix affix = affixes[i];
+            if (affix == null)
+            {
+                continue;
+            }
+
+            builder.AppendLine($"{sectionName}: {affix.AffixName} (Tier {affix.AffixTier})");
+            AppendRolls(builder, string.Empty, affix.ModifierRolls);
         }
     }
 }

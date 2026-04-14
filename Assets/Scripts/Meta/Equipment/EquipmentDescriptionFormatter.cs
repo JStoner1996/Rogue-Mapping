@@ -31,8 +31,8 @@ public static class EquipmentDescriptionFormatter
         if (hasExplicit)
         {
             builder.AppendLine(Divider);
-            AppendRolls(builder, item.PrefixRolls);
-            AppendRolls(builder, item.SuffixRolls);
+            AppendAffixRolls(builder, item.PrefixAffixes);
+            AppendAffixRolls(builder, item.SuffixAffixes);
         }
 
         return builder.ToString().TrimEnd();
@@ -48,6 +48,20 @@ public static class EquipmentDescriptionFormatter
         for (int i = 0; i < rolls.Count; i++)
         {
             builder.AppendLine(FormatRoll(rolls[i]));
+        }
+    }
+
+    private static void AppendAffixRolls(StringBuilder builder, IReadOnlyList<EquipmentRolledAffix> affixes)
+    {
+        if (affixes == null || affixes.Count == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < affixes.Count; i++)
+        {
+            EquipmentRolledAffix affix = affixes[i];
+            AppendRolls(builder, affix?.ModifierRolls);
         }
     }
 

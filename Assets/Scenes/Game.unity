@@ -36288,8 +36288,8 @@ MonoBehaviour:
   baseCatalog: {fileID: 11400000, guid: c49776b7d95237e41aac8cf9ef4a4216, type: 2}
   affixCatalog: {fileID: 11400000, guid: 9ba0aca4a74677d48b476bd5c6b18426, type: 2}
   request:
-    minItemTier: 1
-    maxItemTier: 1
+    minItemTier: 3
+    maxItemTier: 10
     forceSlotType: 0
     forcedSlotType: 0
     requiredAffixStats: 

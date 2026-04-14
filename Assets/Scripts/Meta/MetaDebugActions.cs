@@ -7,6 +7,8 @@ public class MetaDebugActions : MonoBehaviour
     [SerializeField] private VictoryConditionType defaultMapVictoryCondition = VictoryConditionType.Kills;
     [SerializeField] private int defaultMapVictoryTarget = 10;
     [SerializeField] private int starterMapCount = 4;
+    [Header("Debug Panels")]
+    [SerializeField] private EquipmentDebugGenerationPanelUI equipmentDebugGenerationPanel;
 
     public void ResetAllMetaProgression()
     {
@@ -51,5 +53,13 @@ public class MetaDebugActions : MonoBehaviour
     public void ReloadStagingScene()
     {
         SceneManager.LoadScene("Staging");
+    }
+
+    public void OpenEquipmentGeneratorPanel()
+    {
+        if (equipmentDebugGenerationPanel != null)
+        {
+            equipmentDebugGenerationPanel.Show();
+        }
     }
 }

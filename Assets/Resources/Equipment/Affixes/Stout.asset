@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
   affixName: Stout
   affixType: 0
+  affixTier: 1
   allowedSlots: 00000000010000000200000005000000
   minItemTier: 1
   maxItemTier: 10

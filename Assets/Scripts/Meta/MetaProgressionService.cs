@@ -76,6 +76,54 @@ public static class MetaProgressionService
         return saveData.equipmentLoadout;
     }
 
+    public static List<EquipmentInstance> GetEquippedEquipmentInstances()
+    {
+        EnsureLoaded();
+
+        List<EquipmentInstance> ownedEquipment = GetOwnedEquipmentInstances();
+        Dictionary<string, EquipmentInstance> equipmentById = new Dictionary<string, EquipmentInstance>();
+
+        for (int i = 0; i < ownedEquipment.Count; i++)
+        {
+            EquipmentInstance instance = ownedEquipment[i];
+
+            if (instance != null && !string.IsNullOrWhiteSpace(instance.InstanceId))
+            {
+                equipmentById[instance.InstanceId] = instance;
+            }
+        }
+
+        List<EquipmentInstance> equippedItems = new List<EquipmentInstance>();
+        HashSet<string> addedInstanceIds = new HashSet<string>();
+
+        for (int i = 0; i < saveData.equipmentLoadout.equippedItems.Count; i++)
+        {
+            EquipmentLoadoutSlot loadoutSlot = saveData.equipmentLoadout.equippedItems[i];
+
+            if (loadoutSlot == null || string.IsNullOrWhiteSpace(loadoutSlot.equipmentInstanceId))
+            {
+                continue;
+            }
+
+            if (!addedInstanceIds.Add(loadoutSlot.equipmentInstanceId))
+            {
+                continue;
+            }
+
+            if (equipmentById.TryGetValue(loadoutSlot.equipmentInstanceId, out EquipmentInstance equippedItem))
+            {
+                equippedItems.Add(equippedItem);
+            }
+        }
+
+        return equippedItems;
+    }
+
+    public static EquipmentStatSummary GetEquippedEquipmentStatSummary()
+    {
+        return EquipmentStatSummaryCalculator.Calculate(GetEquippedEquipmentInstances());
+    }
+
     public static string GetEquippedItemId(EquipmentSlotType slotType)
     {
         return GetEquippedItemId(slotType.ToString());
@@ -268,10 +316,12 @@ public static class MetaProgressionService
         }
         else if (existingSlot != null)
         {
+            UnequipFromOtherSlots(loadoutSlotId, equipmentInstanceId);
             existingSlot.equipmentInstanceId = equipmentInstanceId;
         }
         else
         {
+            UnequipFromOtherSlots(loadoutSlotId, equipmentInstanceId);
             saveData.equipmentLoadout.equippedItems.Add(new EquipmentLoadoutSlot
             {
                 slotId = loadoutSlotId,
@@ -311,7 +361,19 @@ public static class MetaProgressionService
 
         foreach (EquipmentSlotType slotType in System.Enum.GetValues(typeof(EquipmentSlotType)))
         {
-            EquipmentInstance starterItem = EquipmentGenerator.GenerateForSlot(baseCatalog, affixCatalog, slotType, 1);
+            EquipmentInstance starterItem = EquipmentGenerator.Generate(
+                baseCatalog,
+                affixCatalog,
+                new EquipmentGenerationRequest
+                {
+                    minItemTier = 1,
+                    maxItemTier = 10,
+                    forceSlotType = true,
+                    forcedSlotType = slotType,
+                },
+                33f,
+                33f,
+                34f);
 
             if (starterItem != null)
             {
@@ -319,5 +381,23 @@ public static class MetaProgressionService
             }
         }
 #endif
+    }
+
+    private static void UnequipFromOtherSlots(string targetLoadoutSlotId, string equipmentInstanceId)
+    {
+        for (int i = saveData.equipmentLoadout.equippedItems.Count - 1; i >= 0; i--)
+        {
+            EquipmentLoadoutSlot equippedSlot = saveData.equipmentLoadout.equippedItems[i];
+
+            if (equippedSlot == null)
+            {
+                continue;
+            }
+
+            if (equippedSlot.slotId != targetLoadoutSlotId && equippedSlot.equipmentInstanceId == equipmentInstanceId)
+            {
+                saveData.equipmentLoadout.equippedItems.RemoveAt(i);
+            }
+        }
     }
 }

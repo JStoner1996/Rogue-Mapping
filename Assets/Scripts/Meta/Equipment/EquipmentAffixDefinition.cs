@@ -7,6 +7,7 @@ public class EquipmentAffixDefinition : ScriptableObject
     [Header("Identity")]
     [SerializeField] private string affixName;
     [SerializeField] private EquipmentAffixType affixType;
+    [SerializeField, Min(1)] private int affixTier = 1;
 
     [Header("Restrictions")]
     [SerializeField] private List<EquipmentSlotType> allowedSlots = new List<EquipmentSlotType>();
@@ -18,6 +19,7 @@ public class EquipmentAffixDefinition : ScriptableObject
 
     public string AffixName => affixName;
     public EquipmentAffixType AffixType => affixType;
+    public int AffixTier => affixTier;
     public IReadOnlyList<EquipmentSlotType> AllowedSlots => allowedSlots;
     public int MinItemTier => minItemTier;
     public int MaxItemTier => maxItemTier;
@@ -37,7 +39,7 @@ public class EquipmentAffixDefinition : ScriptableObject
             return false;
         }
 
-        if (maxItemTier < minItemTier || modifiers == null || modifiers.Count == 0)
+        if (affixTier < 1 || maxItemTier < minItemTier || modifiers == null || modifiers.Count == 0)
         {
             return false;
         }

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IDragDropTargetUI
 {
     [Header("Components")]
     [SerializeField] private Button button;
@@ -12,6 +12,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Image iconImage;
     [SerializeField] private Image borderImage;
     [SerializeField] private GameObject selectedOutline;
+    [SerializeField] private Image selectedOutlineImage;
     [SerializeField] private GameObject discardOverlay;
     [SerializeField] private TMP_Text itemNameText;
 
@@ -19,16 +20,27 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Color emptyBorderColor = new Color(1f, 1f, 1f, 0.2f);
     [SerializeField] private Color filledBorderColor = new Color(1f, 1f, 1f, 0.8f);
     [SerializeField] private Color selectedBorderColor = new Color(1f, 0.85f, 0.2f, 1f);
+    [SerializeField] private Color equippedOutlineColor = new Color(0.35f, 1f, 0.45f, 1f);
+    [SerializeField] private Color selectedOutlineColor = new Color(1f, 0.25f, 0.25f, 1f);
 
     private InventorySlotViewData currentData;
     private Action<InventorySlotUI, InventorySlotViewData> onClick;
+    private Action<InventorySlotUI, InventorySlotViewData> onRightClick;
     private Action<InventorySlotUI, InventorySlotViewData> onHoverEnter;
     private Action<InventorySlotUI, InventorySlotViewData> onHoverExit;
+    private Func<InventorySlotUI, DragItemPayload, bool> canAcceptDrop;
+    private Action<InventorySlotUI, DragItemPayload> onDropReceived;
+    private bool isDropHovered;
 
     public InventorySlotViewData CurrentData => currentData;
 
     void Awake()
     {
+        if (selectedOutlineImage == null && selectedOutline != null)
+        {
+            selectedOutlineImage = selectedOutline.GetComponent<Image>();
+        }
+
         if (button != null)
         {
             button.onClick.RemoveAllListeners();
@@ -44,13 +56,20 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void Bind(
         InventorySlotViewData data,
         Action<InventorySlotUI, InventorySlotViewData> clickCallback = null,
+        Action<InventorySlotUI, InventorySlotViewData> rightClickCallback = null,
         Action<InventorySlotUI, InventorySlotViewData> hoverEnterCallback = null,
-        Action<InventorySlotUI, InventorySlotViewData> hoverExitCallback = null)
+        Action<InventorySlotUI, InventorySlotViewData> hoverExitCallback = null,
+        Func<InventorySlotUI, DragItemPayload, bool> canAcceptDropCallback = null,
+        Action<InventorySlotUI, DragItemPayload> dropReceivedCallback = null)
     {
         currentData = data ?? InventorySlotViewData.Empty();
         onClick = clickCallback;
+        onRightClick = rightClickCallback;
         onHoverEnter = hoverEnterCallback;
         onHoverExit = hoverExitCallback;
+        canAcceptDrop = canAcceptDropCallback;
+        onDropReceived = dropReceivedCallback;
+        isDropHovered = false;
         RefreshVisuals();
     }
 
@@ -77,6 +96,21 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
 
         onHoverExit?.Invoke(this, currentData);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Right)
+        {
+            return;
+        }
+
+        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
+        {
+            return;
+        }
+
+        onRightClick?.Invoke(this, currentData);
     }
 
     private void HandleClick()
@@ -109,7 +143,15 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (selectedOutline != null)
         {
-            selectedOutline.SetActive(!isEmpty && currentData.isSelected);
+            bool showOutline = !isEmpty && (currentData.isSelected || currentData.isEquipped);
+            selectedOutline.SetActive(showOutline);
+
+            if (showOutline && selectedOutlineImage != null)
+            {
+                selectedOutlineImage.color = currentData.isSelected
+                    ? selectedOutlineColor
+                    : equippedOutlineColor;
+            }
         }
 
         if (discardOverlay != null)
@@ -121,7 +163,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             borderImage.color = isEmpty
                 ? emptyBorderColor
-                : currentData.isFocused
+                : isDropHovered || currentData.isFocused
                     ? selectedBorderColor
                     : filledBorderColor;
         }
@@ -130,11 +172,16 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             button.interactable = !isEmpty && currentData.isInteractable;
         }
+
+        if (draggableItem != null)
+        {
+            draggableItem.SetDragEnabled(!isEmpty && currentData.isInteractable && currentData.canDrag);
+        }
     }
 
     private DragItemPayload BuildDragPayload()
     {
-        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
+        if (currentData == null || currentData.isEmpty || !currentData.isInteractable || !currentData.canDrag)
         {
             return null;
         }
@@ -145,8 +192,36 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             label = currentData.label,
             icon = currentData.icon,
             itemType = currentData.dragItemType,
+            sourceType = currentData.dragItemSourceType,
             hasEquipmentSlotType = currentData.hasEquipmentSlotType,
             equipmentSlotType = currentData.equipmentSlotType,
         };
+    }
+
+    public bool CanAcceptDrop(DragItemPayload payload)
+    {
+        return canAcceptDrop != null && canAcceptDrop.Invoke(this, payload);
+    }
+
+    public void OnDropReceived(DragItemPayload payload)
+    {
+        if (!CanAcceptDrop(payload))
+        {
+            return;
+        }
+
+        onDropReceived?.Invoke(this, payload);
+    }
+
+    public void OnDragHoverStart(DragItemPayload payload)
+    {
+        isDropHovered = CanAcceptDrop(payload);
+        RefreshVisuals();
+    }
+
+    public void OnDragHoverEnd(DragItemPayload payload)
+    {
+        isDropHovered = false;
+        RefreshVisuals();
     }
 }

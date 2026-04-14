@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
   affixName: Doctor's
   affixType: 0
+  affixTier: 3
   allowedSlots: 0600000004000000
   minItemTier: 8
   maxItemTier: 10

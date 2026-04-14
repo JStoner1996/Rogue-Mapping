@@ -32,25 +32,39 @@ public class InventoryGridUI : MonoBehaviour
     public void SetItems(
         IReadOnlyList<InventorySlotViewData> items,
         Action<int, InventorySlotViewData> onSlotClicked = null,
+        Action<int, InventorySlotViewData> onSlotRightClicked = null,
         Action<int, InventorySlotViewData> onSlotHoverEnter = null,
-        Action<int, InventorySlotViewData> onSlotHoverExit = null)
+        Action<int, InventorySlotViewData> onSlotHoverExit = null,
+        Func<int, DragItemPayload, bool> canAcceptDropAtIndex = null,
+        Action<int, DragItemPayload> onSlotDropReceived = null)
     {
         EnsureSlotCount();
 
         for (int i = 0; i < spawnedSlots.Count; i++)
         {
+            int localIndex = i;
+
             if (items != null && i < items.Count && items[i] != null)
             {
-                int localIndex = i;
                 spawnedSlots[i].Bind(
                     items[i],
                     (_, data) => onSlotClicked?.Invoke(localIndex, data),
+                    (_, data) => onSlotRightClicked?.Invoke(localIndex, data),
                     (_, data) => onSlotHoverEnter?.Invoke(localIndex, data),
-                    (_, data) => onSlotHoverExit?.Invoke(localIndex, data));
+                    (_, data) => onSlotHoverExit?.Invoke(localIndex, data),
+                    (_, payload) => canAcceptDropAtIndex != null && canAcceptDropAtIndex.Invoke(localIndex, payload),
+                    (_, payload) => onSlotDropReceived?.Invoke(localIndex, payload));
                 continue;
             }
 
-            spawnedSlots[i].SetEmpty();
+            spawnedSlots[i].Bind(
+                InventorySlotViewData.Empty(),
+                null,
+                null,
+                null,
+                null,
+                (_, payload) => canAcceptDropAtIndex != null && canAcceptDropAtIndex.Invoke(localIndex, payload),
+                (_, payload) => onSlotDropReceived?.Invoke(localIndex, payload));
         }
     }
 

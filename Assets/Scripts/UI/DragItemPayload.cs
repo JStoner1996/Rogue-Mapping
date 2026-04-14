@@ -8,6 +8,7 @@ public class DragItemPayload
     public string label;
     public Sprite icon;
     public DragItemType itemType;
+    public DragItemSourceType sourceType;
     public bool hasEquipmentSlotType;
     public EquipmentSlotType equipmentSlotType;
 

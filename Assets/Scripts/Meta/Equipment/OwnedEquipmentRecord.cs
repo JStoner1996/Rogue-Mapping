@@ -8,6 +8,10 @@ public class OwnedEquipmentRecord
     public EquipmentRarity rarity;
     public int itemTier;
     public string baseName;
+    public List<OwnedEquipmentAffixRecord> prefixAffixes = new List<OwnedEquipmentAffixRecord>();
+    public List<OwnedEquipmentAffixRecord> suffixAffixes = new List<OwnedEquipmentAffixRecord>();
+
+    // Legacy save fields retained for migration from older one-prefix/one-suffix records.
     public string prefixAffixName;
     public string suffixAffixName;
     public string slotId;

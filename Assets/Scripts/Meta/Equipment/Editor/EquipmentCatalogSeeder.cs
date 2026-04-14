@@ -142,6 +142,7 @@ public static class EquipmentCatalogSeeder
             CreateOrUpdateAffix(
                 "Curing",
                 EquipmentAffixType.Prefix,
+                1,
                 new[] { EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 1,
                 4,
@@ -157,6 +158,7 @@ public static class EquipmentCatalogSeeder
             CreateOrUpdateAffix(
                 "Healing",
                 EquipmentAffixType.Prefix,
+                2,
                 new[] { EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 5,
                 7,
@@ -172,6 +174,7 @@ public static class EquipmentCatalogSeeder
             CreateOrUpdateAffix(
                 "Doctor's",
                 EquipmentAffixType.Prefix,
+                3,
                 new[] { EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 8,
                 10,
@@ -187,6 +190,7 @@ public static class EquipmentCatalogSeeder
             CreateOrUpdateAffix(
                 "Stout",
                 EquipmentAffixType.Prefix,
+                1,
                 new[] { EquipmentSlotType.Head, EquipmentSlotType.Chest, EquipmentSlotType.Legs, EquipmentSlotType.Hands },
                 1,
                 10,
@@ -202,6 +206,7 @@ public static class EquipmentCatalogSeeder
             CreateOrUpdateAffix(
                 "Swift",
                 EquipmentAffixType.Prefix,
+                1,
                 new[] { EquipmentSlotType.Feet },
                 1,
                 10,
@@ -217,6 +222,7 @@ public static class EquipmentCatalogSeeder
             CreateOrUpdateAffix(
                 "of Guarding",
                 EquipmentAffixType.Suffix,
+                1,
                 new[] { EquipmentSlotType.Head, EquipmentSlotType.Chest, EquipmentSlotType.Legs, EquipmentSlotType.Hands },
                 1,
                 10,
@@ -232,6 +238,7 @@ public static class EquipmentCatalogSeeder
             CreateOrUpdateAffix(
                 "of the Boar",
                 EquipmentAffixType.Suffix,
+                1,
                 new[] { EquipmentSlotType.Head, EquipmentSlotType.Chest, EquipmentSlotType.Legs, EquipmentSlotType.Hands, EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 1,
                 10,
@@ -247,6 +254,7 @@ public static class EquipmentCatalogSeeder
             CreateOrUpdateAffix(
                 "of Force",
                 EquipmentAffixType.Suffix,
+                1,
                 new[] { EquipmentSlotType.Hands, EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 1,
                 10,
@@ -296,6 +304,7 @@ public static class EquipmentCatalogSeeder
     private static EquipmentAffixDefinition CreateOrUpdateAffix(
         string affixName,
         EquipmentAffixType affixType,
+        int affixTier,
         EquipmentSlotType[] allowedSlots,
         int minTier,
         int maxTier,
@@ -313,6 +322,7 @@ public static class EquipmentCatalogSeeder
         SerializedObject serializedObject = new SerializedObject(asset);
         serializedObject.FindProperty("affixName").stringValue = affixName;
         serializedObject.FindProperty("affixType").enumValueIndex = (int)affixType;
+        serializedObject.FindProperty("affixTier").intValue = affixTier;
         serializedObject.FindProperty("minItemTier").intValue = minTier;
         serializedObject.FindProperty("maxItemTier").intValue = maxTier;
 

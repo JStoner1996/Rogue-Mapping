@@ -11,8 +11,11 @@ public class InventorySlotViewData
     public bool isSelected;
     public bool isFocused;
     public bool isDiscarded;
+    public bool isEquipped;
     public bool isInteractable = true;
+    public bool canDrag = true;
     public DragItemType dragItemType;
+    public DragItemSourceType dragItemSourceType;
     public bool hasEquipmentSlotType;
     public EquipmentSlotType equipmentSlotType;
 
@@ -22,7 +25,9 @@ public class InventorySlotViewData
         {
             isEmpty = true,
             isInteractable = false,
+            canDrag = false,
             dragItemType = DragItemType.Unknown,
+            dragItemSourceType = DragItemSourceType.Unknown,
         };
     }
 }
