@@ -156,6 +156,12 @@ public class StagingManager : MonoBehaviour
             dropTarget.DropReceived += HandleEquipmentDropped;
             dropTarget.RightClicked -= HandleEquipmentSlotRightClicked;
             dropTarget.RightClicked += HandleEquipmentSlotRightClicked;
+            dropTarget.LeftClicked -= HandleEquippedSlotLeftClicked;
+            dropTarget.LeftClicked += HandleEquippedSlotLeftClicked;
+            dropTarget.HoverEntered -= HandleEquippedSlotHoverEntered;
+            dropTarget.HoverEntered += HandleEquippedSlotHoverEntered;
+            dropTarget.HoverExited -= HandleEquippedSlotHoverExited;
+            dropTarget.HoverExited += HandleEquippedSlotHoverExited;
         }
 
         RefreshEquippedSlotVisuals();
@@ -321,6 +327,7 @@ public class StagingManager : MonoBehaviour
                 id = equipment.InstanceId,
                 label = equipment.DisplayName,
                 icon = equipment.Icon,
+                iconTint = GetEquipmentTierTint(equipment.ItemTier),
                 isEmpty = false,
                 isSelected = equipment == selectedEquipment,
                 isFocused = equipment == hoveredEquipment,
@@ -386,6 +393,7 @@ public class StagingManager : MonoBehaviour
             equipmentPreviewUI.ShowEquipment(equipment);
         }
 
+        RefreshEquippedSlotVisuals();
         RefreshEquipmentGrid();
     }
 
@@ -446,6 +454,8 @@ public class StagingManager : MonoBehaviour
             string equippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
             EquipmentInstance equippedItem = availableEquipment.Find(item => item != null && item.InstanceId == equippedItemId);
             dropTarget.SetDisplayedEquipment(equippedItem);
+            dropTarget.SetSelected(equippedItem != null && selectedEquipment != null && equippedItem.InstanceId == selectedEquipment.InstanceId);
+            dropTarget.SetHovered(equippedItem != null && hoveredEquipment != null && equippedItem.InstanceId == hoveredEquipment.InstanceId);
         }
     }
 
@@ -615,6 +625,7 @@ public class StagingManager : MonoBehaviour
             equipmentPreviewUI.ShowEquipment(hoveredEquipment);
         }
 
+        RefreshEquippedSlotVisuals();
         RefreshEquipmentGrid();
     }
 
@@ -633,11 +644,46 @@ public class StagingManager : MonoBehaviour
         RefreshPlayerStatsPanel();
     }
 
+    private void HandleEquippedSlotLeftClicked(EquipmentSlotDropTargetUI dropTarget)
+    {
+        if (dropTarget == null || dropTarget.DisplayedEquipment == null)
+        {
+            return;
+        }
+
+        SelectEquipment(dropTarget.DisplayedEquipment);
+        RefreshEquippedSlotVisuals();
+    }
+
+    private void HandleEquippedSlotHoverEntered(EquipmentSlotDropTargetUI dropTarget)
+    {
+        if (dropTarget == null || dropTarget.DisplayedEquipment == null)
+        {
+            return;
+        }
+
+        hoveredEquipment = dropTarget.DisplayedEquipment;
+        hoveredEquipmentIndex = -1;
+        RefreshPreview();
+        RefreshEquippedSlotVisuals();
+        RefreshEquipmentGrid();
+    }
+
+    private void HandleEquippedSlotHoverExited(EquipmentSlotDropTargetUI dropTarget)
+    {
+        hoveredEquipment = null;
+        hoveredEquipmentIndex = -1;
+        RefreshPreview();
+        RefreshEquippedSlotVisuals();
+        RefreshEquipmentGrid();
+    }
+
     private void OnEquipmentSlotHoverExit(int index, InventorySlotViewData data)
     {
         hoveredEquipment = null;
         hoveredEquipmentIndex = -1;
         RefreshPreview();
+        RefreshEquippedSlotVisuals();
         RefreshEquipmentGrid();
     }
 
@@ -670,8 +716,10 @@ public class StagingManager : MonoBehaviour
         }
 
         EquipmentSlotDropTargetUI emptySlot = null;
-        EquipmentSlotDropTargetUI lowerTierSlot = null;
-        EquipmentSlotDropTargetUI lowerRaritySlot = null;
+        EquipmentSlotDropTargetUI bestLowerTierSlot = null;
+        EquipmentInstance bestLowerTierItem = null;
+        EquipmentSlotDropTargetUI bestLowerRaritySlot = null;
+        EquipmentInstance bestLowerRarityItem = null;
         EquipmentSlotDropTargetUI firstSlot = candidates[0];
 
         for (int i = 0; i < candidates.Count; i++)
@@ -697,14 +745,28 @@ public class StagingManager : MonoBehaviour
                 continue;
             }
 
-            if (lowerTierSlot == null && equippedItem.ItemTier < equipment.ItemTier)
+            if (equippedItem.ItemTier < equipment.ItemTier)
             {
-                lowerTierSlot = candidate;
+                if (bestLowerTierItem == null
+                    || equippedItem.ItemTier < bestLowerTierItem.ItemTier
+                    || (equippedItem.ItemTier == bestLowerTierItem.ItemTier
+                        && CompareRarity(equippedItem.Rarity, bestLowerTierItem.Rarity) < 0))
+                {
+                    bestLowerTierSlot = candidate;
+                    bestLowerTierItem = equippedItem;
+                }
             }
 
-            if (lowerRaritySlot == null && CompareRarity(equippedItem.Rarity, equipment.Rarity) < 0)
+            if (CompareRarity(equippedItem.Rarity, equipment.Rarity) < 0)
             {
-                lowerRaritySlot = candidate;
+                if (bestLowerRarityItem == null
+                    || CompareRarity(equippedItem.Rarity, bestLowerRarityItem.Rarity) < 0
+                    || (CompareRarity(equippedItem.Rarity, bestLowerRarityItem.Rarity) == 0
+                        && equippedItem.ItemTier < bestLowerRarityItem.ItemTier))
+                {
+                    bestLowerRaritySlot = candidate;
+                    bestLowerRarityItem = equippedItem;
+                }
             }
         }
 
@@ -713,14 +775,14 @@ public class StagingManager : MonoBehaviour
             return emptySlot;
         }
 
-        if (lowerTierSlot != null)
+        if (bestLowerTierSlot != null)
         {
-            return lowerTierSlot;
+            return bestLowerTierSlot;
         }
 
-        if (lowerRaritySlot != null)
+        if (bestLowerRaritySlot != null)
         {
-            return lowerRaritySlot;
+            return bestLowerRaritySlot;
         }
 
         return firstSlot;
@@ -1015,6 +1077,12 @@ public class StagingManager : MonoBehaviour
 
         hoveredEquipment = FindEquipmentById(equipmentInventoryLayout[hoveredEquipmentIndex]);
         RefreshPreview();
+    }
+
+    private Color GetEquipmentTierTint(int itemTier)
+    {
+        float normalizedTier = Mathf.InverseLerp(1f, 10f, Mathf.Clamp(itemTier, 1, 10));
+        return Color.Lerp(Color.white, Color.red, normalizedTier);
     }
 
     public void ShowWeaponsTab()

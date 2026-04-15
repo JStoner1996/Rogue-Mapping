@@ -7,6 +7,7 @@ public class InventorySlotViewData
     public string id;
     public string label;
     public Sprite icon;
+    public Color iconTint = Color.white;
     public bool isEmpty;
     public bool isSelected;
     public bool isFocused;

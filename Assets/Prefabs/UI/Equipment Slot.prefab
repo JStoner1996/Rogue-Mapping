@@ -109,7 +109,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: -50}
+  m_AnchoredPosition: {x: 0, y: -56.6}
   m_SizeDelta: {x: 0, y: 50}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &2937247099552296188
@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 4948496469402604776}
   - component: {fileID: 1339656186448522625}
   m_Layer: 5
-  m_Name: Highlight
+  m_Name: SelectedOutline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -455,11 +455,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e0d9c6a3e81d0e4792259e6674ec915, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentSlotDropTargetUI
+  loadoutSlotId: 
   slotType: 0
-  highlightImage: {fileID: 1339656186448522625}
-  equippedItemIcon: {fileID: 8937345598428607126}
-  validHighlightColor: {r: 1, g: 0.85, b: 0.2, a: 0.8}
-  equippedHighlightColor: {r: 0.35, g: 1, b: 0.45, a: 0.8}
+  slotBorderImage: {fileID: 1365086071045002284}
+  selectionOutlineImage: {fileID: 1339656186448522625}
+  itemIconImage: {fileID: 8937345598428607126}
+  hoveredBorderColor: {r: 1, g: 0.85, b: 0.2, a: 0.8}
+  equippedBorderColor: {r: 0.35, g: 1, b: 0.45, a: 0.8}
+  filledBorderColor: {r: 1, g: 1, b: 1, a: 0.8}
+  selectedOutlineColor: {r: 1, g: 0.25, b: 0.25, a: 0.8}
 --- !u!1 &6678822954943638546
 GameObject:
   m_ObjectHideFlags: 0

@@ -506,7 +506,7 @@ MonoBehaviour:
   iconImage: {fileID: 8937345598428607126}
   borderImage: {fileID: 1365086071045002284}
   selectedOutline: {fileID: 3378232851290904719}
-  selectedOutlineImage: {fileID: 0}
+  selectedOutlineImage: {fileID: 1339656186448522625}
   discardOverlay: {fileID: 782845242734518078}
   itemNameText: {fileID: 7211228715486454764}
   emptyBorderColor: {r: 1, g: 1, b: 1, a: 0.2}

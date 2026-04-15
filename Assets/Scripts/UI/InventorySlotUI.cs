@@ -3,24 +3,33 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IDragDropTargetUI
 {
-    [Header("Components")]
+    [Header("Interaction")]
     [SerializeField] private Button button;
     [SerializeField] private DraggableItemUI draggableItem;
-    [SerializeField] private Image iconImage;
-    [SerializeField] private Image borderImage;
-    [SerializeField] private GameObject selectedOutline;
-    [SerializeField] private Image selectedOutlineImage;
+
+    [Header("Visual References")]
+    [FormerlySerializedAs("iconImage")]
+    [SerializeField] private Image itemIconImage;
+    [FormerlySerializedAs("borderImage")]
+    [SerializeField] private Image slotBorderImage;
+    [FormerlySerializedAs("selectedOutline")]
+    [SerializeField] private GameObject selectionOutlineRoot;
+    [FormerlySerializedAs("selectedOutlineImage")]
+    [SerializeField] private Image selectionOutlineImage;
     [SerializeField] private GameObject discardOverlay;
     [SerializeField] private TMP_Text itemNameText;
 
-    [Header("State Colors")]
+    [Header("Border Colors")]
     [SerializeField] private Color emptyBorderColor = new Color(1f, 1f, 1f, 0.2f);
     [SerializeField] private Color filledBorderColor = new Color(1f, 1f, 1f, 0.8f);
-    [SerializeField] private Color selectedBorderColor = new Color(1f, 0.85f, 0.2f, 1f);
-    [SerializeField] private Color equippedOutlineColor = new Color(0.35f, 1f, 0.45f, 1f);
+    [SerializeField] private Color hoveredBorderColor = new Color(1f, 0.85f, 0.2f, 1f);
+    [SerializeField] private Color equippedBorderColor = new Color(0.35f, 1f, 0.45f, 1f);
+
+    [Header("Selection Outline Colors")]
     [SerializeField] private Color selectedOutlineColor = new Color(1f, 0.25f, 0.25f, 1f);
 
     private InventorySlotViewData currentData;
@@ -36,9 +45,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     void Awake()
     {
-        if (selectedOutlineImage == null && selectedOutline != null)
+        if (selectionOutlineImage == null && selectionOutlineRoot != null)
         {
-            selectedOutlineImage = selectedOutline.GetComponent<Image>();
+            selectionOutlineImage = selectionOutlineRoot.GetComponent<Image>();
         }
 
         if (button != null)
@@ -128,11 +137,12 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         bool isEmpty = currentData == null || currentData.isEmpty;
         bool hasIcon = !isEmpty && currentData.icon != null;
 
-        if (iconImage != null)
+        if (itemIconImage != null)
         {
-            iconImage.gameObject.SetActive(hasIcon);
-            iconImage.sprite = hasIcon ? currentData.icon : null;
-            iconImage.enabled = hasIcon;
+            itemIconImage.gameObject.SetActive(hasIcon);
+            itemIconImage.sprite = hasIcon ? currentData.icon : null;
+            itemIconImage.enabled = hasIcon;
+            itemIconImage.color = hasIcon ? currentData.iconTint : Color.white;
         }
 
         if (itemNameText != null)
@@ -141,16 +151,14 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             itemNameText.enabled = !string.IsNullOrWhiteSpace(itemNameText.text);
         }
 
-        if (selectedOutline != null)
+        if (selectionOutlineRoot != null)
         {
-            bool showOutline = !isEmpty && (currentData.isSelected || currentData.isEquipped);
-            selectedOutline.SetActive(showOutline);
+            bool showOutline = !isEmpty && currentData.isSelected;
+            selectionOutlineRoot.SetActive(showOutline);
 
-            if (showOutline && selectedOutlineImage != null)
+            if (showOutline && selectionOutlineImage != null)
             {
-                selectedOutlineImage.color = currentData.isSelected
-                    ? selectedOutlineColor
-                    : equippedOutlineColor;
+                selectionOutlineImage.color = selectedOutlineColor;
             }
         }
 
@@ -159,13 +167,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             discardOverlay.SetActive(!isEmpty && currentData.isDiscarded);
         }
 
-        if (borderImage != null)
+        if (slotBorderImage != null)
         {
-            borderImage.color = isEmpty
-                ? emptyBorderColor
-                : isDropHovered || currentData.isFocused
-                    ? selectedBorderColor
-                    : filledBorderColor;
+            slotBorderImage.color = GetBorderColor(isEmpty);
         }
 
         if (button != null)
@@ -177,6 +181,26 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             draggableItem.SetDragEnabled(!isEmpty && currentData.isInteractable && currentData.canDrag);
         }
+    }
+
+    private Color GetBorderColor(bool isEmpty)
+    {
+        if (isEmpty)
+        {
+            return emptyBorderColor;
+        }
+
+        if (isDropHovered || currentData.isFocused)
+        {
+            return hoveredBorderColor;
+        }
+
+        if (currentData.isEquipped)
+        {
+            return equippedBorderColor;
+        }
+
+        return filledBorderColor;
     }
 
     private DragItemPayload BuildDragPayload()
