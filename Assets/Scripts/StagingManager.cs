@@ -36,21 +36,20 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private int defaultMapVictoryTarget = 10;
 
     private readonly List<Button> tabButtons = new List<Button>();
-    private readonly List<MapInstance> availableMaps = new List<MapInstance>();
     private List<WeaponData> allWeapons = new List<WeaponData>();
     private EquipmentStagingController equipmentController;
+    private MapStagingController mapController;
 
     private WeaponData selectedWeapon;
-    private MapInstance selectedMap;
     private WeaponData hoveredWeapon;
-    private MapInstance hoveredMap;
     private StagingTab currentTab;
 
     void Start()
     {
         MetaProgressionService.EnsureLoaded();
         LoadWeapons();
-        LoadMaps();
+        mapController = new MapStagingController(mapGrid, mapPreviewUI);
+        mapController.LoadStarterMaps(4, defaultMapVictoryCondition, defaultMapVictoryTarget);
         equipmentController = new EquipmentStagingController(
             equipmentGrid,
             equipmentInventoryDropTarget,
@@ -69,13 +68,6 @@ public class StagingManager : MonoBehaviour
         allWeapons = new List<WeaponData>(Resources.LoadAll<WeaponData>("WeaponData"));
     }
 
-    private void LoadMaps()
-    {
-        MetaProgressionService.EnsureStarterMaps(4, defaultMapVictoryCondition, defaultMapVictoryTarget);
-        availableMaps.Clear();
-        availableMaps.AddRange(MetaProgressionService.GetOwnedMaps());
-    }
-
     private void InitializeDefaults()
     {
         selectedWeapon = allWeapons.Find(w => w.weaponName == "Area Weapon");
@@ -85,13 +77,8 @@ public class StagingManager : MonoBehaviour
             selectedWeapon = allWeapons[0];
         }
 
-        if (availableMaps.Count > 0)
-        {
-            selectedMap = availableMaps[0];
-        }
-
         RunData.SelectedWeapon = selectedWeapon;
-        RunData.SelectedMap = selectedMap;
+        RunData.SelectedMap = mapController != null ? mapController.SelectedMap : null;
     }
 
     private void RegisterTabButtons()
@@ -150,7 +137,7 @@ public class StagingManager : MonoBehaviour
                 break;
 
             case StagingTab.Maps:
-                RefreshMapGrid();
+                mapController?.RefreshGrid();
                 break;
 
             case StagingTab.Equipment:
@@ -196,43 +183,6 @@ public class StagingManager : MonoBehaviour
             });
     }
 
-    private void RefreshMapGrid()
-    {
-        if (mapGrid == null)
-        {
-            return;
-        }
-
-        List<InventorySlotModel> items = new List<InventorySlotModel>(availableMaps.Count);
-        foreach (MapInstance map in availableMaps)
-        {
-            if (map == null)
-            {
-                continue;
-            }
-
-            items.Add(new InventorySlotModel
-            {
-                id = map.BaseMapId + "|" + map.DisplayName,
-                label = map.DisplayName,
-                icon = map.Icon,
-                isEmpty = false,
-                isSelected = map == selectedMap,
-                isHovered = map == hoveredMap,
-                isInteractable = true,
-            });
-        }
-
-        mapGrid.SetItems(
-            new InventoryGridModel(items, mapGrid.MaxSlots),
-            new InventoryGridInteractions
-            {
-                OnSlotClicked = OnMapSlotClicked,
-                OnSlotHoverEnter = OnMapSlotHoverEnter,
-                OnSlotHoverExit = OnMapSlotHoverExit,
-            });
-    }
-
     private void RefreshPreview()
     {
         switch (currentTab)
@@ -242,7 +192,7 @@ public class StagingManager : MonoBehaviour
                 break;
 
             case StagingTab.Maps:
-                mapPreviewUI.ShowMap(hoveredMap != null ? hoveredMap : selectedMap);
+                mapController?.RefreshPreview();
                 break;
 
             case StagingTab.Equipment:
@@ -274,15 +224,6 @@ public class StagingManager : MonoBehaviour
         RefreshWeaponGrid();
     }
 
-    private void SelectMap(MapInstance map)
-    {
-        selectedMap = map;
-        hoveredMap = null;
-        RunData.SelectedMap = map;
-        mapPreviewUI.ShowMap(map);
-        RefreshMapGrid();
-    }
-
     private void OnWeaponSlotClicked(int index, InventorySlotModel data)
     {
         if (index < 0 || index >= allWeapons.Count)
@@ -312,35 +253,6 @@ public class StagingManager : MonoBehaviour
         RefreshWeaponGrid();
     }
 
-    private void OnMapSlotClicked(int index, InventorySlotModel data)
-    {
-        if (index < 0 || index >= availableMaps.Count)
-        {
-            return;
-        }
-
-        SelectMap(availableMaps[index]);
-    }
-
-    private void OnMapSlotHoverEnter(int index, InventorySlotModel data)
-    {
-        if (index < 0 || index >= availableMaps.Count)
-        {
-            return;
-        }
-
-        hoveredMap = availableMaps[index];
-        mapPreviewUI.ShowMap(hoveredMap);
-        RefreshMapGrid();
-    }
-
-    private void OnMapSlotHoverExit(int index, InventorySlotModel data)
-    {
-        hoveredMap = null;
-        RefreshPreview();
-        RefreshMapGrid();
-    }
-
     public void ShowWeaponsTab()
     {
         SwitchTab(StagingTab.Weapons);
@@ -364,6 +276,7 @@ public class StagingManager : MonoBehaviour
             return;
         }
 
+        MapInstance selectedMap = mapController != null ? mapController.SelectedMap : null;
         if (selectedMap == null)
         {
             Debug.LogWarning("No map selected!");
