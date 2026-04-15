@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+// Determines where equipment items should appear in the inventory layout.
 public static class EquipmentInventoryLayoutService
 {
     private static readonly EquipmentSlotType[] PriorityOrder =
@@ -40,6 +41,8 @@ public static class EquipmentInventoryLayoutService
         IReadOnlyList<EquipmentInstance> availableEquipment,
         Func<string, string> getEquippedItemId)
     {
+        // Chooses an equip destination using the current priority rules:
+        // empty slot > replace lower tier > replace lower rarity > first slot.
         if (equipment == null || dropTargets == null || getEquippedItemId == null)
         {
             return null;
@@ -146,6 +149,8 @@ public static class EquipmentInventoryLayoutService
         IReadOnlyList<EquipmentSlotDropTargetUI> dropTargets,
         Func<string, string> getEquippedItemId)
     {
+        // Rebuilds the inventory so equipped items occupy the compact priority strip first,
+        // while displaced and unequipped items keep their previous positions when possible.
         List<string> layout = new List<string>();
         int slotCount = Math.Max(Math.Max(minimumSlotCount, 8), availableEquipment != null ? availableEquipment.Count : 0);
 
@@ -250,6 +255,7 @@ public static class EquipmentInventoryLayoutService
 
     private static List<string> GetEquippedPriorityIds(IReadOnlyList<EquipmentSlotDropTargetUI> dropTargets, Func<string, string> getEquippedItemId)
     {
+        // Collects currently equipped ids in the same order the inventory strip should display them.
         List<string> equippedIds = new List<string>(PriorityOrder.Length);
         List<EquipmentSlotDropTargetUI> orderedTargets = new List<EquipmentSlotDropTargetUI>();
 
@@ -295,6 +301,7 @@ public static class EquipmentInventoryLayoutService
 
     private static int GetDropTargetPriority(EquipmentSlotDropTargetUI dropTarget)
     {
+        // Rings share a slot type, so their loadout id is used to keep Ring 1 ahead of Ring 2.
         if (dropTarget == null)
         {
             return int.MaxValue;

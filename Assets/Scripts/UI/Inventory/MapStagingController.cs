@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+// Coordinates the maps tab state, selection, and preview updates.
 public class MapStagingController : IStagingTabController
 {
     private readonly InventoryGridUI mapGrid;

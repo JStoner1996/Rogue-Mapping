@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Builds the inventory grid view model for equipment items.
 public static class EquipmentInventoryGridPresenter
 {
     public static InventoryGridModel BuildGridModel(
@@ -10,6 +11,7 @@ public static class EquipmentInventoryGridPresenter
         EquipmentInstance selectedEquipment,
         EquipmentInstance hoveredEquipment)
     {
+        // Converts the current equipment inventory layout into generic slot models for the reusable grid UI.
         int slotCount = Mathf.Max(maxSlots, equipmentInventoryLayout != null ? equipmentInventoryLayout.Count : 0);
         List<InventorySlotModel> items = new List<InventorySlotModel>(slotCount);
         EquipmentLoadoutData loadout = MetaProgressionService.GetEquipmentLoadout();

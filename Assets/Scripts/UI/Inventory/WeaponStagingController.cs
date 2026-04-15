@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Coordinates the weapons tab state, selection, and preview updates.
 public class WeaponStagingController : IStagingTabController
 {
     private readonly InventoryGridUI weaponGrid;

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+// Handles equip, unequip, swap, and drop interaction rules for equipment items.
 public static class EquipmentInventoryInteractionService
 {
     public static bool ToggleEquipFromInventory(
@@ -7,6 +8,8 @@ public static class EquipmentInventoryInteractionService
         IReadOnlyList<EquipmentInstance> availableEquipment,
         IReadOnlyList<EquipmentSlotDropTargetUI> dropTargets)
     {
+        // Right-clicking from inventory either unequips the item if it's already worn,
+        // or finds the best legal slot to equip it into.
         if (equipment == null)
         {
             return false;
@@ -55,6 +58,7 @@ public static class EquipmentInventoryInteractionService
         DragItemPayload payload,
         IReadOnlyList<EquipmentInstance> availableEquipment)
     {
+        // Handles dragging onto the paper-doll, including same-type slot swaps like Ring 1 <-> Ring 2.
         if (dropTarget == null || payload == null || string.IsNullOrWhiteSpace(payload.itemId))
         {
             return false;
@@ -111,6 +115,8 @@ public static class EquipmentInventoryInteractionService
         List<string> equipmentInventoryLayout,
         IReadOnlyList<EquipmentInstance> availableEquipment)
     {
+        // Handles inventory-slot drops, including the special case where dropping an equipped item
+        // onto a same-type inventory item equips that target item into the dragged item's old slot.
         if (!CanAcceptInventoryDrop(targetIndex, payload, equipmentInventoryLayout)
             || string.IsNullOrWhiteSpace(payload.itemId))
         {
@@ -161,6 +167,7 @@ public static class EquipmentInventoryInteractionService
 
     public static bool UnequipItem(string equipmentInstanceId)
     {
+        // Removes an item from any loadout slot currently pointing at it.
         if (string.IsNullOrWhiteSpace(equipmentInstanceId))
         {
             return false;

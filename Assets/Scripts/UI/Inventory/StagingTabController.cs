@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+// Manages staging tab buttons, active panel visibility, and tab visuals.
 public class StagingTabController
 {
     public enum Tab

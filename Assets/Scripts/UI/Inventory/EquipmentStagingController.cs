@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Coordinates the equipment tab state, UI refreshes, and event wiring.
 public class EquipmentStagingController : IStagingTabController
 {
     private readonly InventoryGridUI equipmentGrid;

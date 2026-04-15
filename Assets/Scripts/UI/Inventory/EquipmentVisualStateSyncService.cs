@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+// Syncs selected and hovered equipment state into the paper-doll slot visuals.
 public static class EquipmentVisualStateSyncService
 {
     public static void SyncEquippedSlotVisuals(
@@ -8,6 +9,7 @@ public static class EquipmentVisualStateSyncService
         EquipmentInstance hoveredEquipment,
         IReadOnlyList<EquipmentInstance> availableEquipment)
     {
+        // Mirrors the shared equipment selection/hover state onto the paper-doll slot visuals.
         if (dropTargets == null)
         {
             return;
