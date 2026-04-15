@@ -87,6 +87,29 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
+    public void ApplyEquipmentSummary(EquipmentStatSummary summary)
+    {
+        if (summary == null)
+        {
+            return;
+        }
+
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.MaximumHealth), PlayerStatType.MaximumHealth, supportsFlatValue: true);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Armor), PlayerStatType.Armor);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.HealthRegen), PlayerStatType.HealthRegen);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.MovementSpeed), PlayerStatType.MovementSpeed);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.PickupRange), PlayerStatType.PickupRange);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Damage), PlayerStatType.Damage);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.AttackSpeed), PlayerStatType.AttackSpeed);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Range), PlayerStatType.Range);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Knockback), PlayerStatType.Knockback);
+    }
+
+    public float GetTotal(PlayerStatType statType)
+    {
+        return totals.TryGetValue(statType, out float value) ? value : 0f;
+    }
+
     private void ApplyStat(PlayerStatType statType, float value)
     {
         if (!totals.ContainsKey(statType))
@@ -124,6 +147,34 @@ public class PlayerStats : MonoBehaviour
             case PlayerStatType.Knockback:
                 weaponController?.ApplyGlobalPlayerStat(statType, value);
                 break;
+        }
+    }
+
+    private void ApplyEquipmentEntry(EquipmentStatSummaryEntry entry, PlayerStatType targetStatType, bool supportsFlatValue = false)
+    {
+        if (entry == null)
+        {
+            return;
+        }
+
+        if (supportsFlatValue && !Mathf.Approximately(entry.flatValue, 0f))
+        {
+            switch (targetStatType)
+            {
+                case PlayerStatType.MaximumHealth:
+                    playerHealth?.ApplyFlatMaxHealthModifier(entry.flatValue);
+                    break;
+            }
+        }
+
+        if (!Mathf.Approximately(entry.percentValue, 0f))
+        {
+            ApplyStat(targetStatType, entry.percentValue);
+        }
+
+        if (!supportsFlatValue && !Mathf.Approximately(entry.flatValue, 0f))
+        {
+            ApplyStat(targetStatType, entry.flatValue);
         }
     }
 }

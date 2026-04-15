@@ -6,6 +6,7 @@ public class PlayerHealth : MonoBehaviour
     private const float ArmorMitigationDenominator = 100f;
 
     private float baseMaxHealth;
+    private float flatMaxHealthBonus;
     private float maxHealthMultiplier;
     private float immunityDuration;
     private bool initialized;
@@ -15,7 +16,7 @@ public class PlayerHealth : MonoBehaviour
     private bool isImmune;
     private float immunityTimer;
 
-    public float MaxHealth => baseMaxHealth * (1f + maxHealthMultiplier);
+    public float MaxHealth => (baseMaxHealth + flatMaxHealthBonus) * (1f + maxHealthMultiplier);
     public float CurrentHealth { get; private set; }
     public float Armor => armor;
     public float HealthRegenPerSecond => healthRegenPerSecond;
@@ -23,6 +24,7 @@ public class PlayerHealth : MonoBehaviour
     public void Configure(float configuredMaxHealth, float configuredImmunityDuration)
     {
         baseMaxHealth = configuredMaxHealth;
+        flatMaxHealthBonus = 0f;
         maxHealthMultiplier = 0f;
         immunityDuration = configuredImmunityDuration;
         armor = 5f;
@@ -37,7 +39,16 @@ public class PlayerHealth : MonoBehaviour
         maxHealthMultiplier += value;
         float newMaxHealth = MaxHealth;
         CurrentHealth = Mathf.Min(CurrentHealth + (newMaxHealth - previousMaxHealth), newMaxHealth);
-        UIController.Instance.UpdateHealthSlider();
+        RefreshHealthUI();
+    }
+
+    public void ApplyFlatMaxHealthModifier(float value)
+    {
+        float previousMaxHealth = MaxHealth;
+        flatMaxHealthBonus = Mathf.Max(0f, flatMaxHealthBonus + value);
+        float newMaxHealth = MaxHealth;
+        CurrentHealth = Mathf.Min(CurrentHealth + (newMaxHealth - previousMaxHealth), newMaxHealth);
+        RefreshHealthUI();
     }
 
     public void ApplyArmorModifier(float value)
@@ -57,7 +68,7 @@ public class PlayerHealth : MonoBehaviour
             return;
         }
 
-        UIController.Instance.UpdateHealthSlider();
+        RefreshHealthUI();
     }
 
     void Update()
@@ -94,7 +105,7 @@ public class PlayerHealth : MonoBehaviour
         immunityTimer = immunityDuration;
         CurrentHealth -= GetMitigatedDamage(damage);
 
-        UIController.Instance.UpdateHealthSlider();
+        RefreshHealthUI();
 
         if (CurrentHealth > 0f)
         {
@@ -108,7 +119,7 @@ public class PlayerHealth : MonoBehaviour
     public void GainHealth(int healthAmount)
     {
         CurrentHealth = Mathf.Min(CurrentHealth + healthAmount, MaxHealth);
-        UIController.Instance.UpdateHealthSlider();
+        RefreshHealthUI();
     }
 
     private void RegenerateHealth()
@@ -123,7 +134,7 @@ public class PlayerHealth : MonoBehaviour
 
         if (!Mathf.Approximately(previousHealth, CurrentHealth))
         {
-            UIController.Instance.UpdateHealthSlider();
+            RefreshHealthUI();
         }
     }
 
@@ -141,5 +152,13 @@ public class PlayerHealth : MonoBehaviour
 
         float mitigatedDamage = incomingDamage * (ArmorMitigationDenominator / (ArmorMitigationDenominator + armor));
         return Mathf.Max(1f, mitigatedDamage);
+    }
+
+    private void RefreshHealthUI()
+    {
+        if (UIController.Instance != null)
+        {
+            UIController.Instance.UpdateHealthSlider();
+        }
     }
 }

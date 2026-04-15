@@ -39,6 +39,11 @@ public class PlayerController : MonoBehaviour
     [Header("Available Weapons")]
     [SerializeField] private List<WeaponData> allWeapons;
 
+    public PlayerMovement PlayerMovementComponent => playerMovement;
+    public PlayerHealth PlayerHealthComponent => playerHealthComponent;
+    public PlayerCollector PlayerCollectorComponent => playerCollector;
+    public PlayerStats PlayerStatsComponent => playerStatsComponent;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -70,6 +75,7 @@ public class PlayerController : MonoBehaviour
         playerHealthComponent.Configure(maxHealth, immunityDuration);
         playerExperienceComponent.Configure(startingLevel, maxLevel, levelThresholds, startingExperience);
         playerStatsComponent.Configure(playerMovement, playerHealthComponent, playerCollector, weaponController);
+        playerStatsComponent.ApplyEquipmentSummary(MetaProgressionService.GetEquippedEquipmentStatSummary());
         weaponController.Configure(playerStatsComponent);
         playerLevelUpController.Configure(playerExperienceComponent, weaponController, playerStatsComponent, allWeapons);
         playerLevelUpController.RebindExperience();
