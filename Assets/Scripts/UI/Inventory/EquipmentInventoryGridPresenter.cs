@@ -9,12 +9,13 @@ public static class EquipmentInventoryGridPresenter
         IReadOnlyList<string> equipmentInventoryLayout,
         IReadOnlyList<EquipmentInstance> availableEquipment,
         EquipmentInstance selectedEquipment,
-        EquipmentInstance hoveredEquipment)
+        EquipmentInstance hoveredEquipment,
+        IEquipmentDataFacade dataFacade)
     {
         // Converts the current equipment inventory layout into generic slot models for the reusable grid UI.
         int slotCount = Mathf.Max(maxSlots, equipmentInventoryLayout != null ? equipmentInventoryLayout.Count : 0);
         List<InventorySlotModel> items = new List<InventorySlotModel>(slotCount);
-        EquipmentLoadoutData loadout = MetaProgressionService.GetEquipmentLoadout();
+        EquipmentLoadoutData loadout = dataFacade != null ? dataFacade.GetEquipmentLoadout() : null;
 
         for (int i = 0; i < slotCount; i++)
         {

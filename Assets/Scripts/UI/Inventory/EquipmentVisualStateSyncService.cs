@@ -7,10 +7,11 @@ public static class EquipmentVisualStateSyncService
         IReadOnlyList<EquipmentSlotDropTargetUI> dropTargets,
         EquipmentInstance selectedEquipment,
         EquipmentInstance hoveredEquipment,
-        IReadOnlyList<EquipmentInstance> availableEquipment)
+        IReadOnlyList<EquipmentInstance> availableEquipment,
+        IEquipmentDataFacade dataFacade)
     {
         // Mirrors the shared equipment selection/hover state onto the paper-doll slot visuals.
-        if (dropTargets == null)
+        if (dropTargets == null || dataFacade == null)
         {
             return;
         }
@@ -23,7 +24,7 @@ public static class EquipmentVisualStateSyncService
                 continue;
             }
 
-            string equippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
+            string equippedItemId = dataFacade.GetEquippedItemId(dropTarget.LoadoutSlotId);
             EquipmentInstance equippedItem = FindEquipmentById(availableEquipment, equippedItemId);
 
             dropTarget.SetDisplayedEquipment(equippedItem);

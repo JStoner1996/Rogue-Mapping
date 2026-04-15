@@ -8,6 +8,7 @@ public class EquipmentStagingController : IStagingTabController
     private readonly ItemDetailsPanelUI equipmentPreviewUI;
     private readonly PlayerStatsPanelUI playerStatsPanelUI;
     private readonly List<EquipmentSlotDropTargetUI> equipmentDropTargets;
+    private readonly IEquipmentDataFacade dataFacade;
 
     private readonly List<EquipmentInstance> availableEquipment = new List<EquipmentInstance>();
     private readonly List<string> equipmentInventoryLayout = new List<string>();
@@ -20,18 +21,20 @@ public class EquipmentStagingController : IStagingTabController
         InventoryGridUI equipmentGrid,
         ItemDetailsPanelUI equipmentPreviewUI,
         PlayerStatsPanelUI playerStatsPanelUI,
-        List<EquipmentSlotDropTargetUI> equipmentDropTargets)
+        List<EquipmentSlotDropTargetUI> equipmentDropTargets,
+        IEquipmentDataFacade dataFacade = null)
     {
         this.equipmentGrid = equipmentGrid;
         this.equipmentPreviewUI = equipmentPreviewUI;
         this.playerStatsPanelUI = playerStatsPanelUI;
         this.equipmentDropTargets = equipmentDropTargets ?? new List<EquipmentSlotDropTargetUI>();
+        this.dataFacade = dataFacade ?? new MetaProgressionEquipmentDataFacade();
     }
 
     public void Load()
     {
         availableEquipment.Clear();
-        availableEquipment.AddRange(MetaProgressionService.GetOwnedEquipmentInstances());
+        availableEquipment.AddRange(dataFacade.GetOwnedEquipmentInstances());
         RebuildInventoryLayout();
         selectedEquipment = availableEquipment.Find(item => item != null && item.InstanceId == selectedEquipment?.InstanceId);
         hoveredEquipment = null;
@@ -76,7 +79,8 @@ public class EquipmentStagingController : IStagingTabController
                 equipmentInventoryLayout,
                 availableEquipment,
                 selectedEquipment,
-                hoveredEquipment),
+                hoveredEquipment,
+                dataFacade),
             new InventoryGridInteractions
             {
                 OnSlotClicked = OnEquipmentSlotClicked,
@@ -134,7 +138,8 @@ public class EquipmentStagingController : IStagingTabController
             equipmentDropTargets,
             selectedEquipment,
             hoveredEquipment,
-            availableEquipment);
+            availableEquipment,
+            dataFacade);
     }
 
     private void RefreshPlayerStatsPanel()
@@ -180,7 +185,7 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        if (!EquipmentInventoryInteractionService.ToggleEquipFromInventory(equipment, availableEquipment, equipmentDropTargets))
+        if (!EquipmentInventoryInteractionService.ToggleEquipFromInventory(equipment, availableEquipment, equipmentDropTargets, dataFacade))
         {
             return;
         }
@@ -240,13 +245,13 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        string equippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
+        string equippedItemId = dataFacade.GetEquippedItemId(dropTarget.LoadoutSlotId);
         if (string.IsNullOrWhiteSpace(equippedItemId))
         {
             return;
         }
 
-        if (!EquipmentInventoryInteractionService.UnequipFromLoadoutSlot(dropTarget.LoadoutSlotId))
+        if (!EquipmentInventoryInteractionService.UnequipFromLoadoutSlot(dropTarget.LoadoutSlotId, dataFacade))
         {
             return;
         }
@@ -279,7 +284,7 @@ public class EquipmentStagingController : IStagingTabController
 
     private void HandleEquipmentDropped(EquipmentSlotDropTargetUI dropTarget, DragItemPayload payload)
     {
-        if (!EquipmentInventoryInteractionService.HandleDropToEquipmentSlot(dropTarget, payload, availableEquipment))
+        if (!EquipmentInventoryInteractionService.HandleDropToEquipmentSlot(dropTarget, payload, availableEquipment, dataFacade))
         {
             return;
         }
@@ -292,12 +297,12 @@ public class EquipmentStagingController : IStagingTabController
 
     private bool CanAcceptEquipmentInventoryDrop(int index, DragItemPayload payload)
     {
-        return EquipmentInventoryInteractionService.CanAcceptInventoryDrop(index, payload, equipmentInventoryLayout);
+        return EquipmentInventoryInteractionService.CanAcceptInventoryDrop(index, payload, equipmentInventoryLayout, dataFacade);
     }
 
     private void HandleEquipmentInventorySlotDrop(int targetIndex, DragItemPayload payload)
     {
-        if (!EquipmentInventoryInteractionService.HandleInventorySlotDrop(targetIndex, payload, equipmentInventoryLayout, availableEquipment))
+        if (!EquipmentInventoryInteractionService.HandleInventorySlotDrop(targetIndex, payload, equipmentInventoryLayout, availableEquipment, dataFacade))
         {
             return;
         }
@@ -313,7 +318,7 @@ public class EquipmentStagingController : IStagingTabController
             availableEquipment,
             slotCount,
             equipmentDropTargets,
-            MetaProgressionService.GetEquippedItemId);
+            dataFacade.GetEquippedItemId);
         equipmentInventoryLayout.Clear();
         equipmentInventoryLayout.AddRange(rebuiltLayout);
     }

@@ -6,60 +6,62 @@ public static class EquipmentInventoryInteractionService
     public static bool ToggleEquipFromInventory(
         EquipmentInstance equipment,
         IReadOnlyList<EquipmentInstance> availableEquipment,
-        IReadOnlyList<EquipmentSlotDropTargetUI> dropTargets)
+        IReadOnlyList<EquipmentSlotDropTargetUI> dropTargets,
+        IEquipmentDataFacade dataFacade)
     {
         // Right-clicking from inventory either unequips the item if it's already worn,
         // or finds the best legal slot to equip it into.
-        if (equipment == null)
+        if (equipment == null || dataFacade == null)
         {
             return false;
         }
 
-        EquipmentLoadoutData loadout = MetaProgressionService.GetEquipmentLoadout();
+        EquipmentLoadoutData loadout = dataFacade.GetEquipmentLoadout();
         if (EquipmentInventoryLayoutService.IsEquipped(equipment.InstanceId, loadout))
         {
-            return UnequipItem(equipment.InstanceId);
+            return UnequipItem(equipment.InstanceId, dataFacade);
         }
 
         EquipmentSlotDropTargetUI targetSlot = EquipmentInventoryLayoutService.FindBestEquipTarget(
             equipment,
             dropTargets,
             availableEquipment,
-            MetaProgressionService.GetEquippedItemId);
+            dataFacade.GetEquippedItemId);
 
         if (targetSlot == null)
         {
             return false;
         }
 
-        MetaProgressionService.SetEquippedItem(targetSlot.LoadoutSlotId, equipment.InstanceId);
+        dataFacade.SetEquippedItem(targetSlot.LoadoutSlotId, equipment.InstanceId);
         return true;
     }
 
-    public static bool UnequipFromLoadoutSlot(string loadoutSlotId)
+    public static bool UnequipFromLoadoutSlot(string loadoutSlotId, IEquipmentDataFacade dataFacade)
     {
-        if (string.IsNullOrWhiteSpace(loadoutSlotId))
+        if (string.IsNullOrWhiteSpace(loadoutSlotId) || dataFacade == null)
         {
             return false;
         }
 
-        string equippedItemId = MetaProgressionService.GetEquippedItemId(loadoutSlotId);
+        string equippedItemId = dataFacade.GetEquippedItemId(loadoutSlotId);
         if (string.IsNullOrWhiteSpace(equippedItemId))
         {
             return false;
         }
 
-        MetaProgressionService.SetEquippedItem(loadoutSlotId, string.Empty);
+        dataFacade.SetEquippedItem(loadoutSlotId, string.Empty);
         return true;
     }
 
     public static bool HandleDropToEquipmentSlot(
         EquipmentSlotDropTargetUI dropTarget,
         DragItemPayload payload,
-        IReadOnlyList<EquipmentInstance> availableEquipment)
+        IReadOnlyList<EquipmentInstance> availableEquipment,
+        IEquipmentDataFacade dataFacade)
     {
         // Handles dragging onto the paper-doll, including same-type slot swaps like Ring 1 <-> Ring 2.
-        if (dropTarget == null || payload == null || string.IsNullOrWhiteSpace(payload.itemId))
+        if (dropTarget == null || payload == null || string.IsNullOrWhiteSpace(payload.itemId) || dataFacade == null)
         {
             return false;
         }
@@ -74,30 +76,32 @@ public static class EquipmentInventoryInteractionService
             && !string.IsNullOrWhiteSpace(payload.sourceSlotId)
             && payload.sourceSlotId != dropTarget.LoadoutSlotId)
         {
-            string targetEquippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
+            string targetEquippedItemId = dataFacade.GetEquippedItemId(dropTarget.LoadoutSlotId);
             EquipmentInstance targetEquippedItem = FindEquipmentById(availableEquipment, targetEquippedItemId);
 
             if (targetEquippedItem != null && targetEquippedItem.SlotType == equipment.SlotType)
             {
-                MetaProgressionService.SetEquippedItem(payload.sourceSlotId, targetEquippedItem.InstanceId, false);
-                MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId, false);
-                MetaProgressionService.Save();
+                dataFacade.SetEquippedItem(payload.sourceSlotId, targetEquippedItem.InstanceId, false);
+                dataFacade.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId, false);
+                dataFacade.Save();
                 return true;
             }
         }
 
-        MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId);
+        dataFacade.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId);
         return true;
     }
 
     public static bool CanAcceptInventoryDrop(
         int index,
         DragItemPayload payload,
-        IReadOnlyList<string> equipmentInventoryLayout)
+        IReadOnlyList<string> equipmentInventoryLayout,
+        IEquipmentDataFacade dataFacade)
     {
         if (payload == null
             || payload.itemType != DragItemType.Equipment
             || index < 0
+            || dataFacade == null
             || equipmentInventoryLayout == null
             || index >= equipmentInventoryLayout.Count)
         {
@@ -106,18 +110,19 @@ public static class EquipmentInventoryInteractionService
 
         string targetItemId = equipmentInventoryLayout[index];
         return string.IsNullOrWhiteSpace(targetItemId)
-            || !EquipmentInventoryLayoutService.IsEquipped(targetItemId, MetaProgressionService.GetEquipmentLoadout());
+            || !EquipmentInventoryLayoutService.IsEquipped(targetItemId, dataFacade.GetEquipmentLoadout());
     }
 
     public static bool HandleInventorySlotDrop(
         int targetIndex,
         DragItemPayload payload,
         List<string> equipmentInventoryLayout,
-        IReadOnlyList<EquipmentInstance> availableEquipment)
+        IReadOnlyList<EquipmentInstance> availableEquipment,
+        IEquipmentDataFacade dataFacade)
     {
         // Handles inventory-slot drops, including the special case where dropping an equipped item
         // onto a same-type inventory item equips that target item into the dragged item's old slot.
-        if (!CanAcceptInventoryDrop(targetIndex, payload, equipmentInventoryLayout)
+        if (!CanAcceptInventoryDrop(targetIndex, payload, equipmentInventoryLayout, dataFacade)
             || string.IsNullOrWhiteSpace(payload.itemId))
         {
             return false;
@@ -135,7 +140,7 @@ public static class EquipmentInventoryInteractionService
             && targetEquipment.SlotType == payload.equipmentSlotType
             && targetEquipment.InstanceId != payload.itemId)
         {
-            MetaProgressionService.SetEquippedItem(payload.sourceSlotId, targetEquipment.InstanceId);
+            dataFacade.SetEquippedItem(payload.sourceSlotId, targetEquipment.InstanceId);
 
             if (sourceIndex >= 0)
             {
@@ -153,7 +158,7 @@ public static class EquipmentInventoryInteractionService
 
         if (payload.sourceType == DragItemSourceType.EquippedSlot)
         {
-            UnequipItem(payload.itemId);
+            UnequipItem(payload.itemId, dataFacade);
         }
 
         if (sourceIndex != targetIndex)
@@ -165,15 +170,15 @@ public static class EquipmentInventoryInteractionService
         return true;
     }
 
-    public static bool UnequipItem(string equipmentInstanceId)
+    public static bool UnequipItem(string equipmentInstanceId, IEquipmentDataFacade dataFacade)
     {
         // Removes an item from any loadout slot currently pointing at it.
-        if (string.IsNullOrWhiteSpace(equipmentInstanceId))
+        if (string.IsNullOrWhiteSpace(equipmentInstanceId) || dataFacade == null)
         {
             return false;
         }
 
-        EquipmentLoadoutData loadout = MetaProgressionService.GetEquipmentLoadout();
+        EquipmentLoadoutData loadout = dataFacade.GetEquipmentLoadout();
         bool changed = false;
 
         if (loadout?.equippedItems != null)
@@ -184,7 +189,7 @@ public static class EquipmentInventoryInteractionService
 
                 if (slot != null && slot.equipmentInstanceId == equipmentInstanceId)
                 {
-                    MetaProgressionService.SetEquippedItem(slot.slotId, string.Empty, false);
+                    dataFacade.SetEquippedItem(slot.slotId, string.Empty, false);
                     changed = true;
                 }
             }
@@ -192,7 +197,7 @@ public static class EquipmentInventoryInteractionService
 
         if (changed)
         {
-            MetaProgressionService.Save();
+            dataFacade.Save();
         }
 
         return changed;
