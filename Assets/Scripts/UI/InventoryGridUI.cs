@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -30,41 +29,27 @@ public class InventoryGridUI : MonoBehaviour
     }
 
     public void SetItems(
-        IReadOnlyList<InventorySlotViewData> items,
-        Action<int, InventorySlotViewData> onSlotClicked = null,
-        Action<int, InventorySlotViewData> onSlotRightClicked = null,
-        Action<int, InventorySlotViewData> onSlotHoverEnter = null,
-        Action<int, InventorySlotViewData> onSlotHoverExit = null,
-        Func<int, DragItemPayload, bool> canAcceptDropAtIndex = null,
-        Action<int, DragItemPayload> onSlotDropReceived = null)
+        InventoryGridModel model,
+        InventoryGridInteractions interactions = null)
     {
         EnsureSlotCount();
+        interactions ??= InventoryGridInteractions.Empty();
 
         for (int i = 0; i < spawnedSlots.Count; i++)
         {
             int localIndex = i;
-
-            if (items != null && i < items.Count && items[i] != null)
-            {
-                spawnedSlots[i].Bind(
-                    items[i],
-                    (_, data) => onSlotClicked?.Invoke(localIndex, data),
-                    (_, data) => onSlotRightClicked?.Invoke(localIndex, data),
-                    (_, data) => onSlotHoverEnter?.Invoke(localIndex, data),
-                    (_, data) => onSlotHoverExit?.Invoke(localIndex, data),
-                    (_, payload) => canAcceptDropAtIndex != null && canAcceptDropAtIndex.Invoke(localIndex, payload),
-                    (_, payload) => onSlotDropReceived?.Invoke(localIndex, payload));
-                continue;
-            }
+            InventorySlotModel slotModel = model != null && i < model.SlotCount
+                ? model.GetSlot(i)
+                : InventorySlotModel.Empty();
 
             spawnedSlots[i].Bind(
-                InventorySlotViewData.Empty(),
-                null,
-                null,
-                null,
-                null,
-                (_, payload) => canAcceptDropAtIndex != null && canAcceptDropAtIndex.Invoke(localIndex, payload),
-                (_, payload) => onSlotDropReceived?.Invoke(localIndex, payload));
+                slotModel,
+                (_, data) => interactions.OnSlotClicked?.Invoke(localIndex, data),
+                (_, data) => interactions.OnSlotRightClicked?.Invoke(localIndex, data),
+                (_, data) => interactions.OnSlotHoverEnter?.Invoke(localIndex, data),
+                (_, data) => interactions.OnSlotHoverExit?.Invoke(localIndex, data),
+                (_, payload) => interactions.CanAcceptDropAtIndex != null && interactions.CanAcceptDropAtIndex.Invoke(localIndex, payload),
+                (_, payload) => interactions.OnSlotDropReceived?.Invoke(localIndex, payload));
         }
     }
 

@@ -32,16 +32,16 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [Header("Selection Outline Colors")]
     [SerializeField] private Color selectedOutlineColor = new Color(1f, 0.25f, 0.25f, 1f);
 
-    private InventorySlotViewData currentData;
-    private Action<InventorySlotUI, InventorySlotViewData> onClick;
-    private Action<InventorySlotUI, InventorySlotViewData> onRightClick;
-    private Action<InventorySlotUI, InventorySlotViewData> onHoverEnter;
-    private Action<InventorySlotUI, InventorySlotViewData> onHoverExit;
+    private InventorySlotModel currentData;
+    private Action<InventorySlotUI, InventorySlotModel> onClick;
+    private Action<InventorySlotUI, InventorySlotModel> onRightClick;
+    private Action<InventorySlotUI, InventorySlotModel> onHoverEnter;
+    private Action<InventorySlotUI, InventorySlotModel> onHoverExit;
     private Func<InventorySlotUI, DragItemPayload, bool> canAcceptDrop;
     private Action<InventorySlotUI, DragItemPayload> onDropReceived;
     private bool isDropHovered;
 
-    public InventorySlotViewData CurrentData => currentData;
+    public InventorySlotModel CurrentData => currentData;
 
     void Awake()
     {
@@ -63,15 +63,15 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     }
 
     public void Bind(
-        InventorySlotViewData data,
-        Action<InventorySlotUI, InventorySlotViewData> clickCallback = null,
-        Action<InventorySlotUI, InventorySlotViewData> rightClickCallback = null,
-        Action<InventorySlotUI, InventorySlotViewData> hoverEnterCallback = null,
-        Action<InventorySlotUI, InventorySlotViewData> hoverExitCallback = null,
+        InventorySlotModel data,
+        Action<InventorySlotUI, InventorySlotModel> clickCallback = null,
+        Action<InventorySlotUI, InventorySlotModel> rightClickCallback = null,
+        Action<InventorySlotUI, InventorySlotModel> hoverEnterCallback = null,
+        Action<InventorySlotUI, InventorySlotModel> hoverExitCallback = null,
         Func<InventorySlotUI, DragItemPayload, bool> canAcceptDropCallback = null,
         Action<InventorySlotUI, DragItemPayload> dropReceivedCallback = null)
     {
-        currentData = data ?? InventorySlotViewData.Empty();
+        currentData = data ?? InventorySlotModel.Empty();
         onClick = clickCallback;
         onRightClick = rightClickCallback;
         onHoverEnter = hoverEnterCallback;
@@ -82,9 +82,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         RefreshVisuals();
     }
 
-    public void SetEmpty(Action<InventorySlotUI, InventorySlotViewData> clickCallback = null)
+    public void SetEmpty(Action<InventorySlotUI, InventorySlotModel> clickCallback = null)
     {
-        Bind(InventorySlotViewData.Empty(), clickCallback);
+        Bind(InventorySlotModel.Empty(), clickCallback);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -190,7 +190,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return emptyBorderColor;
         }
 
-        if (isDropHovered || currentData.isFocused)
+        if (isDropHovered || currentData.isHovered)
         {
             return hoveredBorderColor;
         }

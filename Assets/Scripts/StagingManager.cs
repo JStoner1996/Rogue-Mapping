@@ -219,7 +219,7 @@ public class StagingManager : MonoBehaviour
             return;
         }
 
-        List<InventorySlotViewData> items = new List<InventorySlotViewData>(allWeapons.Count);
+        List<InventorySlotModel> items = new List<InventorySlotModel>(allWeapons.Count);
         foreach (WeaponData weapon in allWeapons)
         {
             if (weapon == null)
@@ -227,19 +227,26 @@ public class StagingManager : MonoBehaviour
                 continue;
             }
 
-            items.Add(new InventorySlotViewData
+            items.Add(new InventorySlotModel
             {
                 id = weapon.weaponName,
                 label = weapon.weaponName,
                 icon = weapon.icon,
                 isEmpty = false,
                 isSelected = weapon == selectedWeapon,
-                isFocused = weapon == hoveredWeapon,
+                isHovered = weapon == hoveredWeapon,
                 isInteractable = true,
             });
         }
 
-        weaponGrid.SetItems(items, OnWeaponSlotClicked, null, OnWeaponSlotHoverEnter, OnWeaponSlotHoverExit);
+        weaponGrid.SetItems(
+            new InventoryGridModel(items, weaponGrid.MaxSlots),
+            new InventoryGridInteractions
+            {
+                OnSlotClicked = OnWeaponSlotClicked,
+                OnSlotHoverEnter = OnWeaponSlotHoverEnter,
+                OnSlotHoverExit = OnWeaponSlotHoverExit,
+            });
     }
 
     private void RefreshMapGrid()
@@ -249,7 +256,7 @@ public class StagingManager : MonoBehaviour
             return;
         }
 
-        List<InventorySlotViewData> items = new List<InventorySlotViewData>(availableMaps.Count);
+        List<InventorySlotModel> items = new List<InventorySlotModel>(availableMaps.Count);
         foreach (MapInstance map in availableMaps)
         {
             if (map == null)
@@ -257,19 +264,26 @@ public class StagingManager : MonoBehaviour
                 continue;
             }
 
-            items.Add(new InventorySlotViewData
+            items.Add(new InventorySlotModel
             {
                 id = map.BaseMapId + "|" + map.DisplayName,
                 label = map.DisplayName,
                 icon = map.Icon,
                 isEmpty = false,
                 isSelected = map == selectedMap,
-                isFocused = map == hoveredMap,
+                isHovered = map == hoveredMap,
                 isInteractable = true,
             });
         }
 
-        mapGrid.SetItems(items, OnMapSlotClicked, null, OnMapSlotHoverEnter, OnMapSlotHoverExit);
+        mapGrid.SetItems(
+            new InventoryGridModel(items, mapGrid.MaxSlots),
+            new InventoryGridInteractions
+            {
+                OnSlotClicked = OnMapSlotClicked,
+                OnSlotHoverEnter = OnMapSlotHoverEnter,
+                OnSlotHoverExit = OnMapSlotHoverExit,
+            });
     }
 
     private void RefreshPreview()
@@ -308,7 +322,7 @@ public class StagingManager : MonoBehaviour
         }
 
         int slotCount = Mathf.Max(equipmentGrid.MaxSlots, equipmentInventoryLayout.Count);
-        List<InventorySlotViewData> items = new List<InventorySlotViewData>(slotCount);
+        List<InventorySlotModel> items = new List<InventorySlotModel>(slotCount);
         for (int i = 0; i < slotCount; i++)
         {
             string equipmentId = i < equipmentInventoryLayout.Count ? equipmentInventoryLayout[i] : string.Empty;
@@ -316,13 +330,13 @@ public class StagingManager : MonoBehaviour
 
             if (equipment == null)
             {
-                items.Add(InventorySlotViewData.Empty());
+                items.Add(InventorySlotModel.Empty());
                 continue;
             }
 
             bool isEquipped = IsEquipmentEquipped(equipment.InstanceId);
 
-            items.Add(new InventorySlotViewData
+            items.Add(new InventorySlotModel
             {
                 id = equipment.InstanceId,
                 label = equipment.DisplayName,
@@ -330,7 +344,7 @@ public class StagingManager : MonoBehaviour
                 iconTint = GetEquipmentTierTint(equipment.ItemTier),
                 isEmpty = false,
                 isSelected = equipment == selectedEquipment,
-                isFocused = equipment == hoveredEquipment,
+                isHovered = equipment == hoveredEquipment,
                 isEquipped = isEquipped,
                 isInteractable = true,
                 canDrag = !isEquipped,
@@ -342,13 +356,16 @@ public class StagingManager : MonoBehaviour
         }
 
         equipmentGrid.SetItems(
-            items,
-            OnEquipmentSlotClicked,
-            OnEquipmentSlotRightClicked,
-            OnEquipmentSlotHoverEnter,
-            OnEquipmentSlotHoverExit,
-            CanAcceptEquipmentInventoryDrop,
-            HandleEquipmentInventorySlotDrop);
+            new InventoryGridModel(items, equipmentGrid.MaxSlots),
+            new InventoryGridInteractions
+            {
+                OnSlotClicked = OnEquipmentSlotClicked,
+                OnSlotRightClicked = OnEquipmentSlotRightClicked,
+                OnSlotHoverEnter = OnEquipmentSlotHoverEnter,
+                OnSlotHoverExit = OnEquipmentSlotHoverExit,
+                CanAcceptDropAtIndex = CanAcceptEquipmentInventoryDrop,
+                OnSlotDropReceived = HandleEquipmentInventorySlotDrop,
+            });
     }
 
     private void RefreshTabVisuals()
@@ -414,10 +431,7 @@ public class StagingManager : MonoBehaviour
         MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId);
         RebuildEquipmentInventoryLayout();
         selectedEquipment = equipment;
-        RefreshHoveredEquipmentFromCurrentIndex();
-        RefreshEquippedSlotVisuals();
-        RefreshEquipmentGrid();
-        RefreshPlayerStatsPanel();
+        RefreshEquipmentPresentation();
     }
 
     private void HandleEquipmentSlotRightClicked(EquipmentSlotDropTargetUI dropTarget)
@@ -434,10 +448,7 @@ public class StagingManager : MonoBehaviour
         }
 
         MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, string.Empty);
-        RefreshHoveredEquipmentFromCurrentIndex();
-        RefreshEquippedSlotVisuals();
-        RefreshEquipmentGrid();
-        RefreshPlayerStatsPanel();
+        RefreshEquipmentPresentation();
     }
 
     private void RefreshEquippedSlotVisuals()
@@ -467,6 +478,14 @@ public class StagingManager : MonoBehaviour
         }
     }
 
+    private void RefreshEquipmentPresentation()
+    {
+        RefreshHoveredEquipmentFromCurrentIndex();
+        RefreshEquippedSlotVisuals();
+        RefreshEquipmentGrid();
+        RefreshPlayerStatsPanel();
+    }
+
     private bool IsEquipmentEquipped(string equipmentInstanceId)
     {
         if (string.IsNullOrWhiteSpace(equipmentInstanceId))
@@ -494,7 +513,7 @@ public class StagingManager : MonoBehaviour
         return false;
     }
 
-    private void OnWeaponSlotClicked(int index, InventorySlotViewData data)
+    private void OnWeaponSlotClicked(int index, InventorySlotModel data)
     {
         if (index < 0 || index >= allWeapons.Count)
         {
@@ -504,7 +523,7 @@ public class StagingManager : MonoBehaviour
         SelectWeapon(allWeapons[index]);
     }
 
-    private void OnWeaponSlotHoverEnter(int index, InventorySlotViewData data)
+    private void OnWeaponSlotHoverEnter(int index, InventorySlotModel data)
     {
         if (index < 0 || index >= allWeapons.Count)
         {
@@ -516,14 +535,14 @@ public class StagingManager : MonoBehaviour
         RefreshWeaponGrid();
     }
 
-    private void OnWeaponSlotHoverExit(int index, InventorySlotViewData data)
+    private void OnWeaponSlotHoverExit(int index, InventorySlotModel data)
     {
         hoveredWeapon = null;
         RefreshPreview();
         RefreshWeaponGrid();
     }
 
-    private void OnMapSlotClicked(int index, InventorySlotViewData data)
+    private void OnMapSlotClicked(int index, InventorySlotModel data)
     {
         if (index < 0 || index >= availableMaps.Count)
         {
@@ -533,7 +552,7 @@ public class StagingManager : MonoBehaviour
         SelectMap(availableMaps[index]);
     }
 
-    private void OnMapSlotHoverEnter(int index, InventorySlotViewData data)
+    private void OnMapSlotHoverEnter(int index, InventorySlotModel data)
     {
         if (index < 0 || index >= availableMaps.Count)
         {
@@ -545,14 +564,14 @@ public class StagingManager : MonoBehaviour
         RefreshMapGrid();
     }
 
-    private void OnMapSlotHoverExit(int index, InventorySlotViewData data)
+    private void OnMapSlotHoverExit(int index, InventorySlotModel data)
     {
         hoveredMap = null;
         RefreshPreview();
         RefreshMapGrid();
     }
 
-    private void OnEquipmentSlotClicked(int index, InventorySlotViewData data)
+    private void OnEquipmentSlotClicked(int index, InventorySlotModel data)
     {
         if (index < 0 || index >= equipmentInventoryLayout.Count)
         {
@@ -566,7 +585,7 @@ public class StagingManager : MonoBehaviour
         }
     }
 
-    private void OnEquipmentSlotRightClicked(int index, InventorySlotViewData data)
+    private void OnEquipmentSlotRightClicked(int index, InventorySlotModel data)
     {
         if (index < 0 || index >= equipmentInventoryLayout.Count)
         {
@@ -583,10 +602,7 @@ public class StagingManager : MonoBehaviour
         {
             UnequipItem(equipment.InstanceId);
             RebuildEquipmentInventoryLayout();
-            RefreshHoveredEquipmentFromCurrentIndex();
-            RefreshEquippedSlotVisuals();
-            RefreshEquipmentGrid();
-            RefreshPlayerStatsPanel();
+            RefreshEquipmentPresentation();
             return;
         }
 
@@ -600,13 +616,10 @@ public class StagingManager : MonoBehaviour
         MetaProgressionService.SetEquippedItem(targetSlot.LoadoutSlotId, equipment.InstanceId);
         RebuildEquipmentInventoryLayout();
         selectedEquipment = equipment;
-        RefreshHoveredEquipmentFromCurrentIndex();
-        RefreshEquippedSlotVisuals();
-        RefreshEquipmentGrid();
-        RefreshPlayerStatsPanel();
+        RefreshEquipmentPresentation();
     }
 
-    private void OnEquipmentSlotHoverEnter(int index, InventorySlotViewData data)
+    private void OnEquipmentSlotHoverEnter(int index, InventorySlotModel data)
     {
         if (index < 0 || index >= equipmentInventoryLayout.Count)
         {
@@ -638,10 +651,7 @@ public class StagingManager : MonoBehaviour
 
         UnequipItem(payload.itemId);
         RebuildEquipmentInventoryLayout();
-        RefreshHoveredEquipmentFromCurrentIndex();
-        RefreshEquippedSlotVisuals();
-        RefreshEquipmentGrid();
-        RefreshPlayerStatsPanel();
+        RefreshEquipmentPresentation();
     }
 
     private void HandleEquippedSlotLeftClicked(EquipmentSlotDropTargetUI dropTarget)
@@ -678,7 +688,7 @@ public class StagingManager : MonoBehaviour
         RefreshEquipmentGrid();
     }
 
-    private void OnEquipmentSlotHoverExit(int index, InventorySlotViewData data)
+    private void OnEquipmentSlotHoverExit(int index, InventorySlotModel data)
     {
         hoveredEquipment = null;
         hoveredEquipmentIndex = -1;
@@ -838,9 +848,7 @@ public class StagingManager : MonoBehaviour
             equipmentInventoryLayout[sourceIndex] = targetItemId;
         }
 
-        RefreshEquippedSlotVisuals();
-        RefreshEquipmentGrid();
-        RefreshPlayerStatsPanel();
+        RefreshEquipmentPresentation();
     }
 
     private void RebuildEquipmentInventoryLayout()
@@ -1034,13 +1042,6 @@ public class StagingManager : MonoBehaviour
         }
 
         return int.MaxValue - 1;
-    }
-
-    private bool IsEquipmentInventorySlotEmpty(int index)
-    {
-        return index >= 0
-            && index < equipmentInventoryLayout.Count
-            && string.IsNullOrWhiteSpace(equipmentInventoryLayout[index]);
     }
 
     private int FindNextEmptyEquipmentInventoryIndex()

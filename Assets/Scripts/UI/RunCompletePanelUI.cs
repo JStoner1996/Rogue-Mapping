@@ -53,7 +53,7 @@ public class RunCompletePanelUI : MonoBehaviour
         }
 
         IReadOnlyList<RunLootEntry> entries = RunLootService.Entries;
-        List<InventorySlotViewData> slotData = new List<InventorySlotViewData>(entries.Count);
+        List<InventorySlotModel> slotData = new List<InventorySlotModel>(entries.Count);
 
         foreach (RunLootEntry entry in entries)
         {
@@ -62,7 +62,7 @@ public class RunCompletePanelUI : MonoBehaviour
                 continue;
             }
 
-            slotData.Add(new InventorySlotViewData
+            slotData.Add(new InventorySlotModel
             {
                 id = entry.id,
                 label = entry.displayName,
@@ -74,7 +74,14 @@ public class RunCompletePanelUI : MonoBehaviour
             });
         }
 
-        lootGrid.SetItems(slotData, OnLootSlotClicked, OnLootSlotHoverEnter, OnLootSlotHoverExit);
+        lootGrid.SetItems(
+            new InventoryGridModel(slotData, lootGrid.MaxSlots),
+            new InventoryGridInteractions
+            {
+                OnSlotClicked = OnLootSlotClicked,
+                OnSlotHoverEnter = OnLootSlotHoverEnter,
+                OnSlotHoverExit = OnLootSlotHoverExit,
+            });
     }
 
     public void OnCompleteRunPressed()
@@ -84,7 +91,7 @@ public class RunCompletePanelUI : MonoBehaviour
         GameManager.Instance?.FinalizeCompletedRun();
     }
 
-    private void OnLootSlotClicked(int index, InventorySlotViewData data)
+    private void OnLootSlotClicked(int index, InventorySlotModel data)
     {
         if (data == null || string.IsNullOrEmpty(data.id))
         {
@@ -94,7 +101,7 @@ public class RunCompletePanelUI : MonoBehaviour
         RunLootService.ToggleDiscard(data.id);
     }
 
-    private void OnLootSlotHoverEnter(int index, InventorySlotViewData data)
+    private void OnLootSlotHoverEnter(int index, InventorySlotModel data)
     {
         if (hoverPreviewUI == null || index < 0 || index >= RunLootService.Entries.Count)
         {
@@ -120,7 +127,7 @@ public class RunCompletePanelUI : MonoBehaviour
         }
     }
 
-    private void OnLootSlotHoverExit(int index, InventorySlotViewData data)
+    private void OnLootSlotHoverExit(int index, InventorySlotModel data)
     {
         hoverPreviewUI?.HidePanel();
     }

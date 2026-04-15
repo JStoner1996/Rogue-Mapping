@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class InventorySlotViewData
+public class InventorySlotModel
 {
     public string id;
     public string label;
@@ -10,7 +10,7 @@ public class InventorySlotViewData
     public Color iconTint = Color.white;
     public bool isEmpty;
     public bool isSelected;
-    public bool isFocused;
+    public bool isHovered;
     public bool isDiscarded;
     public bool isEquipped;
     public bool isInteractable = true;
@@ -20,9 +20,9 @@ public class InventorySlotViewData
     public bool hasEquipmentSlotType;
     public EquipmentSlotType equipmentSlotType;
 
-    public static InventorySlotViewData Empty()
+    public static InventorySlotModel Empty()
     {
-        return new InventorySlotViewData
+        return new InventorySlotModel
         {
             isEmpty = true,
             isInteractable = false,
