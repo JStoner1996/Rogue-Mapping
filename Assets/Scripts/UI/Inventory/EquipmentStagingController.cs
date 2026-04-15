@@ -4,7 +4,6 @@ using UnityEngine;
 public class EquipmentStagingController
 {
     private readonly InventoryGridUI equipmentGrid;
-    private readonly EquipmentInventoryDropTargetUI equipmentInventoryDropTarget;
     private readonly ItemDetailsPanelUI equipmentPreviewUI;
     private readonly PlayerStatsPanelUI playerStatsPanelUI;
     private readonly List<EquipmentSlotDropTargetUI> equipmentDropTargets;
@@ -18,13 +17,11 @@ public class EquipmentStagingController
 
     public EquipmentStagingController(
         InventoryGridUI equipmentGrid,
-        EquipmentInventoryDropTargetUI equipmentInventoryDropTarget,
         ItemDetailsPanelUI equipmentPreviewUI,
         PlayerStatsPanelUI playerStatsPanelUI,
         List<EquipmentSlotDropTargetUI> equipmentDropTargets)
     {
         this.equipmentGrid = equipmentGrid;
-        this.equipmentInventoryDropTarget = equipmentInventoryDropTarget;
         this.equipmentPreviewUI = equipmentPreviewUI;
         this.playerStatsPanelUI = playerStatsPanelUI;
         this.equipmentDropTargets = equipmentDropTargets ?? new List<EquipmentSlotDropTargetUI>();
@@ -43,12 +40,6 @@ public class EquipmentStagingController
 
     public void RegisterDropTargets()
     {
-        if (equipmentInventoryDropTarget != null)
-        {
-            equipmentInventoryDropTarget.DropReceived -= HandleEquipmentDroppedBackToInventory;
-            equipmentInventoryDropTarget.DropReceived += HandleEquipmentDroppedBackToInventory;
-        }
-
         foreach (EquipmentSlotDropTargetUI dropTarget in equipmentDropTargets)
         {
             if (dropTarget == null)
@@ -284,18 +275,6 @@ public class EquipmentStagingController
         RefreshPreview();
         RefreshEquippedSlotVisuals();
         RefreshGrid();
-    }
-
-    private void HandleEquipmentDroppedBackToInventory(DragItemPayload payload)
-    {
-        if (payload == null || string.IsNullOrWhiteSpace(payload.itemId))
-        {
-            return;
-        }
-
-        UnequipItem(payload.itemId);
-        RebuildInventoryLayout();
-        RefreshPresentation();
     }
 
     private void HandleEquippedSlotLeftClicked(EquipmentSlotDropTargetUI dropTarget)

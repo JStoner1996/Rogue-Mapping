@@ -12,19 +12,26 @@ public class StagingManager : MonoBehaviour
         Equipment,
     }
 
-    [Header("UI")]
+    [Header("UI Panels")]
     [SerializeField] private GameObject weaponsPanel;
     [SerializeField] private GameObject mapsPanel;
     [SerializeField] private GameObject equipmentPanel;
+
+    [Header("Grids")]
     [SerializeField] private InventoryGridUI weaponGrid;
     [SerializeField] private InventoryGridUI mapGrid;
     [SerializeField] private InventoryGridUI equipmentGrid;
-    [SerializeField] private EquipmentInventoryDropTargetUI equipmentInventoryDropTarget;
+
+    [Header("Previews")]
     [SerializeField] private ItemDetailsPanelUI weaponPreviewUI;
     [SerializeField] private ItemDetailsPanelUI mapPreviewUI;
     [SerializeField] private ItemDetailsPanelUI equipmentPreviewUI;
     [SerializeField] private PlayerStatsPanelUI playerStatsPanelUI;
+
+    [Header("Player Loadout Slots")]
     [SerializeField] private List<EquipmentSlotDropTargetUI> equipmentDropTargets = new List<EquipmentSlotDropTargetUI>();
+
+    [Header("Tab Buttons")]
     [SerializeField] private Button weaponsTabButton;
     [SerializeField] private Button mapsTabButton;
     [SerializeField] private Button equipmentTabButton;
@@ -36,23 +43,20 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private int defaultMapVictoryTarget = 10;
 
     private readonly List<Button> tabButtons = new List<Button>();
-    private List<WeaponData> allWeapons = new List<WeaponData>();
     private EquipmentStagingController equipmentController;
     private MapStagingController mapController;
-
-    private WeaponData selectedWeapon;
-    private WeaponData hoveredWeapon;
+    private WeaponStagingController weaponController;
     private StagingTab currentTab;
 
     void Start()
     {
         MetaProgressionService.EnsureLoaded();
-        LoadWeapons();
+        weaponController = new WeaponStagingController(weaponGrid, weaponPreviewUI);
+        weaponController.Load();
         mapController = new MapStagingController(mapGrid, mapPreviewUI);
         mapController.LoadStarterMaps(4, defaultMapVictoryCondition, defaultMapVictoryTarget);
         equipmentController = new EquipmentStagingController(
             equipmentGrid,
-            equipmentInventoryDropTarget,
             equipmentPreviewUI,
             playerStatsPanelUI,
             equipmentDropTargets);
@@ -63,21 +67,9 @@ public class StagingManager : MonoBehaviour
         SwitchTab(StagingTab.Weapons);
     }
 
-    private void LoadWeapons()
-    {
-        allWeapons = new List<WeaponData>(Resources.LoadAll<WeaponData>("WeaponData"));
-    }
-
     private void InitializeDefaults()
     {
-        selectedWeapon = allWeapons.Find(w => w.weaponName == "Area Weapon");
-
-        if (selectedWeapon == null && allWeapons.Count > 0)
-        {
-            selectedWeapon = allWeapons[0];
-        }
-
-        RunData.SelectedWeapon = selectedWeapon;
+        RunData.SelectedWeapon = weaponController != null ? weaponController.SelectedWeapon : null;
         RunData.SelectedMap = mapController != null ? mapController.SelectedMap : null;
     }
 
@@ -133,7 +125,7 @@ public class StagingManager : MonoBehaviour
         switch (currentTab)
         {
             case StagingTab.Weapons:
-                RefreshWeaponGrid();
+                weaponController?.RefreshGrid();
                 break;
 
             case StagingTab.Maps:
@@ -146,49 +138,12 @@ public class StagingManager : MonoBehaviour
         }
     }
 
-    private void RefreshWeaponGrid()
-    {
-        if (weaponGrid == null)
-        {
-            return;
-        }
-
-        List<InventorySlotModel> items = new List<InventorySlotModel>(allWeapons.Count);
-        foreach (WeaponData weapon in allWeapons)
-        {
-            if (weapon == null)
-            {
-                continue;
-            }
-
-            items.Add(new InventorySlotModel
-            {
-                id = weapon.weaponName,
-                label = weapon.weaponName,
-                icon = weapon.icon,
-                isEmpty = false,
-                isSelected = weapon == selectedWeapon,
-                isHovered = weapon == hoveredWeapon,
-                isInteractable = true,
-            });
-        }
-
-        weaponGrid.SetItems(
-            new InventoryGridModel(items, weaponGrid.MaxSlots),
-            new InventoryGridInteractions
-            {
-                OnSlotClicked = OnWeaponSlotClicked,
-                OnSlotHoverEnter = OnWeaponSlotHoverEnter,
-                OnSlotHoverExit = OnWeaponSlotHoverExit,
-            });
-    }
-
     private void RefreshPreview()
     {
         switch (currentTab)
         {
             case StagingTab.Weapons:
-                weaponPreviewUI.ShowWeapon(hoveredWeapon != null ? hoveredWeapon : selectedWeapon);
+                weaponController?.RefreshPreview();
                 break;
 
             case StagingTab.Maps:
@@ -215,44 +170,6 @@ public class StagingManager : MonoBehaviour
         }
     }
 
-    private void SelectWeapon(WeaponData weapon)
-    {
-        selectedWeapon = weapon;
-        hoveredWeapon = null;
-        RunData.SelectedWeapon = weapon;
-        weaponPreviewUI.ShowWeapon(weapon);
-        RefreshWeaponGrid();
-    }
-
-    private void OnWeaponSlotClicked(int index, InventorySlotModel data)
-    {
-        if (index < 0 || index >= allWeapons.Count)
-        {
-            return;
-        }
-
-        SelectWeapon(allWeapons[index]);
-    }
-
-    private void OnWeaponSlotHoverEnter(int index, InventorySlotModel data)
-    {
-        if (index < 0 || index >= allWeapons.Count)
-        {
-            return;
-        }
-
-        hoveredWeapon = allWeapons[index];
-        weaponPreviewUI.ShowWeapon(hoveredWeapon);
-        RefreshWeaponGrid();
-    }
-
-    private void OnWeaponSlotHoverExit(int index, InventorySlotModel data)
-    {
-        hoveredWeapon = null;
-        RefreshPreview();
-        RefreshWeaponGrid();
-    }
-
     public void ShowWeaponsTab()
     {
         SwitchTab(StagingTab.Weapons);
@@ -270,6 +187,7 @@ public class StagingManager : MonoBehaviour
 
     public void StartRun()
     {
+        WeaponData selectedWeapon = weaponController != null ? weaponController.SelectedWeapon : null;
         if (selectedWeapon == null)
         {
             Debug.LogWarning("No weapon selected!");
