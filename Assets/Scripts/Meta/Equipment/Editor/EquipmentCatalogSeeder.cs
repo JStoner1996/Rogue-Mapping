@@ -197,11 +197,11 @@ public static class EquipmentCatalogSeeder
                 new EquipmentModifierDefinition
                 {
                     statType = EquipmentStatType.MaximumHealth,
-                    modifierKind = EquipmentModifierKind.Percent,
-                    minValue = 0.06f,
-                    maxValue = 0.10f,
+                    modifierKind = EquipmentModifierKind.Flat,
+                    minValue = 30f,
+                    maxValue = 50f,
                     tierScalingMode = EquipmentTierScalingMode.FlatPerTier,
-                    tierScalingAmount = 0.01f
+                    tierScalingAmount = 5f
                 }),
             CreateOrUpdateAffix(
                 "Swift",
@@ -245,11 +245,11 @@ public static class EquipmentCatalogSeeder
                 new EquipmentModifierDefinition
                 {
                     statType = EquipmentStatType.MaximumHealth,
-                    modifierKind = EquipmentModifierKind.Percent,
-                    minValue = 0.08f,
-                    maxValue = 0.12f,
+                    modifierKind = EquipmentModifierKind.Flat,
+                    minValue = 40f,
+                    maxValue = 70f,
                     tierScalingMode = EquipmentTierScalingMode.FlatPerTier,
-                    tierScalingAmount = 0.01f
+                    tierScalingAmount = 6f
                 }),
             CreateOrUpdateAffix(
                 "of Force",

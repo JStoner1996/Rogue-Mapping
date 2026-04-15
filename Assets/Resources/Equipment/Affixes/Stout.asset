@@ -20,8 +20,8 @@ MonoBehaviour:
   maxItemTier: 10
   modifiers:
   - statType: 0
-    modifierKind: 1
-    minValue: 0.06
-    maxValue: 0.1
+    modifierKind: 0
+    minValue: 30
+    maxValue: 50
     tierScalingMode: 1
-    tierScalingAmount: 0.01
+    tierScalingAmount: 5
