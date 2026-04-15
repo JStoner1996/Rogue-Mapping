@@ -1,17 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class StagingManager : MonoBehaviour
 {
-    private enum StagingTab
-    {
-        Weapons,
-        Maps,
-        Equipment,
-    }
-
     [Header("UI Panels")]
     [SerializeField] private GameObject weaponsPanel;
     [SerializeField] private GameObject mapsPanel;
@@ -32,9 +24,9 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private List<EquipmentSlotDropTargetUI> equipmentDropTargets = new List<EquipmentSlotDropTargetUI>();
 
     [Header("Tab Buttons")]
-    [SerializeField] private Button weaponsTabButton;
-    [SerializeField] private Button mapsTabButton;
-    [SerializeField] private Button equipmentTabButton;
+    [SerializeField] private UnityEngine.UI.Button weaponsTabButton;
+    [SerializeField] private UnityEngine.UI.Button mapsTabButton;
+    [SerializeField] private UnityEngine.UI.Button equipmentTabButton;
     [SerializeField] private Color activeTabColor = new Color(0.35f, 0.35f, 0.35f, 1f);
     [SerializeField] private Color inactiveTabColor = new Color(0.17f, 0.17f, 0.17f, 0.1f);
 
@@ -42,11 +34,10 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private VictoryConditionType defaultMapVictoryCondition = VictoryConditionType.Kills;
     [SerializeField] private int defaultMapVictoryTarget = 10;
 
-    private readonly List<Button> tabButtons = new List<Button>();
     private EquipmentStagingController equipmentController;
     private MapStagingController mapController;
+    private StagingTabController tabController;
     private WeaponStagingController weaponController;
-    private StagingTab currentTab;
 
     void Start()
     {
@@ -61,10 +52,19 @@ public class StagingManager : MonoBehaviour
             playerStatsPanelUI,
             equipmentDropTargets);
         equipmentController.Load();
+        tabController = new StagingTabController(
+            weaponsPanel,
+            mapsPanel,
+            equipmentPanel,
+            weaponsTabButton,
+            mapsTabButton,
+            equipmentTabButton,
+            activeTabColor,
+            inactiveTabColor);
         InitializeDefaults();
-        RegisterTabButtons();
+        tabController.RegisterTabButtons(ShowWeaponsTab, ShowMapsTab, ShowEquipmentTab);
         equipmentController.RegisterDropTargets();
-        SwitchTab(StagingTab.Weapons);
+        tabController.SwitchTab(StagingTabController.Tab.Weapons, HandleTabChanged);
     }
 
     private void InitializeDefaults()
@@ -73,66 +73,25 @@ public class StagingManager : MonoBehaviour
         RunData.SelectedMap = mapController != null ? mapController.SelectedMap : null;
     }
 
-    private void RegisterTabButtons()
+    private void HandleTabChanged(StagingTabController.Tab tab)
     {
-        tabButtons.Clear();
-        AddTabButton(weaponsTabButton, ShowWeaponsTab);
-        AddTabButton(mapsTabButton, ShowMapsTab);
-        AddTabButton(equipmentTabButton, ShowEquipmentTab);
-    }
-
-    private void AddTabButton(Button button, UnityEngine.Events.UnityAction onClick)
-    {
-        if (button == null)
-        {
-            return;
-        }
-
-        button.onClick.RemoveListener(onClick);
-        button.onClick.AddListener(onClick);
-        tabButtons.Add(button);
-    }
-
-    private void SwitchTab(StagingTab tab)
-    {
-        currentTab = tab;
-        RefreshPanelVisibility();
         RefreshButtons();
         RefreshPreview();
-        RefreshTabVisuals();
-    }
-
-    private void RefreshPanelVisibility()
-    {
-        if (weaponsPanel != null)
-        {
-            weaponsPanel.SetActive(currentTab == StagingTab.Weapons);
-        }
-
-        if (mapsPanel != null)
-        {
-            mapsPanel.SetActive(currentTab == StagingTab.Maps);
-        }
-
-        if (equipmentPanel != null)
-        {
-            equipmentPanel.SetActive(currentTab == StagingTab.Equipment);
-        }
     }
 
     private void RefreshButtons()
     {
-        switch (currentTab)
+        switch (tabController != null ? tabController.CurrentTab : StagingTabController.Tab.Weapons)
         {
-            case StagingTab.Weapons:
+            case StagingTabController.Tab.Weapons:
                 weaponController?.RefreshGrid();
                 break;
 
-            case StagingTab.Maps:
+            case StagingTabController.Tab.Maps:
                 mapController?.RefreshGrid();
                 break;
 
-            case StagingTab.Equipment:
+            case StagingTabController.Tab.Equipment:
                 equipmentController?.RefreshGrid();
                 break;
         }
@@ -140,49 +99,35 @@ public class StagingManager : MonoBehaviour
 
     private void RefreshPreview()
     {
-        switch (currentTab)
+        switch (tabController != null ? tabController.CurrentTab : StagingTabController.Tab.Weapons)
         {
-            case StagingTab.Weapons:
+            case StagingTabController.Tab.Weapons:
                 weaponController?.RefreshPreview();
                 break;
 
-            case StagingTab.Maps:
+            case StagingTabController.Tab.Maps:
                 mapController?.RefreshPreview();
                 break;
 
-            case StagingTab.Equipment:
+            case StagingTabController.Tab.Equipment:
                 equipmentController?.RefreshPreview();
                 break;
         }
     }
 
-    private void RefreshTabVisuals()
-    {
-        for (int i = 0; i < tabButtons.Count; i++)
-        {
-            bool isActive = i == (int)currentTab;
-            Image image = tabButtons[i].GetComponent<Image>();
-
-            if (image != null)
-            {
-                image.color = isActive ? activeTabColor : inactiveTabColor;
-            }
-        }
-    }
-
     public void ShowWeaponsTab()
     {
-        SwitchTab(StagingTab.Weapons);
+        tabController?.SwitchTab(StagingTabController.Tab.Weapons, HandleTabChanged);
     }
 
     public void ShowMapsTab()
     {
-        SwitchTab(StagingTab.Maps);
+        tabController?.SwitchTab(StagingTabController.Tab.Maps, HandleTabChanged);
     }
 
     public void ShowEquipmentTab()
     {
-        SwitchTab(StagingTab.Equipment);
+        tabController?.SwitchTab(StagingTabController.Tab.Equipment, HandleTabChanged);
     }
 
     public void StartRun()
