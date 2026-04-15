@@ -158,6 +158,7 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
             icon = displayedEquipment.Icon,
             itemType = DragItemType.Equipment,
             sourceType = DragItemSourceType.EquippedSlot,
+            sourceSlotId = LoadoutSlotId,
             hasEquipmentSlotType = true,
             equipmentSlotType = displayedEquipment.SlotType,
         };

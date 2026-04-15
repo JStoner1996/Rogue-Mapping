@@ -39,17 +39,6 @@ public class StagingManager : MonoBehaviour
     private readonly List<MapInstance> availableMaps = new List<MapInstance>();
     private readonly List<EquipmentInstance> availableEquipment = new List<EquipmentInstance>();
     private readonly List<string> equipmentInventoryLayout = new List<string>();
-    private static readonly EquipmentSlotType[] equipmentInventoryPriorityOrder =
-    {
-        EquipmentSlotType.Head,
-        EquipmentSlotType.Chest,
-        EquipmentSlotType.Legs,
-        EquipmentSlotType.Feet,
-        EquipmentSlotType.Hands,
-        EquipmentSlotType.Necklace,
-        EquipmentSlotType.Ring,
-        EquipmentSlotType.Ring,
-    };
     private List<WeaponData> allWeapons = new List<WeaponData>();
 
     private WeaponData selectedWeapon;
@@ -334,7 +323,7 @@ public class StagingManager : MonoBehaviour
                 continue;
             }
 
-            bool isEquipped = IsEquipmentEquipped(equipment.InstanceId);
+            bool isEquipped = EquipmentInventoryLayoutService.IsEquipped(equipment.InstanceId, MetaProgressionService.GetEquipmentLoadout());
 
             items.Add(new InventorySlotModel
             {
@@ -428,6 +417,25 @@ public class StagingManager : MonoBehaviour
             return;
         }
 
+        if (payload.sourceType == DragItemSourceType.EquippedSlot
+            && !string.IsNullOrWhiteSpace(payload.sourceSlotId)
+            && payload.sourceSlotId != dropTarget.LoadoutSlotId)
+        {
+            string targetEquippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
+            EquipmentInstance targetEquippedItem = FindEquipmentById(targetEquippedItemId);
+
+            if (targetEquippedItem != null && targetEquippedItem.SlotType == equipment.SlotType)
+            {
+                MetaProgressionService.SetEquippedItem(payload.sourceSlotId, targetEquippedItem.InstanceId, false);
+                MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId, false);
+                MetaProgressionService.Save();
+                RebuildEquipmentInventoryLayout();
+                selectedEquipment = equipment;
+                RefreshEquipmentPresentation();
+                return;
+            }
+        }
+
         MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId);
         RebuildEquipmentInventoryLayout();
         selectedEquipment = equipment;
@@ -484,33 +492,6 @@ public class StagingManager : MonoBehaviour
         RefreshEquippedSlotVisuals();
         RefreshEquipmentGrid();
         RefreshPlayerStatsPanel();
-    }
-
-    private bool IsEquipmentEquipped(string equipmentInstanceId)
-    {
-        if (string.IsNullOrWhiteSpace(equipmentInstanceId))
-        {
-            return false;
-        }
-
-        EquipmentLoadoutData loadout = MetaProgressionService.GetEquipmentLoadout();
-
-        if (loadout?.equippedItems == null)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < loadout.equippedItems.Count; i++)
-        {
-            EquipmentLoadoutSlot slot = loadout.equippedItems[i];
-
-            if (slot != null && slot.equipmentInstanceId == equipmentInstanceId)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void OnWeaponSlotClicked(int index, InventorySlotModel data)
@@ -598,7 +579,7 @@ public class StagingManager : MonoBehaviour
             return;
         }
 
-        if (IsEquipmentEquipped(equipment.InstanceId))
+        if (EquipmentInventoryLayoutService.IsEquipped(equipment.InstanceId, MetaProgressionService.GetEquipmentLoadout()))
         {
             UnequipItem(equipment.InstanceId);
             RebuildEquipmentInventoryLayout();
@@ -606,7 +587,11 @@ public class StagingManager : MonoBehaviour
             return;
         }
 
-        EquipmentSlotDropTargetUI targetSlot = FindBestEquipTarget(equipment);
+        EquipmentSlotDropTargetUI targetSlot = EquipmentInventoryLayoutService.FindBestEquipTarget(
+            equipment,
+            equipmentDropTargets,
+            availableEquipment,
+            MetaProgressionService.GetEquippedItemId);
 
         if (targetSlot == null)
         {
@@ -697,112 +682,6 @@ public class StagingManager : MonoBehaviour
         RefreshEquipmentGrid();
     }
 
-    private EquipmentSlotDropTargetUI FindBestEquipTarget(EquipmentInstance equipment)
-    {
-        if (equipment == null)
-        {
-            return null;
-        }
-
-        List<EquipmentSlotDropTargetUI> candidates = new List<EquipmentSlotDropTargetUI>();
-
-        for (int i = 0; i < equipmentDropTargets.Count; i++)
-        {
-            EquipmentSlotDropTargetUI dropTarget = equipmentDropTargets[i];
-            if (dropTarget != null && dropTarget.SlotType == equipment.SlotType)
-            {
-                candidates.Add(dropTarget);
-            }
-        }
-
-        if (candidates.Count == 0)
-        {
-            return null;
-        }
-
-        if (candidates.Count == 1)
-        {
-            return candidates[0];
-        }
-
-        EquipmentSlotDropTargetUI emptySlot = null;
-        EquipmentSlotDropTargetUI bestLowerTierSlot = null;
-        EquipmentInstance bestLowerTierItem = null;
-        EquipmentSlotDropTargetUI bestLowerRaritySlot = null;
-        EquipmentInstance bestLowerRarityItem = null;
-        EquipmentSlotDropTargetUI firstSlot = candidates[0];
-
-        for (int i = 0; i < candidates.Count; i++)
-        {
-            EquipmentSlotDropTargetUI candidate = candidates[i];
-            string equippedItemId = MetaProgressionService.GetEquippedItemId(candidate.LoadoutSlotId);
-
-            if (string.IsNullOrWhiteSpace(equippedItemId))
-            {
-                emptySlot = candidate;
-                break;
-            }
-
-            EquipmentInstance equippedItem = availableEquipment.Find(item => item != null && item.InstanceId == equippedItemId);
-            if (equippedItem == null)
-            {
-                emptySlot = candidate;
-                break;
-            }
-
-            if (equippedItem.InstanceId == equipment.InstanceId)
-            {
-                continue;
-            }
-
-            if (equippedItem.ItemTier < equipment.ItemTier)
-            {
-                if (bestLowerTierItem == null
-                    || equippedItem.ItemTier < bestLowerTierItem.ItemTier
-                    || (equippedItem.ItemTier == bestLowerTierItem.ItemTier
-                        && CompareRarity(equippedItem.Rarity, bestLowerTierItem.Rarity) < 0))
-                {
-                    bestLowerTierSlot = candidate;
-                    bestLowerTierItem = equippedItem;
-                }
-            }
-
-            if (CompareRarity(equippedItem.Rarity, equipment.Rarity) < 0)
-            {
-                if (bestLowerRarityItem == null
-                    || CompareRarity(equippedItem.Rarity, bestLowerRarityItem.Rarity) < 0
-                    || (CompareRarity(equippedItem.Rarity, bestLowerRarityItem.Rarity) == 0
-                        && equippedItem.ItemTier < bestLowerRarityItem.ItemTier))
-                {
-                    bestLowerRaritySlot = candidate;
-                    bestLowerRarityItem = equippedItem;
-                }
-            }
-        }
-
-        if (emptySlot != null)
-        {
-            return emptySlot;
-        }
-
-        if (bestLowerTierSlot != null)
-        {
-            return bestLowerTierSlot;
-        }
-
-        if (bestLowerRaritySlot != null)
-        {
-            return bestLowerRaritySlot;
-        }
-
-        return firstSlot;
-    }
-
-    private int CompareRarity(EquipmentRarity left, EquipmentRarity right)
-    {
-        return left.CompareTo(right);
-    }
-
     private bool CanAcceptEquipmentInventoryDrop(int index, DragItemPayload payload)
     {
         if (payload == null
@@ -815,7 +694,7 @@ public class StagingManager : MonoBehaviour
 
         string targetItemId = equipmentInventoryLayout[index];
 
-        if (!string.IsNullOrWhiteSpace(targetItemId) && IsEquipmentEquipped(targetItemId))
+        if (!string.IsNullOrWhiteSpace(targetItemId) && EquipmentInventoryLayoutService.IsEquipped(targetItemId, MetaProgressionService.GetEquipmentLoadout()))
         {
             return false;
         }
@@ -831,6 +710,29 @@ public class StagingManager : MonoBehaviour
         }
 
         int sourceIndex = equipmentInventoryLayout.FindIndex(id => id == payload.itemId);
+        string targetItemId = targetIndex >= 0 && targetIndex < equipmentInventoryLayout.Count
+            ? equipmentInventoryLayout[targetIndex]
+            : string.Empty;
+        EquipmentInstance targetEquipment = FindEquipmentById(targetItemId);
+
+        if (payload.sourceType == DragItemSourceType.EquippedSlot
+            && targetEquipment != null
+            && !string.IsNullOrWhiteSpace(payload.sourceSlotId)
+            && targetEquipment.SlotType == payload.equipmentSlotType
+            && targetEquipment.InstanceId != payload.itemId)
+        {
+            MetaProgressionService.SetEquippedItem(payload.sourceSlotId, targetEquipment.InstanceId);
+
+            if (sourceIndex >= 0)
+            {
+                equipmentInventoryLayout[sourceIndex] = targetEquipment.InstanceId;
+            }
+
+            equipmentInventoryLayout[targetIndex] = payload.itemId;
+            RefreshEquipmentPresentation();
+            return;
+        }
+
         if (sourceIndex < 0)
         {
             return;
@@ -843,7 +745,6 @@ public class StagingManager : MonoBehaviour
 
         if (sourceIndex != targetIndex)
         {
-            string targetItemId = equipmentInventoryLayout[targetIndex];
             equipmentInventoryLayout[targetIndex] = equipmentInventoryLayout[sourceIndex];
             equipmentInventoryLayout[sourceIndex] = targetItemId;
         }
@@ -853,89 +754,15 @@ public class StagingManager : MonoBehaviour
 
     private void RebuildEquipmentInventoryLayout()
     {
-        List<string> previousLayout = new List<string>(equipmentInventoryLayout);
         int slotCount = equipmentGrid != null ? equipmentGrid.MaxSlots : 0;
-        slotCount = Mathf.Max(slotCount, 8);
-        slotCount = Mathf.Max(slotCount, availableEquipment.Count);
-
-        List<string> availableIds = new List<string>(availableEquipment.Count);
-        HashSet<string> availableIdSet = new HashSet<string>();
-
-        for (int i = 0; i < availableEquipment.Count; i++)
-        {
-            if (availableEquipment[i] == null || string.IsNullOrWhiteSpace(availableEquipment[i].InstanceId))
-            {
-                continue;
-            }
-
-            if (availableIdSet.Add(availableEquipment[i].InstanceId))
-            {
-                availableIds.Add(availableEquipment[i].InstanceId);
-            }
-        }
-
-        List<string> equippedPriorityIds = GetEquippedPriorityIds();
-        HashSet<string> equippedIdSet = new HashSet<string>(equippedPriorityIds);
-
+        List<string> rebuiltLayout = EquipmentInventoryLayoutService.BuildInventoryLayout(
+            equipmentInventoryLayout,
+            availableEquipment,
+            slotCount,
+            equipmentDropTargets,
+            MetaProgressionService.GetEquippedItemId);
         equipmentInventoryLayout.Clear();
-        for (int i = 0; i < slotCount; i++)
-        {
-            string previousId = i < previousLayout.Count ? previousLayout[i] : string.Empty;
-            equipmentInventoryLayout.Add(availableIdSet.Contains(previousId) ? previousId : string.Empty);
-        }
-
-        // Remove equipped items from their old positions first so their previous slots become holes.
-        for (int i = 0; i < equipmentInventoryLayout.Count; i++)
-        {
-            if (!string.IsNullOrWhiteSpace(equipmentInventoryLayout[i]) && equippedIdSet.Contains(equipmentInventoryLayout[i]))
-            {
-                equipmentInventoryLayout[i] = string.Empty;
-            }
-        }
-
-        List<string> displacedIds = new List<string>();
-
-        // Pin the currently equipped items into the compact priority strip.
-        for (int i = 0; i < equippedPriorityIds.Count; i++)
-        {
-            EnsureEquipmentInventoryLayoutSize(i + 1);
-
-            string displacedId = equipmentInventoryLayout[i];
-            if (!string.IsNullOrWhiteSpace(displacedId) && !equippedIdSet.Contains(displacedId))
-            {
-                displacedIds.Add(displacedId);
-            }
-
-            equipmentInventoryLayout[i] = equippedPriorityIds[i];
-        }
-
-        // Put any directly displaced items into the next open holes without disturbing the rest.
-        for (int i = 0; i < displacedIds.Count; i++)
-        {
-            int nextEmptyIndex = FindNextEmptyEquipmentInventoryIndex();
-            equipmentInventoryLayout[nextEmptyIndex] = displacedIds[i];
-        }
-
-        HashSet<string> placedIds = new HashSet<string>();
-        for (int i = 0; i < equipmentInventoryLayout.Count; i++)
-        {
-            if (!string.IsNullOrWhiteSpace(equipmentInventoryLayout[i]))
-            {
-                placedIds.Add(equipmentInventoryLayout[i]);
-            }
-        }
-
-        // Any brand new items that were not in the previous layout yet get appended into the next empty holes.
-        for (int i = 0; i < availableIds.Count; i++)
-        {
-            if (placedIds.Contains(availableIds[i]))
-            {
-                continue;
-            }
-
-            int nextEmptyIndex = FindNextEmptyEquipmentInventoryIndex();
-            equipmentInventoryLayout[nextEmptyIndex] = availableIds[i];
-        }
+        equipmentInventoryLayout.AddRange(rebuiltLayout);
     }
 
     private EquipmentInstance FindEquipmentById(string equipmentId)
@@ -975,94 +802,6 @@ public class StagingManager : MonoBehaviour
         if (changed)
         {
             MetaProgressionService.Save();
-        }
-    }
-
-    private List<string> GetEquippedPriorityIds()
-    {
-        List<string> equippedIds = new List<string>(equipmentInventoryPriorityOrder.Length);
-        List<EquipmentSlotDropTargetUI> orderedTargets = new List<EquipmentSlotDropTargetUI>(equipmentDropTargets);
-        orderedTargets.Sort(CompareEquipmentDropTargetPriority);
-
-        for (int i = 0; i < orderedTargets.Count; i++)
-        {
-            EquipmentSlotDropTargetUI dropTarget = orderedTargets[i];
-
-            if (dropTarget == null)
-            {
-                continue;
-            }
-
-            string equippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
-            if (!string.IsNullOrWhiteSpace(equippedItemId))
-            {
-                equippedIds.Add(equippedItemId);
-            }
-        }
-
-        return equippedIds;
-    }
-
-    private int CompareEquipmentDropTargetPriority(EquipmentSlotDropTargetUI left, EquipmentSlotDropTargetUI right)
-    {
-        int leftPriority = GetEquipmentDropTargetPriority(left);
-        int rightPriority = GetEquipmentDropTargetPriority(right);
-
-        if (leftPriority != rightPriority)
-        {
-            return leftPriority.CompareTo(rightPriority);
-        }
-
-        string leftId = left != null ? left.LoadoutSlotId : string.Empty;
-        string rightId = right != null ? right.LoadoutSlotId : string.Empty;
-        return string.CompareOrdinal(leftId, rightId);
-    }
-
-    private int GetEquipmentDropTargetPriority(EquipmentSlotDropTargetUI dropTarget)
-    {
-        if (dropTarget == null)
-        {
-            return int.MaxValue;
-        }
-
-        for (int i = 0; i < equipmentInventoryPriorityOrder.Length; i++)
-        {
-            if (equipmentInventoryPriorityOrder[i] != dropTarget.SlotType)
-            {
-                continue;
-            }
-
-            if (dropTarget.SlotType != EquipmentSlotType.Ring)
-            {
-                return i;
-            }
-
-            bool isRingTwo = dropTarget.LoadoutSlotId.IndexOf("2", System.StringComparison.OrdinalIgnoreCase) >= 0;
-            return isRingTwo ? 7 : 6;
-        }
-
-        return int.MaxValue - 1;
-    }
-
-    private int FindNextEmptyEquipmentInventoryIndex()
-    {
-        for (int i = 0; i < equipmentInventoryLayout.Count; i++)
-        {
-            if (string.IsNullOrWhiteSpace(equipmentInventoryLayout[i]))
-            {
-                return i;
-            }
-        }
-
-        equipmentInventoryLayout.Add(string.Empty);
-        return equipmentInventoryLayout.Count - 1;
-    }
-
-    private void EnsureEquipmentInventoryLayoutSize(int requiredSize)
-    {
-        while (equipmentInventoryLayout.Count < requiredSize)
-        {
-            equipmentInventoryLayout.Add(string.Empty);
         }
     }
 

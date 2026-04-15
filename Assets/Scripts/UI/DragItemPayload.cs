@@ -9,6 +9,7 @@ public class DragItemPayload
     public Sprite icon;
     public DragItemType itemType;
     public DragItemSourceType sourceType;
+    public string sourceSlotId;
     public bool hasEquipmentSlotType;
     public EquipmentSlotType equipmentSlotType;
 
