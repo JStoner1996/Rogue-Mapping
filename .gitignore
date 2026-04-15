@@ -98,5 +98,4 @@ InitTestScene*.unity*
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
-/[Aa]ssets/Thaleah_PixelFont/Materials/ThaleahFat_TTF SDF.asset
-/[Aa]ssets/Thaleah_PixelFont/Materials
+/Assets/Thaleah_PixelFont/Materials/ThaleahFat_TTF\ SDF.asset
