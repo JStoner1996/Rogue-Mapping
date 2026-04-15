@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class MapStagingController
+public class MapStagingController : IStagingTabController
 {
     private readonly InventoryGridUI mapGrid;
     private readonly ItemDetailsPanelUI mapPreviewUI;

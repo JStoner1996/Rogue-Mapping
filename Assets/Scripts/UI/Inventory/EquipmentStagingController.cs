@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EquipmentStagingController
+public class EquipmentStagingController : IStagingTabController
 {
     private readonly InventoryGridUI equipmentGrid;
     private readonly ItemDetailsPanelUI equipmentPreviewUI;

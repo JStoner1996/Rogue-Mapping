@@ -75,43 +75,26 @@ public class StagingManager : MonoBehaviour
 
     private void HandleTabChanged(StagingTabController.Tab tab)
     {
-        RefreshButtons();
-        RefreshPreview();
+        IStagingTabController activeController = GetActiveTabController();
+        activeController?.RefreshGrid();
+        activeController?.RefreshPreview();
     }
 
-    private void RefreshButtons()
+    private IStagingTabController GetActiveTabController()
     {
         switch (tabController != null ? tabController.CurrentTab : StagingTabController.Tab.Weapons)
         {
             case StagingTabController.Tab.Weapons:
-                weaponController?.RefreshGrid();
-                break;
+                return weaponController;
 
             case StagingTabController.Tab.Maps:
-                mapController?.RefreshGrid();
-                break;
+                return mapController;
 
             case StagingTabController.Tab.Equipment:
-                equipmentController?.RefreshGrid();
-                break;
-        }
-    }
+                return equipmentController;
 
-    private void RefreshPreview()
-    {
-        switch (tabController != null ? tabController.CurrentTab : StagingTabController.Tab.Weapons)
-        {
-            case StagingTabController.Tab.Weapons:
-                weaponController?.RefreshPreview();
-                break;
-
-            case StagingTabController.Tab.Maps:
-                mapController?.RefreshPreview();
-                break;
-
-            case StagingTabController.Tab.Equipment:
-                equipmentController?.RefreshPreview();
-                break;
+            default:
+                return null;
         }
     }
 

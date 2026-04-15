@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponStagingController
+public class WeaponStagingController : IStagingTabController
 {
     private readonly InventoryGridUI weaponGrid;
     private readonly ItemDetailsPanelUI weaponPreviewUI;
