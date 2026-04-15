@@ -220,26 +220,11 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        if (EquipmentInventoryLayoutService.IsEquipped(equipment.InstanceId, MetaProgressionService.GetEquipmentLoadout()))
-        {
-            UnequipItem(equipment.InstanceId);
-            RebuildInventoryLayout();
-            RefreshPresentation();
-            return;
-        }
-
-        EquipmentSlotDropTargetUI targetSlot = EquipmentInventoryLayoutService.FindBestEquipTarget(
-            equipment,
-            equipmentDropTargets,
-            availableEquipment,
-            MetaProgressionService.GetEquippedItemId);
-
-        if (targetSlot == null)
+        if (!EquipmentInventoryInteractionService.ToggleEquipFromInventory(equipment, availableEquipment, equipmentDropTargets))
         {
             return;
         }
 
-        MetaProgressionService.SetEquippedItem(targetSlot.LoadoutSlotId, equipment.InstanceId);
         RebuildInventoryLayout();
         selectedEquipment = equipment;
         RefreshPresentation();
@@ -301,7 +286,11 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, string.Empty);
+        if (!EquipmentInventoryInteractionService.UnequipFromLoadoutSlot(dropTarget.LoadoutSlotId))
+        {
+            return;
+        }
+
         RefreshPresentation();
     }
 
@@ -330,38 +319,12 @@ public class EquipmentStagingController : IStagingTabController
 
     private void HandleEquipmentDropped(EquipmentSlotDropTargetUI dropTarget, DragItemPayload payload)
     {
-        if (dropTarget == null || payload == null || string.IsNullOrWhiteSpace(payload.itemId))
+        if (!EquipmentInventoryInteractionService.HandleDropToEquipmentSlot(dropTarget, payload, availableEquipment))
         {
             return;
         }
 
-        EquipmentInstance equipment = availableEquipment.Find(item => item != null && item.InstanceId == payload.itemId);
-
-        if (equipment == null || equipment.SlotType != dropTarget.SlotType)
-        {
-            return;
-        }
-
-        if (payload.sourceType == DragItemSourceType.EquippedSlot
-            && !string.IsNullOrWhiteSpace(payload.sourceSlotId)
-            && payload.sourceSlotId != dropTarget.LoadoutSlotId)
-        {
-            string targetEquippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
-            EquipmentInstance targetEquippedItem = FindEquipmentById(targetEquippedItemId);
-
-            if (targetEquippedItem != null && targetEquippedItem.SlotType == equipment.SlotType)
-            {
-                MetaProgressionService.SetEquippedItem(payload.sourceSlotId, targetEquippedItem.InstanceId, false);
-                MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId, false);
-                MetaProgressionService.Save();
-                RebuildInventoryLayout();
-                selectedEquipment = equipment;
-                RefreshPresentation();
-                return;
-            }
-        }
-
-        MetaProgressionService.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId);
+        EquipmentInstance equipment = FindEquipmentById(payload.itemId);
         RebuildInventoryLayout();
         selectedEquipment = equipment;
         RefreshPresentation();
@@ -369,69 +332,14 @@ public class EquipmentStagingController : IStagingTabController
 
     private bool CanAcceptEquipmentInventoryDrop(int index, DragItemPayload payload)
     {
-        if (payload == null
-            || payload.itemType != DragItemType.Equipment
-            || index < 0
-            || index >= equipmentInventoryLayout.Count)
-        {
-            return false;
-        }
-
-        string targetItemId = equipmentInventoryLayout[index];
-
-        if (!string.IsNullOrWhiteSpace(targetItemId) && EquipmentInventoryLayoutService.IsEquipped(targetItemId, MetaProgressionService.GetEquipmentLoadout()))
-        {
-            return false;
-        }
-
-        return true;
+        return EquipmentInventoryInteractionService.CanAcceptInventoryDrop(index, payload, equipmentInventoryLayout);
     }
 
     private void HandleEquipmentInventorySlotDrop(int targetIndex, DragItemPayload payload)
     {
-        if (!CanAcceptEquipmentInventoryDrop(targetIndex, payload) || string.IsNullOrWhiteSpace(payload.itemId))
+        if (!EquipmentInventoryInteractionService.HandleInventorySlotDrop(targetIndex, payload, equipmentInventoryLayout, availableEquipment))
         {
             return;
-        }
-
-        int sourceIndex = equipmentInventoryLayout.FindIndex(id => id == payload.itemId);
-        string targetItemId = targetIndex >= 0 && targetIndex < equipmentInventoryLayout.Count
-            ? equipmentInventoryLayout[targetIndex]
-            : string.Empty;
-        EquipmentInstance targetEquipment = FindEquipmentById(targetItemId);
-
-        if (payload.sourceType == DragItemSourceType.EquippedSlot
-            && targetEquipment != null
-            && !string.IsNullOrWhiteSpace(payload.sourceSlotId)
-            && targetEquipment.SlotType == payload.equipmentSlotType
-            && targetEquipment.InstanceId != payload.itemId)
-        {
-            MetaProgressionService.SetEquippedItem(payload.sourceSlotId, targetEquipment.InstanceId);
-
-            if (sourceIndex >= 0)
-            {
-                equipmentInventoryLayout[sourceIndex] = targetEquipment.InstanceId;
-            }
-
-            equipmentInventoryLayout[targetIndex] = payload.itemId;
-            RefreshPresentation();
-            return;
-        }
-
-        if (sourceIndex < 0)
-        {
-            return;
-        }
-
-        if (payload.sourceType == DragItemSourceType.EquippedSlot)
-        {
-            UnequipItem(payload.itemId);
-        }
-
-        if (sourceIndex != targetIndex)
-        {
-            equipmentInventoryLayout[targetIndex] = equipmentInventoryLayout[sourceIndex];
-            equipmentInventoryLayout[sourceIndex] = targetItemId;
         }
 
         RefreshPresentation();
@@ -458,36 +366,6 @@ public class EquipmentStagingController : IStagingTabController
         }
 
         return availableEquipment.Find(item => item != null && item.InstanceId == equipmentId);
-    }
-
-    private void UnequipItem(string equipmentInstanceId)
-    {
-        if (string.IsNullOrWhiteSpace(equipmentInstanceId))
-        {
-            return;
-        }
-
-        EquipmentLoadoutData loadout = MetaProgressionService.GetEquipmentLoadout();
-        bool changed = false;
-
-        if (loadout?.equippedItems != null)
-        {
-            for (int i = 0; i < loadout.equippedItems.Count; i++)
-            {
-                EquipmentLoadoutSlot slot = loadout.equippedItems[i];
-
-                if (slot != null && slot.equipmentInstanceId == equipmentInstanceId)
-                {
-                    MetaProgressionService.SetEquippedItem(slot.slotId, string.Empty, false);
-                    changed = true;
-                }
-            }
-        }
-
-        if (changed)
-        {
-            MetaProgressionService.Save();
-        }
     }
 
     private void RefreshHoveredEquipmentFromCurrentIndex()
