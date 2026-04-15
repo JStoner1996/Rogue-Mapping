@@ -5,24 +5,26 @@ public class MapStagingController : IStagingTabController
 {
     private readonly InventoryGridUI mapGrid;
     private readonly ItemDetailsPanelUI mapPreviewUI;
+    private readonly IMapDataFacade dataFacade;
 
     private readonly List<MapInstance> availableMaps = new List<MapInstance>();
     private MapInstance selectedMap;
     private MapInstance hoveredMap;
 
-    public MapStagingController(InventoryGridUI mapGrid, ItemDetailsPanelUI mapPreviewUI)
+    public MapStagingController(InventoryGridUI mapGrid, ItemDetailsPanelUI mapPreviewUI, IMapDataFacade dataFacade = null)
     {
         this.mapGrid = mapGrid;
         this.mapPreviewUI = mapPreviewUI;
+        this.dataFacade = dataFacade ?? new MetaProgressionMapDataFacade();
     }
 
     public MapInstance SelectedMap => selectedMap;
 
     public void LoadStarterMaps(int starterCount, VictoryConditionType defaultVictoryCondition, int defaultVictoryTarget)
     {
-        MetaProgressionService.EnsureStarterMaps(starterCount, defaultVictoryCondition, defaultVictoryTarget);
+        dataFacade.EnsureStarterMaps(starterCount, defaultVictoryCondition, defaultVictoryTarget);
         availableMaps.Clear();
-        availableMaps.AddRange(MetaProgressionService.GetOwnedMaps());
+        availableMaps.AddRange(dataFacade.GetOwnedMaps());
         selectedMap = availableMaps.Count > 0 ? availableMaps[0] : null;
         hoveredMap = null;
     }
