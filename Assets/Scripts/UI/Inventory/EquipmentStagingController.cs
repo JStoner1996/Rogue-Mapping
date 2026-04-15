@@ -69,44 +69,13 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        int slotCount = Mathf.Max(equipmentGrid.MaxSlots, equipmentInventoryLayout.Count);
-        List<InventorySlotModel> items = new List<InventorySlotModel>(slotCount);
-        EquipmentLoadoutData loadout = MetaProgressionService.GetEquipmentLoadout();
-
-        for (int i = 0; i < slotCount; i++)
-        {
-            string equipmentId = i < equipmentInventoryLayout.Count ? equipmentInventoryLayout[i] : string.Empty;
-            EquipmentInstance equipment = FindEquipmentById(equipmentId);
-
-            if (equipment == null)
-            {
-                items.Add(InventorySlotModel.Empty());
-                continue;
-            }
-
-            bool isEquipped = EquipmentInventoryLayoutService.IsEquipped(equipment.InstanceId, loadout);
-
-            items.Add(new InventorySlotModel
-            {
-                id = equipment.InstanceId,
-                label = equipment.DisplayName,
-                icon = equipment.Icon,
-                iconTint = GetEquipmentTierTint(equipment.ItemTier),
-                isEmpty = false,
-                isSelected = equipment == selectedEquipment,
-                isHovered = equipment == hoveredEquipment,
-                isEquipped = isEquipped,
-                isInteractable = true,
-                canDrag = !isEquipped,
-                dragItemType = DragItemType.Equipment,
-                dragItemSourceType = DragItemSourceType.Inventory,
-                hasEquipmentSlotType = true,
-                equipmentSlotType = equipment.SlotType,
-            });
-        }
-
         equipmentGrid.SetItems(
-            new InventoryGridModel(items, equipmentGrid.MaxSlots),
+            EquipmentInventoryGridPresenter.BuildGridModel(
+                equipmentGrid.MaxSlots,
+                equipmentInventoryLayout,
+                availableEquipment,
+                selectedEquipment,
+                hoveredEquipment),
             new InventoryGridInteractions
             {
                 OnSlotClicked = OnEquipmentSlotClicked,
@@ -160,21 +129,11 @@ public class EquipmentStagingController : IStagingTabController
 
     private void RefreshEquippedSlotVisuals()
     {
-        for (int i = 0; i < equipmentDropTargets.Count; i++)
-        {
-            EquipmentSlotDropTargetUI dropTarget = equipmentDropTargets[i];
-
-            if (dropTarget == null)
-            {
-                continue;
-            }
-
-            string equippedItemId = MetaProgressionService.GetEquippedItemId(dropTarget.LoadoutSlotId);
-            EquipmentInstance equippedItem = FindEquipmentById(equippedItemId);
-            dropTarget.SetDisplayedEquipment(equippedItem);
-            dropTarget.SetSelected(equippedItem != null && selectedEquipment != null && equippedItem.InstanceId == selectedEquipment.InstanceId);
-            dropTarget.SetHovered(equippedItem != null && hoveredEquipment != null && equippedItem.InstanceId == hoveredEquipment.InstanceId);
-        }
+        EquipmentVisualStateSyncService.SyncEquippedSlotVisuals(
+            equipmentDropTargets,
+            selectedEquipment,
+            hoveredEquipment,
+            availableEquipment);
     }
 
     private void RefreshPlayerStatsPanel()
@@ -380,11 +339,5 @@ public class EquipmentStagingController : IStagingTabController
 
         hoveredEquipment = FindEquipmentById(equipmentInventoryLayout[hoveredEquipmentIndex]);
         RefreshPreview();
-    }
-
-    private Color GetEquipmentTierTint(int itemTier)
-    {
-        float normalizedTier = Mathf.InverseLerp(1f, 10f, Mathf.Clamp(itemTier, 1, 10));
-        return Color.Lerp(Color.white, Color.red, normalizedTier);
     }
 }
