@@ -87,7 +87,7 @@ public static class EquipmentInventoryLayoutService
                 break;
             }
 
-            EquipmentInstance equippedItem = FindEquipmentById(availableEquipment, equippedItemId);
+            EquipmentInstance equippedItem = EquipmentInstanceLookup.FindById(availableEquipment, equippedItemId);
             if (equippedItem == null)
             {
                 emptySlot = candidate;
@@ -233,26 +233,6 @@ public static class EquipmentInventoryLayoutService
 
         return layout;
     }
-
-    private static EquipmentInstance FindEquipmentById(IReadOnlyList<EquipmentInstance> availableEquipment, string equipmentId)
-    {
-        if (availableEquipment == null || string.IsNullOrWhiteSpace(equipmentId))
-        {
-            return null;
-        }
-
-        for (int i = 0; i < availableEquipment.Count; i++)
-        {
-            EquipmentInstance item = availableEquipment[i];
-            if (item != null && item.InstanceId == equipmentId)
-            {
-                return item;
-            }
-        }
-
-        return null;
-    }
-
     private static List<string> GetEquippedPriorityIds(IReadOnlyList<EquipmentSlotDropTargetUI> dropTargets, Func<string, string> getEquippedItemId)
     {
         // Collects currently equipped ids in the same order the inventory strip should display them.

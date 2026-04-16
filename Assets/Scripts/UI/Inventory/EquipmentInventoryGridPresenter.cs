@@ -22,7 +22,7 @@ public static class EquipmentInventoryGridPresenter
             string equipmentId = equipmentInventoryLayout != null && i < equipmentInventoryLayout.Count
                 ? equipmentInventoryLayout[i]
                 : string.Empty;
-            EquipmentInstance equipment = FindEquipmentById(availableEquipment, equipmentId);
+            EquipmentInstance equipment = EquipmentInstanceLookup.FindById(availableEquipment, equipmentId);
 
             if (equipment == null)
             {
@@ -53,26 +53,6 @@ public static class EquipmentInventoryGridPresenter
 
         return new InventoryGridModel(items, maxSlots);
     }
-
-    private static EquipmentInstance FindEquipmentById(IReadOnlyList<EquipmentInstance> availableEquipment, string equipmentId)
-    {
-        if (availableEquipment == null || string.IsNullOrWhiteSpace(equipmentId))
-        {
-            return null;
-        }
-
-        for (int i = 0; i < availableEquipment.Count; i++)
-        {
-            EquipmentInstance item = availableEquipment[i];
-            if (item != null && item.InstanceId == equipmentId)
-            {
-                return item;
-            }
-        }
-
-        return null;
-    }
-
     private static Color GetEquipmentTierTint(int itemTier)
     {
         float normalizedTier = Mathf.InverseLerp(1f, 10f, Mathf.Clamp(itemTier, 1, 10));

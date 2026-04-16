@@ -1,111 +1,29 @@
 using System.Collections.Generic;
 
 // Coordinates the maps tab state, selection, and preview updates.
-public class MapStagingController : IStagingTabController
+public class MapStagingController : SimpleListStagingController<MapInstance>
 {
-    private readonly InventoryGridUI mapGrid;
-    private readonly ItemDetailsPanelUI mapPreviewUI;
     private readonly IMapDataFacade dataFacade;
 
-    private readonly List<MapInstance> availableMaps = new List<MapInstance>();
-    private MapInstance selectedMap;
-    private MapInstance hoveredMap;
-
     public MapStagingController(InventoryGridUI mapGrid, ItemDetailsPanelUI mapPreviewUI, IMapDataFacade dataFacade = null)
+        : base(mapGrid, mapPreviewUI != null ? new System.Action<MapInstance>(mapPreviewUI.ShowMap) : null)
     {
-        this.mapGrid = mapGrid;
-        this.mapPreviewUI = mapPreviewUI;
         this.dataFacade = dataFacade ?? new MetaProgressionMapDataFacade();
     }
 
-    public MapInstance SelectedMap => selectedMap;
+    public MapInstance SelectedMap => SelectedItem;
 
     public void LoadStarterMaps(int starterCount, VictoryConditionType defaultVictoryCondition, int defaultVictoryTarget)
     {
         dataFacade.EnsureStarterMaps(starterCount, defaultVictoryCondition, defaultVictoryTarget);
-        availableMaps.Clear();
-        availableMaps.AddRange(dataFacade.GetOwnedMaps());
-        selectedMap = availableMaps.Count > 0 ? availableMaps[0] : null;
-        hoveredMap = null;
+        List<MapInstance> availableMaps = dataFacade.GetOwnedMaps();
+        SetItems(availableMaps);
+        SelectedItem = availableMaps.Count > 0 ? availableMaps[0] : null;
+        ClearHoveredItem();
     }
 
-    public void SetSelectedMap(MapInstance map)
-    {
-        selectedMap = map;
-        hoveredMap = null;
-        RunData.SelectedMap = map;
-        mapPreviewUI?.ShowMap(map);
-        RefreshGrid();
-    }
-
-    public void RefreshGrid()
-    {
-        if (mapGrid == null)
-        {
-            return;
-        }
-
-        List<InventorySlotModel> items = new List<InventorySlotModel>(availableMaps.Count);
-        foreach (MapInstance map in availableMaps)
-        {
-            if (map == null)
-            {
-                continue;
-            }
-
-            items.Add(new InventorySlotModel
-            {
-                id = map.BaseMapId + "|" + map.DisplayName,
-                label = map.DisplayName,
-                icon = map.Icon,
-                isEmpty = false,
-                isSelected = map == selectedMap,
-                isHovered = map == hoveredMap,
-                isInteractable = true,
-            });
-        }
-
-        mapGrid.SetItems(
-            new InventoryGridModel(items, mapGrid.MaxSlots),
-            new InventoryGridInteractions
-            {
-                OnSlotClicked = OnMapSlotClicked,
-                OnSlotHoverEnter = OnMapSlotHoverEnter,
-                OnSlotHoverExit = OnMapSlotHoverExit,
-            });
-    }
-
-    public void RefreshPreview()
-    {
-        mapPreviewUI?.ShowMap(hoveredMap ?? selectedMap);
-    }
-
-    private void OnMapSlotClicked(int index, InventorySlotModel data)
-    {
-        if (index < 0 || index >= availableMaps.Count)
-        {
-            return;
-        }
-
-        SetSelectedMap(availableMaps[index]);
-    }
-
-    private void OnMapSlotHoverEnter(int index, InventorySlotModel data)
-    {
-        if (index < 0 || index >= availableMaps.Count)
-        {
-            return;
-        }
-
-        hoveredMap = availableMaps[index];
-        mapPreviewUI?.ShowMap(hoveredMap);
-        RefreshGrid();
-    }
-
-    private void OnMapSlotHoverExit(int index, InventorySlotModel data)
-    {
-        hoveredMap = null;
-        RefreshPreview();
-        RefreshGrid();
-    }
+    protected override string GetItemId(MapInstance item) => item.BaseMapId + "|" + item.DisplayName;
+    protected override string GetItemLabel(MapInstance item) => item.DisplayName;
+    protected override UnityEngine.Sprite GetItemIcon(MapInstance item) => item.Icon;
+    protected override void OnSelectionChanged(MapInstance item) => RunData.SelectedMap = item;
 }

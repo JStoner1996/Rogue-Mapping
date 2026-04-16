@@ -66,7 +66,7 @@ public static class EquipmentInventoryInteractionService
             return false;
         }
 
-        EquipmentInstance equipment = FindEquipmentById(availableEquipment, payload.itemId);
+        EquipmentInstance equipment = EquipmentInstanceLookup.FindById(availableEquipment, payload.itemId);
         if (equipment == null || equipment.SlotType != dropTarget.SlotType)
         {
             return false;
@@ -77,7 +77,7 @@ public static class EquipmentInventoryInteractionService
             && payload.sourceSlotId != dropTarget.LoadoutSlotId)
         {
             string targetEquippedItemId = dataFacade.GetEquippedItemId(dropTarget.LoadoutSlotId);
-            EquipmentInstance targetEquippedItem = FindEquipmentById(availableEquipment, targetEquippedItemId);
+            EquipmentInstance targetEquippedItem = EquipmentInstanceLookup.FindById(availableEquipment, targetEquippedItemId);
 
             if (targetEquippedItem != null && targetEquippedItem.SlotType == equipment.SlotType)
             {
@@ -132,7 +132,7 @@ public static class EquipmentInventoryInteractionService
         string targetItemId = targetIndex >= 0 && targetIndex < equipmentInventoryLayout.Count
             ? equipmentInventoryLayout[targetIndex]
             : string.Empty;
-        EquipmentInstance targetEquipment = FindEquipmentById(availableEquipment, targetItemId);
+        EquipmentInstance targetEquipment = EquipmentInstanceLookup.FindById(availableEquipment, targetItemId);
 
         if (payload.sourceType == DragItemSourceType.EquippedSlot
             && targetEquipment != null
@@ -201,24 +201,5 @@ public static class EquipmentInventoryInteractionService
         }
 
         return changed;
-    }
-
-    private static EquipmentInstance FindEquipmentById(IReadOnlyList<EquipmentInstance> availableEquipment, string equipmentId)
-    {
-        if (availableEquipment == null || string.IsNullOrWhiteSpace(equipmentId))
-        {
-            return null;
-        }
-
-        for (int i = 0; i < availableEquipment.Count; i++)
-        {
-            EquipmentInstance item = availableEquipment[i];
-            if (item != null && item.InstanceId == equipmentId)
-            {
-                return item;
-            }
-        }
-
-        return null;
     }
 }

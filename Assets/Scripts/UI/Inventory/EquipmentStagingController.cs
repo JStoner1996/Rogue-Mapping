@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 // Coordinates the equipment tab state, UI refreshes, and event wiring.
 public class EquipmentStagingController : IStagingTabController
@@ -120,8 +119,7 @@ public class EquipmentStagingController : IStagingTabController
     private void SelectEquipment(EquipmentInstance equipment)
     {
         selectedEquipment = equipment;
-        hoveredEquipment = null;
-        hoveredEquipmentIndex = -1;
+        ClearHoveredEquipment();
 
         if (equipmentPreviewUI != null)
         {
@@ -202,8 +200,7 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        hoveredEquipment = FindEquipmentById(equipmentInventoryLayout[index]);
-        hoveredEquipmentIndex = index;
+        SetHoveredEquipment(FindEquipmentById(equipmentInventoryLayout[index]), index);
         if (hoveredEquipment == null)
         {
             return;
@@ -220,8 +217,7 @@ public class EquipmentStagingController : IStagingTabController
 
     private void OnEquipmentSlotHoverExit(int index, InventorySlotModel data)
     {
-        hoveredEquipment = null;
-        hoveredEquipmentIndex = -1;
+        ClearHoveredEquipment();
         RefreshPreview();
         RefreshEquippedSlotVisuals();
         RefreshGrid();
@@ -266,8 +262,7 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        hoveredEquipment = dropTarget.DisplayedEquipment;
-        hoveredEquipmentIndex = -1;
+        SetHoveredEquipment(dropTarget.DisplayedEquipment);
         RefreshPreview();
         RefreshEquippedSlotVisuals();
         RefreshGrid();
@@ -275,8 +270,7 @@ public class EquipmentStagingController : IStagingTabController
 
     private void HandleEquippedSlotHoverExited(EquipmentSlotDropTargetUI dropTarget)
     {
-        hoveredEquipment = null;
-        hoveredEquipmentIndex = -1;
+        ClearHoveredEquipment();
         RefreshPreview();
         RefreshEquippedSlotVisuals();
         RefreshGrid();
@@ -330,20 +324,30 @@ public class EquipmentStagingController : IStagingTabController
             return null;
         }
 
-        return availableEquipment.Find(item => item != null && item.InstanceId == equipmentId);
+        return EquipmentInstanceLookup.FindById(availableEquipment, equipmentId);
     }
 
     private void RefreshHoveredEquipmentFromCurrentIndex()
     {
         if (hoveredEquipmentIndex < 0 || hoveredEquipmentIndex >= equipmentInventoryLayout.Count)
         {
-            hoveredEquipment = null;
-            hoveredEquipmentIndex = -1;
+            ClearHoveredEquipment();
             RefreshPreview();
             return;
         }
 
         hoveredEquipment = FindEquipmentById(equipmentInventoryLayout[hoveredEquipmentIndex]);
         RefreshPreview();
+    }
+
+    private void SetHoveredEquipment(EquipmentInstance equipment, int inventoryIndex = -1)
+    {
+        hoveredEquipment = equipment;
+        hoveredEquipmentIndex = inventoryIndex;
+    }
+
+    private void ClearHoveredEquipment()
+    {
+        SetHoveredEquipment(null);
     }
 }
