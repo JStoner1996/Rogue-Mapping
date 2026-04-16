@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Spawns ambient enemy packs over time using archetype weights and map progress scaling.
 public class EnemySpawner : MonoBehaviour
 {
     private struct MapSpawnModifiers
@@ -25,21 +26,11 @@ public class EnemySpawner : MonoBehaviour
     [System.Serializable]
     public class Wave
     {
+        // Legacy list entry kept intentionally so existing inspector prefab assignments survive.
         public GameObject enemyPrefab;
-        public float spawnInterval = 1f;
-        public int enemiesPerWave = 10;
-        public float minimumSpawnInterval = 0.15f;
-        [Range(0.1f, 1f)] public float spawnIntervalDecay = 0.8f;
     }
 
-    private class SpawnRuntimeState
-    {
-        public float spawnTimer;
-        public float currentSpawnInterval;
-        public int completedSpawnCycles;
-    }
-
-    [Header("Spawn Sequence")]
+    [Header("Ambient Spawn Pool")]
     public List<Wave> waves = new List<Wave>();
 
     [Header("Spawn Bounds")]
@@ -50,17 +41,19 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private EnemySpawnModifiers modifiers = new EnemySpawnModifiers();
 
     [Header("Pack Spawning")]
+    [SerializeField, Min(0.1f)] private float basePackSpawnInterval = 5f;
+    [SerializeField, Min(0f)] private float spawnIntervalReductionPerQuarter = 0.5f;
+    [SerializeField, Min(0.1f)] private float minimumPackSpawnInterval = 2f;
     [SerializeField, Min(0f)] private float packSpawnRadius = 1.25f;
 
-    private readonly List<SpawnRuntimeState> runtimeStates = new List<SpawnRuntimeState>();
     private MapSpawnModifiers mapModifiers;
-    public int waveNumber;
     private PlayerController player;
+    private float spawnTimer;
 
     void Awake()
     {
         ApplyRunModifiers();
-        BuildRuntimeStates();
+        spawnTimer = 0f;
     }
 
     void Update()
@@ -70,23 +63,22 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        Wave currentWave = waves[waveNumber];
-        SpawnRuntimeState currentState = runtimeStates[waveNumber];
-
-        if (!ShouldSpawn(currentState))
+        if (!ShouldSpawn())
         {
             return;
         }
 
-        SpawnPack(currentWave);
-        currentState.completedSpawnCycles++;
-
-        if (currentState.completedSpawnCycles < currentWave.enemiesPerWave)
+        int packCount = GetPackCountPerSpawn();
+        for (int i = 0; i < packCount; i++)
         {
-            return;
-        }
+            Wave selectedEntry = RollAmbientSpawnEntry();
+            if (selectedEntry == null)
+            {
+                return;
+            }
 
-        AdvanceToNextWave(currentWave, currentState);
+            SpawnPack(selectedEntry);
+        }
     }
 
     private bool CanRunSpawner()
@@ -96,52 +88,131 @@ public class EnemySpawner : MonoBehaviour
             player = PlayerController.Instance;
         }
 
-        return player != null && player.gameObject.activeSelf && waves.Count > 0;
+        return player != null && player.gameObject.activeSelf && HasAmbientSpawnEntries();
     }
 
-    private bool ShouldSpawn(SpawnRuntimeState currentState)
+    private bool HasAmbientSpawnEntries()
     {
-        currentState.spawnTimer += Time.deltaTime;
+        for (int i = 0; i < waves.Count; i++)
+        {
+            if (GetAmbientSpawnWeight(waves[i]) > 0f)
+            {
+                return true;
+            }
+        }
 
-        if (currentState.spawnTimer < currentState.currentSpawnInterval)
+        return false;
+    }
+
+    private bool ShouldSpawn()
+    {
+        spawnTimer += Time.deltaTime;
+
+        if (spawnTimer < GetCurrentPackSpawnInterval())
         {
             return false;
         }
 
-        currentState.spawnTimer = 0f;
+        spawnTimer = 0f;
         return true;
     }
 
-    private void BuildRuntimeStates()
+    private float GetCurrentPackSpawnInterval()
     {
-        runtimeStates.Clear();
-
-        foreach (Wave wave in waves)
-        {
-            runtimeStates.Add(new SpawnRuntimeState
-            {
-                spawnTimer = 0f,
-                currentSpawnInterval = wave.spawnInterval,
-                completedSpawnCycles = 0,
-            });
-        }
+        int completedThresholds = Mathf.FloorToInt(GetVictoryCompletionRate() / 0.25f);
+        float intervalReduction = completedThresholds * spawnIntervalReductionPerQuarter;
+        return Mathf.Max(minimumPackSpawnInterval, basePackSpawnInterval - intervalReduction);
     }
 
-    private void SpawnPack(Wave wave)
+    private float GetVictoryCompletionRate()
     {
-        if (wave == null || wave.enemyPrefab == null)
+        if (RunData.SelectedMap == null || GameManager.Instance == null || RunData.SelectedMap.VictoryTarget <= 0)
+        {
+            return 0f;
+        }
+
+        return RunData.SelectedMap.VictoryConditionType switch
+        {
+            VictoryConditionType.Time => Mathf.Clamp01(GameManager.Instance.gameTime / (RunData.SelectedMap.VictoryTarget * 60f)),
+            VictoryConditionType.Kills => Mathf.Clamp01((float)GameManager.Instance.enemyKills / RunData.SelectedMap.VictoryTarget),
+            _ => 0f,
+        };
+    }
+
+    private int GetPackCountPerSpawn()
+    {
+        float quantityMultiplier = Mathf.Max(0f, modifiers.quantity);
+        int guaranteedPacks = Mathf.FloorToInt(quantityMultiplier);
+        float fractionalPackChance = quantityMultiplier - guaranteedPacks;
+        int packCount = guaranteedPacks;
+
+        if (Random.value < fractionalPackChance)
+        {
+            packCount++;
+        }
+
+        return Mathf.Max(1, packCount);
+    }
+
+    private Wave RollAmbientSpawnEntry()
+    {
+        float totalWeight = 0f;
+
+        for (int i = 0; i < waves.Count; i++)
+        {
+            totalWeight += GetAmbientSpawnWeight(waves[i]);
+        }
+
+        if (totalWeight <= 0f)
+        {
+            return null;
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        float currentWeight = 0f;
+
+        for (int i = 0; i < waves.Count; i++)
+        {
+            Wave entry = waves[i];
+            currentWeight += GetAmbientSpawnWeight(entry);
+
+            if (roll <= currentWeight)
+            {
+                return entry;
+            }
+        }
+
+        return null;
+    }
+
+    private float GetAmbientSpawnWeight(Wave entry)
+    {
+        if (entry == null || entry.enemyPrefab == null)
+        {
+            return 0f;
+        }
+
+        Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
+        EnemyArchetypeDefinition archetypeDefinition = enemyTemplate != null ? enemyTemplate.ArchetypeDefinition : null;
+
+        return archetypeDefinition != null ? archetypeDefinition.AmbientSpawnWeight : 0f;
+    }
+
+    private void SpawnPack(Wave entry)
+    {
+        if (entry == null || entry.enemyPrefab == null)
         {
             return;
         }
 
-        Enemy enemyTemplate = wave.enemyPrefab.GetComponent<Enemy>();
+        Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
         int packSize = GetPackSize(enemyTemplate);
         EnemySpawnContext packContext = BuildSpawnContext();
         Vector2 packOrigin = GetSpawnPoint();
 
         for (int i = 0; i < packSize; i++)
         {
-            SpawnEnemy(wave.enemyPrefab, packOrigin, packContext);
+            SpawnEnemy(entry.enemyPrefab, packOrigin, packContext);
         }
     }
 
@@ -165,22 +236,6 @@ public class EnemySpawner : MonoBehaviour
         if (enemy != null)
         {
             enemy.Initialize(packContext);
-        }
-    }
-
-    private void AdvanceToNextWave(Wave wave, SpawnRuntimeState currentState)
-    {
-        currentState.completedSpawnCycles = 0;
-        currentState.currentSpawnInterval = Mathf.Max(
-            wave.minimumSpawnInterval,
-            currentState.currentSpawnInterval * wave.spawnIntervalDecay
-        );
-
-        waveNumber++;
-
-        if (waveNumber >= waves.Count)
-        {
-            waveNumber = 0;
         }
     }
 
