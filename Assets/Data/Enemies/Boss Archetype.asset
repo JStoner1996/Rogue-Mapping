@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e1552386dc5baa4eb3a022f0f2dc8f4, type: 3}
   m_Name: Boss Archetype
   m_EditorClassIdentifier: Assembly-CSharp::EnemyArchetypeDefinition
-  archetype: 4
-  displayName: Miniboss
+  archetype: 5
+  displayName: Boss
   spawnRole: 1
   ambientSpawnWeight: 0.15
   itemLevelOffset: 8
-  healthMultiplier: 1.85
-  damageMultiplier: 1.35
+  healthMultiplier: 4
+  damageMultiplier: 2
   moveSpeedMultiplier: 1
-  experienceMultiplier: 1.75
-  dropChanceMultiplier: 1.2
+  experienceMultiplier: 5
+  dropChanceMultiplier: 3

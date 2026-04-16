@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: 1814600791678575216}
   - component: {fileID: 6557924966457350784}
   m_Layer: 7
-  m_Name: Enemy3
+  m_Name: Elite_01
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -122,7 +122,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.5351824, y: -2.0177763, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3815605450991031285}
@@ -177,7 +177,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -4606552108516508874, guid: 578f1d8d3c6eff541a9f145b218bdc76, type: 3}
+  m_Sprite: {fileID: -5912800498141821623, guid: ac6a0595ea2573c4a82c871d5ecc5d49, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -197,7 +197,7 @@ Animator:
   m_GameObject: {fileID: 4676779308917037825}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: e68dec88fa377e34d8b9e1979a49a3b6, type: 2}
+  m_Controller: {fileID: 9100000, guid: eddf870b9a5be2e41946e2412ac11066, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -270,8 +270,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.14792854, y: 0.70488286}
-  m_Radius: 0.5754195
+  m_Offset: {x: 0.030283153, y: 0.7545025}
+  m_Radius: 0.6928318
 --- !u!114 &6557924966457350784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -288,25 +288,26 @@ MonoBehaviour:
   rb: {fileID: 8061212314342040822}
   destroyEffect: {fileID: 1424168793998055834, guid: f587819a14468d74fa2f42eccf304135, type: 3}
   rarityOutlineMaterial: {fileID: 0}
-  experienceWorth: 25
-  moveSpeed: 0.75
-  damage: 15
-  health: 850
-  knockbackResistance: 50
+  archetypeDefinition: {fileID: 11400000, guid: 5dfec0fc6d118fc45ad01b8a7e19a107, type: 2}
+  experienceWorth: 150
+  moveSpeed: 1
+  damage: 20
+  health: 800
+  knockbackResistance: 100
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}
   uncommonOutlineThickness: 1.2
   rareOutlineThickness: 1.4
   powerUpLootTable:
   - type: 0
-    dropChance: 6
+    dropChance: 100
   - type: 1
-    dropChance: 4
-  - type: 1
-    dropChance: 4
+    dropChance: 100
+  - type: 2
+    dropChance: 20
   metaLootTable:
   - type: 0
-    dropChance: 5
+    dropChance: 2
     mapDropSettings:
       sameTierWeight: 0
       aboveTierWeight: 0

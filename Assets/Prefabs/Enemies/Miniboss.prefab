@@ -26,8 +26,8 @@ Transform:
   m_GameObject: {fileID: 1591060210855301892}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.2, z: 0}
-  m_LocalScale: {x: 2, y: 1, z: 1}
+  m_LocalPosition: {x: 0.016, y: -0.014, z: 0}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2882113457081394128}
@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: 1814600791678575216}
   - component: {fileID: 6557924966457350784}
   m_Layer: 7
-  m_Name: Boss1
+  m_Name: Miniboss
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -121,8 +121,8 @@ Transform:
   m_GameObject: {fileID: 4676779308917037825}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.5351824, y: -2.0177763, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: -4, y: 4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3815605450991031285}
@@ -177,12 +177,12 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -5912800498141821623, guid: ac6a0595ea2573c4a82c871d5ecc5d49, type: 3}
+  m_Sprite: {fileID: 2600735624873369648, guid: 32c56ba1050cd4049b15308e7b687ff4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.53125, y: 1.90625}
+  m_Size: {x: 0.4875, y: 0.6625}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -197,7 +197,7 @@ Animator:
   m_GameObject: {fileID: 4676779308917037825}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: eddf870b9a5be2e41946e2412ac11066, type: 2}
+  m_Controller: {fileID: 9100000, guid: b1efb2badfeeac9419bb34bb6efe93c5, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -270,8 +270,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.030283153, y: 0.7545025}
-  m_Radius: 0.6928318
+  m_Offset: {x: 0.005750108, y: 0.29816875}
+  m_Radius: 0.25198463
 --- !u!114 &6557924966457350784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -288,10 +288,11 @@ MonoBehaviour:
   rb: {fileID: 8061212314342040822}
   destroyEffect: {fileID: 1424168793998055834, guid: f587819a14468d74fa2f42eccf304135, type: 3}
   rarityOutlineMaterial: {fileID: 0}
-  experienceWorth: 150
-  moveSpeed: 0.5
-  damage: 25
-  health: 2500
+  archetypeDefinition: {fileID: 11400000, guid: 8dd2b55649becf84589aa0941e44a14a, type: 2}
+  experienceWorth: 200
+  moveSpeed: 1
+  damage: 30
+  health: 1250
   knockbackResistance: 100
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}
@@ -306,7 +307,7 @@ MonoBehaviour:
     dropChance: 20
   metaLootTable:
   - type: 0
-    dropChance: 100
+    dropChance: 50
     mapDropSettings:
       sameTierWeight: 0
       aboveTierWeight: 0

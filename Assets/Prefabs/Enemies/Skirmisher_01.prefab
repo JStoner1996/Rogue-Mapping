@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: 1814600791678575216}
   - component: {fileID: 6557924966457350784}
   m_Layer: 7
-  m_Name: Enemy2
+  m_Name: Skirmisher_01
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -288,10 +288,11 @@ MonoBehaviour:
   rb: {fileID: 8061212314342040822}
   destroyEffect: {fileID: 1424168793998055834, guid: f587819a14468d74fa2f42eccf304135, type: 3}
   rarityOutlineMaterial: {fileID: 0}
+  archetypeDefinition: {fileID: 11400000, guid: 120da502b8e841744adb93ac31959b3e, type: 2}
   experienceWorth: 15
-  moveSpeed: 2
+  moveSpeed: 1.2
   damage: 10
-  health: 650
+  health: 500
   knockbackResistance: 25
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}

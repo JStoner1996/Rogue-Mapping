@@ -29505,7 +29505,6 @@ MonoBehaviour:
   weaponGrid: {fileID: 1753026488}
   mapGrid: {fileID: 1701425228}
   equipmentGrid: {fileID: 1345325933}
-  equipmentInventoryDropTarget: {fileID: 0}
   weaponPreviewUI: {fileID: 1962274037}
   mapPreviewUI: {fileID: 1447237269}
   equipmentPreviewUI: {fileID: 2028219528}
