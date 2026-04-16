@@ -87,39 +87,6 @@ public class DragDropManagerUI : MonoBehaviour
         }
     }
 
-    public void EvaluateHover(PointerEventData eventData)
-    {
-        if (!IsDragging)
-        {
-            return;
-        }
-
-        IDragDropTargetUI nextTarget = ResolveDropTarget(eventData);
-
-        if (ReferenceEquals(nextTarget, currentTarget))
-        {
-            return;
-        }
-
-        ClearCurrentTarget();
-        currentTarget = nextTarget;
-
-        if (currentTarget != null && currentTarget.CanAcceptDrop(currentPayload))
-        {
-            currentTarget.OnDragHoverStart(currentPayload);
-        }
-    }
-
-    private void ClearCurrentTarget()
-    {
-        if (currentTarget != null && currentPayload != null)
-        {
-            currentTarget.OnDragHoverEnd(currentPayload);
-        }
-
-        currentTarget = null;
-    }
-
     private IDragDropTargetUI ResolveDropTarget(PointerEventData eventData)
     {
         if (eventData == null)
@@ -153,6 +120,39 @@ public class DragDropManagerUI : MonoBehaviour
         }
 
         return eventData.pointerEnter.GetComponentInParent<IDragDropTargetUI>();
+    }
+
+    private void ClearCurrentTarget()
+    {
+        if (currentTarget != null && currentPayload != null)
+        {
+            currentTarget.OnDragHoverEnd(currentPayload);
+        }
+
+        currentTarget = null;
+    }
+
+    public void EvaluateHover(PointerEventData eventData)
+    {
+        if (!IsDragging)
+        {
+            return;
+        }
+
+        IDragDropTargetUI nextTarget = ResolveDropTarget(eventData);
+
+        if (ReferenceEquals(nextTarget, currentTarget))
+        {
+            return;
+        }
+
+        ClearCurrentTarget();
+        currentTarget = nextTarget;
+
+        if (currentTarget != null && currentTarget.CanAcceptDrop(currentPayload))
+        {
+            currentTarget.OnDragHoverStart(currentPayload);
+        }
     }
 
     private void EnsureGhost()

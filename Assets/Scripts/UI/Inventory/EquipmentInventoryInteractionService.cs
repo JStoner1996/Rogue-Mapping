@@ -37,6 +37,39 @@ public static class EquipmentInventoryInteractionService
         return true;
     }
 
+    public static bool UnequipItem(string equipmentInstanceId, IEquipmentDataFacade dataFacade)
+    {
+        // Removes an item from any loadout slot currently pointing at it.
+        if (string.IsNullOrWhiteSpace(equipmentInstanceId) || dataFacade == null)
+        {
+            return false;
+        }
+
+        EquipmentLoadoutData loadout = dataFacade.GetEquipmentLoadout();
+        bool changed = false;
+
+        if (loadout?.equippedItems != null)
+        {
+            for (int i = 0; i < loadout.equippedItems.Count; i++)
+            {
+                EquipmentLoadoutSlot slot = loadout.equippedItems[i];
+
+                if (slot != null && slot.equipmentInstanceId == equipmentInstanceId)
+                {
+                    dataFacade.SetEquippedItem(slot.slotId, string.Empty, false);
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed)
+        {
+            dataFacade.Save();
+        }
+
+        return changed;
+    }
+
     public static bool UnequipFromLoadoutSlot(string loadoutSlotId, IEquipmentDataFacade dataFacade)
     {
         if (string.IsNullOrWhiteSpace(loadoutSlotId) || dataFacade == null)
@@ -168,38 +201,5 @@ public static class EquipmentInventoryInteractionService
         }
 
         return true;
-    }
-
-    public static bool UnequipItem(string equipmentInstanceId, IEquipmentDataFacade dataFacade)
-    {
-        // Removes an item from any loadout slot currently pointing at it.
-        if (string.IsNullOrWhiteSpace(equipmentInstanceId) || dataFacade == null)
-        {
-            return false;
-        }
-
-        EquipmentLoadoutData loadout = dataFacade.GetEquipmentLoadout();
-        bool changed = false;
-
-        if (loadout?.equippedItems != null)
-        {
-            for (int i = 0; i < loadout.equippedItems.Count; i++)
-            {
-                EquipmentLoadoutSlot slot = loadout.equippedItems[i];
-
-                if (slot != null && slot.equipmentInstanceId == equipmentInstanceId)
-                {
-                    dataFacade.SetEquippedItem(slot.slotId, string.Empty, false);
-                    changed = true;
-                }
-            }
-        }
-
-        if (changed)
-        {
-            dataFacade.Save();
-        }
-
-        return changed;
     }
 }

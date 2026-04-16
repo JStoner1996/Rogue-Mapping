@@ -53,6 +53,7 @@ public static class EquipmentInventoryGridPresenter
 
         return new InventoryGridModel(items, maxSlots);
     }
+
     private static Color GetEquipmentTierTint(int itemTier)
     {
         float normalizedTier = Mathf.InverseLerp(1f, 10f, Mathf.Clamp(itemTier, 1, 10));

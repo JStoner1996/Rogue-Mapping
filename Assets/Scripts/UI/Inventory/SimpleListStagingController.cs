@@ -43,20 +43,6 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
         }
     }
 
-    protected void SetSelectedItem(T item)
-    {
-        selectedItem = item;
-        hoveredItem = null;
-        OnSelectionChanged(item);
-        showPreview?.Invoke(item);
-        RefreshGrid();
-    }
-
-    protected void ClearHoveredItem()
-    {
-        hoveredItem = null;
-    }
-
     public void RefreshGrid()
     {
         if (grid == null)
@@ -86,33 +72,62 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
         showPreview?.Invoke(hoveredItem ?? selectedItem);
     }
 
+    protected void SetSelectedItem(T item)
+    {
+        selectedItem = item;
+        ClearHoveredItem();
+        OnSelectionChanged(item);
+        showPreview?.Invoke(item);
+        RefreshGrid();
+    }
+
+    private bool TryGetItemAtIndex(int index, out T item)
+    {
+        if (index >= 0 && index < items.Count)
+        {
+            item = items[index];
+            return true;
+        }
+
+        item = null;
+        return false;
+    }
+
+    private void SetHoveredItem(T item)
+    {
+        hoveredItem = item;
+        showPreview?.Invoke(item ?? selectedItem);
+        RefreshGrid();
+    }
+
     private void OnSlotClicked(int index, InventorySlotModel data)
     {
-        if (index < 0 || index >= items.Count)
+        if (!TryGetItemAtIndex(index, out T item))
         {
             return;
         }
 
-        SetSelectedItem(items[index]);
+        SetSelectedItem(item);
     }
 
     private void OnSlotHoverEnter(int index, InventorySlotModel data)
     {
-        if (index < 0 || index >= items.Count)
+        if (!TryGetItemAtIndex(index, out T item))
         {
             return;
         }
 
-        hoveredItem = items[index];
-        showPreview?.Invoke(hoveredItem);
-        RefreshGrid();
+        SetHoveredItem(item);
     }
 
     private void OnSlotHoverExit(int index, InventorySlotModel data)
     {
+        SetHoveredItem(null);
+    }
+
+    protected void ClearHoveredItem()
+    {
         hoveredItem = null;
-        RefreshPreview();
-        RefreshGrid();
     }
 
     protected abstract string GetItemId(T item);

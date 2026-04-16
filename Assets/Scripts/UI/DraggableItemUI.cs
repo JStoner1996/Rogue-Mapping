@@ -18,6 +18,12 @@ public class DraggableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         dragEnabled = enabled;
     }
 
+    private DragItemPayload ResolveDragPayload()
+    {
+        DragItemPayload payload = payloadResolver?.Invoke();
+        return payload != null && payload.IsValid() ? payload : null;
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (!dragEnabled || DragDropManagerUI.Instance == null)
@@ -25,9 +31,8 @@ public class DraggableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
             return;
         }
 
-        DragItemPayload payload = payloadResolver?.Invoke();
-
-        if (payload == null || !payload.IsValid())
+        DragItemPayload payload = ResolveDragPayload();
+        if (payload == null)
         {
             return;
         }

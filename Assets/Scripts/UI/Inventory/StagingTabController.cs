@@ -56,14 +56,6 @@ public class StagingTabController
         AddTabButton(equipmentTabButton, showEquipmentTab);
     }
 
-    public void SwitchTab(Tab tab, Action<Tab> onTabChanged = null)
-    {
-        currentTab = tab;
-        RefreshPanelVisibility();
-        RefreshTabVisuals();
-        onTabChanged?.Invoke(tab);
-    }
-
     private void AddTabButton(Button button, UnityAction onClick)
     {
         if (button == null)
@@ -74,6 +66,14 @@ public class StagingTabController
         button.onClick.RemoveListener(onClick);
         button.onClick.AddListener(onClick);
         tabButtons.Add(button);
+    }
+
+    public void SwitchTab(Tab tab, Action<Tab> onTabChanged = null)
+    {
+        currentTab = tab;
+        RefreshPanelVisibility();
+        RefreshTabVisuals();
+        onTabChanged?.Invoke(tab);
     }
 
     private void RefreshPanelVisibility()

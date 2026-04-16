@@ -87,49 +87,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Bind(InventorySlotModel.Empty(), clickCallback);
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    private bool CanInteractWithCurrentData()
     {
-        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
-        {
-            return;
-        }
-
-        onHoverEnter?.Invoke(this, currentData);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
-        {
-            return;
-        }
-
-        onHoverExit?.Invoke(this, currentData);
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (eventData.button != PointerEventData.InputButton.Right)
-        {
-            return;
-        }
-
-        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
-        {
-            return;
-        }
-
-        onRightClick?.Invoke(this, currentData);
-    }
-
-    private void HandleClick()
-    {
-        if (currentData == null || currentData.isEmpty || !currentData.isInteractable)
-        {
-            return;
-        }
-
-        onClick?.Invoke(this, currentData);
+        return currentData != null && !currentData.isEmpty && currentData.isInteractable;
     }
 
     private void RefreshVisuals()
@@ -220,6 +180,51 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             hasEquipmentSlotType = currentData.hasEquipmentSlotType,
             equipmentSlotType = currentData.equipmentSlotType,
         };
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!CanInteractWithCurrentData())
+        {
+            return;
+        }
+
+        onHoverEnter?.Invoke(this, currentData);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!CanInteractWithCurrentData())
+        {
+            return;
+        }
+
+        onHoverExit?.Invoke(this, currentData);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Right)
+        {
+            return;
+        }
+
+        if (!CanInteractWithCurrentData())
+        {
+            return;
+        }
+
+        onRightClick?.Invoke(this, currentData);
+    }
+
+    private void HandleClick()
+    {
+        if (!CanInteractWithCurrentData())
+        {
+            return;
+        }
+
+        onClick?.Invoke(this, currentData);
     }
 
     public bool CanAcceptDrop(DragItemPayload payload)

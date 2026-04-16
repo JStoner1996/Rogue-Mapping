@@ -53,6 +53,16 @@ public class InventoryGridUI : MonoBehaviour
         }
     }
 
+    private void EnsureSlotCount()
+    {
+        CacheExistingSlots();
+
+        if (spawnedSlots.Count != Mathf.Max(0, maxSlots))
+        {
+            RebuildSlots();
+        }
+    }
+
     public void ClearItems()
     {
         EnsureSlotCount();
@@ -81,16 +91,6 @@ public class InventoryGridUI : MonoBehaviour
             InventorySlotUI slot = InstantiateSlot();
             slot.SetEmpty();
             spawnedSlots.Add(slot);
-        }
-    }
-
-    private void EnsureSlotCount()
-    {
-        CacheExistingSlots();
-
-        if (spawnedSlots.Count != Mathf.Max(0, maxSlots))
-        {
-            RebuildSlots();
         }
     }
 

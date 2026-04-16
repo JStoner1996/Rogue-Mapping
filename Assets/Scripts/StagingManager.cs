@@ -42,16 +42,73 @@ public class StagingManager : MonoBehaviour
     void Start()
     {
         MetaProgressionService.EnsureLoaded();
+        InitializeControllers();
+        tabController.RegisterTabButtons(ShowWeaponsTab, ShowMapsTab, ShowEquipmentTab);
+        equipmentController.RegisterDropTargets();
+        SwitchToTab(StagingTabController.Tab.Weapons);
+    }
+
+    public void ShowWeaponsTab()
+    {
+        SwitchToTab(StagingTabController.Tab.Weapons);
+    }
+
+    public void ShowMapsTab()
+    {
+        SwitchToTab(StagingTabController.Tab.Maps);
+    }
+
+    public void ShowEquipmentTab()
+    {
+        SwitchToTab(StagingTabController.Tab.Equipment);
+    }
+
+    public void StartRun()
+    {
+        WeaponData selectedWeapon = weaponController != null ? weaponController.SelectedWeapon : null;
+        if (selectedWeapon == null)
+        {
+            Debug.LogWarning("No weapon selected!");
+            return;
+        }
+
+        MapInstance selectedMap = mapController != null ? mapController.SelectedMap : null;
+        if (selectedMap == null)
+        {
+            Debug.LogWarning("No map selected!");
+            return;
+        }
+
+        RunData.SelectedWeapon = selectedWeapon;
+        RunData.SelectedMap = selectedMap;
+        SceneManager.LoadScene("Game");
+    }
+
+    public void RefreshEquipmentDebugData()
+    {
+        equipmentController?.RefreshDebugData();
+    }
+
+    private void SwitchToTab(StagingTabController.Tab tab)
+    {
+        tabController?.SwitchTab(tab, HandleTabChanged);
+    }
+
+    private void InitializeControllers()
+    {
         weaponController = new WeaponStagingController(weaponGrid, weaponPreviewUI);
         weaponController.Load();
+
         mapController = new MapStagingController(mapGrid, mapPreviewUI);
         mapController.LoadStarterMaps(4, defaultMapVictoryCondition, defaultMapVictoryTarget);
+
         equipmentController = new EquipmentStagingController(
             equipmentGrid,
             equipmentPreviewUI,
             playerStatsPanelUI,
             equipmentDropTargets);
         equipmentController.Load();
+
         tabController = new StagingTabController(
             weaponsPanel,
             mapsPanel,
@@ -61,10 +118,8 @@ public class StagingManager : MonoBehaviour
             equipmentTabButton,
             activeTabColor,
             inactiveTabColor);
+
         InitializeDefaults();
-        tabController.RegisterTabButtons(ShowWeaponsTab, ShowMapsTab, ShowEquipmentTab);
-        equipmentController.RegisterDropTargets();
-        tabController.SwitchTab(StagingTabController.Tab.Weapons, HandleTabChanged);
     }
 
     private void InitializeDefaults()
@@ -96,46 +151,5 @@ public class StagingManager : MonoBehaviour
             default:
                 return null;
         }
-    }
-
-    public void ShowWeaponsTab()
-    {
-        tabController?.SwitchTab(StagingTabController.Tab.Weapons, HandleTabChanged);
-    }
-
-    public void ShowMapsTab()
-    {
-        tabController?.SwitchTab(StagingTabController.Tab.Maps, HandleTabChanged);
-    }
-
-    public void ShowEquipmentTab()
-    {
-        tabController?.SwitchTab(StagingTabController.Tab.Equipment, HandleTabChanged);
-    }
-
-    public void StartRun()
-    {
-        WeaponData selectedWeapon = weaponController != null ? weaponController.SelectedWeapon : null;
-        if (selectedWeapon == null)
-        {
-            Debug.LogWarning("No weapon selected!");
-            return;
-        }
-
-        MapInstance selectedMap = mapController != null ? mapController.SelectedMap : null;
-        if (selectedMap == null)
-        {
-            Debug.LogWarning("No map selected!");
-            return;
-        }
-
-        RunData.SelectedWeapon = selectedWeapon;
-        RunData.SelectedMap = selectedMap;
-        SceneManager.LoadScene("Game");
-    }
-
-    public void RefreshEquipmentDebugData()
-    {
-        equipmentController?.RefreshDebugData();
     }
 }

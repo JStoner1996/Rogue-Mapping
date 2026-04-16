@@ -108,6 +108,65 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
         RefreshEquippedIcon(equipment);
     }
 
+    private void RefreshHighlight()
+    {
+        SetBorderColor(GetBorderColor());
+        SetSelectionOutline(isSelected, selectedOutlineColor);
+    }
+
+    private Color GetBorderColor()
+    {
+        if (isPointerHovered || isLinkedHovered || isDropHovered)
+        {
+            return hoveredBorderColor;
+        }
+
+        if (isEquipped)
+        {
+            return equippedBorderColor;
+        }
+
+        return filledBorderColor;
+    }
+
+    private void RefreshEquippedIcon(EquipmentInstance equipment)
+    {
+        if (itemIconImage == null)
+        {
+            return;
+        }
+
+        itemIconImage.sprite = equipment != null ? equipment.Icon : null;
+        itemIconImage.color = equipment != null ? Color.Lerp(Color.white, Color.red, Mathf.InverseLerp(1f, 10f, Mathf.Clamp(equipment.ItemTier, 1, 10))) : Color.white;
+        itemIconImage.gameObject.SetActive(itemIconImage.sprite != null);
+        itemIconImage.enabled = itemIconImage.sprite != null;
+    }
+
+    private DragItemPayload BuildDragPayload()
+    {
+        if (displayedEquipment == null)
+        {
+            return null;
+        }
+
+        return new DragItemPayload
+        {
+            itemId = displayedEquipment.InstanceId,
+            label = displayedEquipment.DisplayName,
+            icon = displayedEquipment.Icon,
+            itemType = DragItemType.Equipment,
+            sourceType = DragItemSourceType.EquippedSlot,
+            sourceSlotId = LoadoutSlotId,
+            hasEquipmentSlotType = true,
+            equipmentSlotType = displayedEquipment.SlotType,
+        };
+    }
+
+    private bool CanDragDisplayedEquipment()
+    {
+        return displayedEquipment != null && DragDropManagerUI.Instance != null;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Left)
@@ -146,30 +205,19 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (displayedEquipment == null || DragDropManagerUI.Instance == null)
+        if (!CanDragDisplayedEquipment())
         {
             return;
         }
 
-        DragItemPayload payload = new DragItemPayload
-        {
-            itemId = displayedEquipment.InstanceId,
-            label = displayedEquipment.DisplayName,
-            icon = displayedEquipment.Icon,
-            itemType = DragItemType.Equipment,
-            sourceType = DragItemSourceType.EquippedSlot,
-            sourceSlotId = LoadoutSlotId,
-            hasEquipmentSlotType = true,
-            equipmentSlotType = displayedEquipment.SlotType,
-        };
-
+        DragItemPayload payload = BuildDragPayload();
         DragDropManagerUI.Instance.BeginDrag(payload);
         DragDropManagerUI.Instance.EvaluateHover(eventData);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (displayedEquipment == null || DragDropManagerUI.Instance == null || !DragDropManagerUI.Instance.IsDragging)
+        if (!CanDragDisplayedEquipment() || !DragDropManagerUI.Instance.IsDragging)
         {
             return;
         }
@@ -180,7 +228,7 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (displayedEquipment == null || DragDropManagerUI.Instance == null)
+        if (!CanDragDisplayedEquipment())
         {
             return;
         }
@@ -212,39 +260,5 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
         {
             selectionOutlineImage.color = colorOverride ?? selectedOutlineColor;
         }
-    }
-
-    private void RefreshHighlight()
-    {
-        SetBorderColor(GetBorderColor());
-        SetSelectionOutline(isSelected, selectedOutlineColor);
-    }
-
-    private Color GetBorderColor()
-    {
-        if (isPointerHovered || isLinkedHovered || isDropHovered)
-        {
-            return hoveredBorderColor;
-        }
-
-        if (isEquipped)
-        {
-            return equippedBorderColor;
-        }
-
-        return filledBorderColor;
-    }
-
-    private void RefreshEquippedIcon(EquipmentInstance equipment)
-    {
-        if (itemIconImage == null)
-        {
-            return;
-        }
-
-        itemIconImage.sprite = equipment != null ? equipment.Icon : null;
-        itemIconImage.color = equipment != null ? Color.Lerp(Color.white, Color.red, Mathf.InverseLerp(1f, 10f, Mathf.Clamp(equipment.ItemTier, 1, 10))) : Color.white;
-        itemIconImage.gameObject.SetActive(itemIconImage.sprite != null);
-        itemIconImage.enabled = itemIconImage.sprite != null;
     }
 }
