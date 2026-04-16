@@ -25,12 +25,6 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
         set => selectedItem = value;
     }
 
-    protected T HoveredItem
-    {
-        get => hoveredItem;
-        set => hoveredItem = value;
-    }
-
     protected void SetItems(IEnumerable<T> sourceItems)
     {
         items.Clear();

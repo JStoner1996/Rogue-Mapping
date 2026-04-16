@@ -45,21 +45,7 @@ public class EquipmentStagingController : IStagingTabController
     {
         foreach (EquipmentSlotDropTargetUI dropTarget in equipmentDropTargets)
         {
-            if (dropTarget == null)
-            {
-                continue;
-            }
-
-            dropTarget.DropReceived -= HandleEquipmentDropped;
-            dropTarget.DropReceived += HandleEquipmentDropped;
-            dropTarget.RightClicked -= HandleEquipmentSlotRightClicked;
-            dropTarget.RightClicked += HandleEquipmentSlotRightClicked;
-            dropTarget.LeftClicked -= HandleEquippedSlotLeftClicked;
-            dropTarget.LeftClicked += HandleEquippedSlotLeftClicked;
-            dropTarget.HoverEntered -= HandleEquippedSlotHoverEntered;
-            dropTarget.HoverEntered += HandleEquippedSlotHoverEntered;
-            dropTarget.HoverExited -= HandleEquippedSlotHoverExited;
-            dropTarget.HoverExited += HandleEquippedSlotHoverExited;
+            RegisterDropTarget(dropTarget);
         }
 
         RefreshEquippedSlotVisuals();
@@ -111,23 +97,14 @@ public class EquipmentStagingController : IStagingTabController
     public void RefreshDebugData()
     {
         Load();
-        RefreshEquippedSlotVisuals();
-        RefreshGrid();
-        RefreshPlayerStatsPanel();
+        RefreshVisuals();
     }
 
     private void SelectEquipment(EquipmentInstance equipment)
     {
         selectedEquipment = equipment;
         ClearHoveredEquipment();
-
-        if (equipmentPreviewUI != null)
-        {
-            equipmentPreviewUI.ShowEquipment(equipment);
-        }
-
-        RefreshEquippedSlotVisuals();
-        RefreshGrid();
+        RefreshSelectionPresentation();
     }
 
     private void RefreshEquippedSlotVisuals()
@@ -151,19 +128,41 @@ public class EquipmentStagingController : IStagingTabController
     private void RefreshPresentation()
     {
         RefreshHoveredEquipmentFromCurrentIndex();
+        RefreshVisuals();
+        RefreshPlayerStatsPanel();
+    }
+
+    private void RefreshSelectionPresentation()
+    {
+        RefreshPreview();
+        RefreshVisuals();
+    }
+
+    private void RefreshVisuals()
+    {
         RefreshEquippedSlotVisuals();
         RefreshGrid();
-        RefreshPlayerStatsPanel();
+    }
+
+    private void ApplyHoveredEquipment(EquipmentInstance equipment, int inventoryIndex = -1)
+    {
+        SetHoveredEquipment(equipment, inventoryIndex);
+
+        if (hoveredEquipment == null)
+        {
+            RefreshPreview();
+        }
+        else
+        {
+            equipmentPreviewUI?.ShowEquipment(hoveredEquipment);
+        }
+
+        RefreshVisuals();
     }
 
     private void OnEquipmentSlotClicked(int index, InventorySlotModel data)
     {
-        if (index < 0 || index >= equipmentInventoryLayout.Count)
-        {
-            return;
-        }
-
-        EquipmentInstance equipment = FindEquipmentById(equipmentInventoryLayout[index]);
+        EquipmentInstance equipment = GetEquipmentAtIndex(index);
         if (equipment != null)
         {
             SelectEquipment(equipment);
@@ -172,12 +171,7 @@ public class EquipmentStagingController : IStagingTabController
 
     private void OnEquipmentSlotRightClicked(int index, InventorySlotModel data)
     {
-        if (index < 0 || index >= equipmentInventoryLayout.Count)
-        {
-            return;
-        }
-
-        EquipmentInstance equipment = FindEquipmentById(equipmentInventoryLayout[index]);
+        EquipmentInstance equipment = GetEquipmentAtIndex(index);
         if (equipment == null)
         {
             return;
@@ -188,39 +182,17 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        RebuildInventoryLayout();
-        selectedEquipment = equipment;
-        RefreshPresentation();
+        HandleEquipmentMutation(equipment, rebuildLayout: true);
     }
 
     private void OnEquipmentSlotHoverEnter(int index, InventorySlotModel data)
     {
-        if (index < 0 || index >= equipmentInventoryLayout.Count)
-        {
-            return;
-        }
-
-        SetHoveredEquipment(FindEquipmentById(equipmentInventoryLayout[index]), index);
-        if (hoveredEquipment == null)
-        {
-            return;
-        }
-
-        if (equipmentPreviewUI != null)
-        {
-            equipmentPreviewUI.ShowEquipment(hoveredEquipment);
-        }
-
-        RefreshEquippedSlotVisuals();
-        RefreshGrid();
+        ApplyHoveredEquipment(GetEquipmentAtIndex(index), index);
     }
 
     private void OnEquipmentSlotHoverExit(int index, InventorySlotModel data)
     {
-        ClearHoveredEquipment();
-        RefreshPreview();
-        RefreshEquippedSlotVisuals();
-        RefreshGrid();
+        ApplyHoveredEquipment(null);
     }
 
     private void HandleEquippedSlotLeftClicked(EquipmentSlotDropTargetUI dropTarget)
@@ -231,7 +203,6 @@ public class EquipmentStagingController : IStagingTabController
         }
 
         SelectEquipment(dropTarget.DisplayedEquipment);
-        RefreshEquippedSlotVisuals();
     }
 
     private void HandleEquipmentSlotRightClicked(EquipmentSlotDropTargetUI dropTarget)
@@ -252,7 +223,7 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        RefreshPresentation();
+        HandleEquipmentMutation(rebuildLayout: false);
     }
 
     private void HandleEquippedSlotHoverEntered(EquipmentSlotDropTargetUI dropTarget)
@@ -262,18 +233,12 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        SetHoveredEquipment(dropTarget.DisplayedEquipment);
-        RefreshPreview();
-        RefreshEquippedSlotVisuals();
-        RefreshGrid();
+        ApplyHoveredEquipment(dropTarget.DisplayedEquipment);
     }
 
     private void HandleEquippedSlotHoverExited(EquipmentSlotDropTargetUI dropTarget)
     {
-        ClearHoveredEquipment();
-        RefreshPreview();
-        RefreshEquippedSlotVisuals();
-        RefreshGrid();
+        ApplyHoveredEquipment(null);
     }
 
     private void HandleEquipmentDropped(EquipmentSlotDropTargetUI dropTarget, DragItemPayload payload)
@@ -283,10 +248,7 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        EquipmentInstance equipment = FindEquipmentById(payload.itemId);
-        RebuildInventoryLayout();
-        selectedEquipment = equipment;
-        RefreshPresentation();
+        HandleEquipmentMutation(FindEquipmentById(payload.itemId), rebuildLayout: true);
     }
 
     private bool CanAcceptEquipmentInventoryDrop(int index, DragItemPayload payload)
@@ -301,7 +263,7 @@ public class EquipmentStagingController : IStagingTabController
             return;
         }
 
-        RefreshPresentation();
+        HandleEquipmentMutation(rebuildLayout: false);
     }
 
     private void RebuildInventoryLayout()
@@ -325,6 +287,54 @@ public class EquipmentStagingController : IStagingTabController
         }
 
         return EquipmentInstanceLookup.FindById(availableEquipment, equipmentId);
+    }
+
+    private void RegisterDropTarget(EquipmentSlotDropTargetUI dropTarget)
+    {
+        if (dropTarget == null)
+        {
+            return;
+        }
+
+        dropTarget.DropReceived -= HandleEquipmentDropped;
+        dropTarget.DropReceived += HandleEquipmentDropped;
+        dropTarget.RightClicked -= HandleEquipmentSlotRightClicked;
+        dropTarget.RightClicked += HandleEquipmentSlotRightClicked;
+        dropTarget.LeftClicked -= HandleEquippedSlotLeftClicked;
+        dropTarget.LeftClicked += HandleEquippedSlotLeftClicked;
+        dropTarget.HoverEntered -= HandleEquippedSlotHoverEntered;
+        dropTarget.HoverEntered += HandleEquippedSlotHoverEntered;
+        dropTarget.HoverExited -= HandleEquippedSlotHoverExited;
+        dropTarget.HoverExited += HandleEquippedSlotHoverExited;
+    }
+
+    private EquipmentInstance GetEquipmentAtIndex(int index)
+    {
+        if (index < 0 || index >= equipmentInventoryLayout.Count)
+        {
+            return null;
+        }
+
+        return FindEquipmentById(equipmentInventoryLayout[index]);
+    }
+
+    private void HandleEquipmentMutation(EquipmentInstance nextSelectedEquipment = null, bool rebuildLayout = true)
+    {
+        if (rebuildLayout)
+        {
+            RebuildInventoryLayout();
+        }
+
+        if (nextSelectedEquipment != null)
+        {
+            selectedEquipment = nextSelectedEquipment;
+        }
+        else if (selectedEquipment != null)
+        {
+            selectedEquipment = FindEquipmentById(selectedEquipment.InstanceId);
+        }
+
+        RefreshPresentation();
     }
 
     private void RefreshHoveredEquipmentFromCurrentIndex()
