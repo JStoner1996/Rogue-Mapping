@@ -36978,37 +36978,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4aaa79528a528445a3b47c14f7a89b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  waves:
+  ambientPacks:
   - enemyPrefab: {fileID: 4323507646279960848, guid: 46e05a1f3f8a3c543aaef99c5eadd9bb, type: 3}
-    spawnInterval: 1
-    enemiesPerWave: 10
-    packSize: 1
-    minimumSpawnInterval: 0.15
-    spawnIntervalDecay: 0.8
   - enemyPrefab: {fileID: 4676779308917037825, guid: 6ba0773349ec68a4f8209080adde97ff, type: 3}
-    spawnInterval: 1
-    enemiesPerWave: 7
-    packSize: 1
-    minimumSpawnInterval: 0.15
-    spawnIntervalDecay: 0.8
   - enemyPrefab: {fileID: 4676779308917037825, guid: ab4025a31207f614193d75583b79d7c1, type: 3}
-    spawnInterval: 1
-    enemiesPerWave: 5
-    packSize: 1
-    minimumSpawnInterval: 0.15
-    spawnIntervalDecay: 0.8
   - enemyPrefab: {fileID: 4676779308917037825, guid: 8081eea848320b145998a688a11d4d80, type: 3}
-    spawnInterval: 1
-    enemiesPerWave: 1
-    packSize: 1
-    minimumSpawnInterval: 0.15
-    spawnIntervalDecay: 0.8
+  eventPacks:
+  - enemyPrefab: {fileID: 4676779308917037825, guid: 7bfc6790e5c5d024b87bb87d7a86277d, type: 3}
+  - enemyPrefab: {fileID: 4676779308917037825, guid: ad21209236dc51b43861a84a2cdcf0c2, type: 3}
   minPos: {fileID: 511867854}
   maxPos: {fileID: 1702407338}
   modifiers:
     quantity: 1
     quality: 0
-  waveNumber: 0
+  basePackSpawnInterval: 5
+  spawnIntervalReductionPerQuarter: 0.5
+  minimumPackSpawnInterval: 2
+  packSpawnRadius: 3
 --- !u!4 &992489899
 Transform:
   m_ObjectHideFlags: 0

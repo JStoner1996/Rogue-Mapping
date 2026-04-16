@@ -4,6 +4,13 @@ using UnityEngine;
 // Spawns ambient enemy packs over time using archetype weights and map progress scaling.
 public class EnemySpawner : MonoBehaviour
 {
+    private struct RuntimeSpawnerModifier
+    {
+        public EnemySpawnerModifierType type;
+        public float additiveValue;
+        public float remainingDuration;
+    }
+
     private struct MapSpawnModifiers
     {
         public float quantity;
@@ -24,14 +31,16 @@ public class EnemySpawner : MonoBehaviour
     }
 
     [System.Serializable]
-    public class Wave
+    public class PackEntry
     {
-        // Legacy list entry kept intentionally so existing inspector prefab assignments survive.
         public GameObject enemyPrefab;
     }
 
     [Header("Ambient Spawn Pool")]
-    public List<Wave> waves = new List<Wave>();
+    [SerializeField] private List<PackEntry> ambientPacks = new List<PackEntry>();
+
+    [Header("Event Spawn Pool")]
+    [SerializeField] private List<PackEntry> eventPacks = new List<PackEntry>();
 
     [Header("Spawn Bounds")]
     [SerializeField] private Transform minPos;
@@ -49,6 +58,8 @@ public class EnemySpawner : MonoBehaviour
     private MapSpawnModifiers mapModifiers;
     private PlayerController player;
     private float spawnTimer;
+    private readonly List<RuntimeSpawnerModifier> temporaryRuntimeModifiers = new List<RuntimeSpawnerModifier>();
+    private readonly Dictionary<EnemySpawnerModifierType, float> persistentRuntimeModifiers = new Dictionary<EnemySpawnerModifierType, float>();
 
     void Awake()
     {
@@ -58,6 +69,8 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
+        UpdateTemporaryModifiers();
+
         if (!CanRunSpawner())
         {
             return;
@@ -71,7 +84,7 @@ public class EnemySpawner : MonoBehaviour
         int packCount = GetPackCountPerSpawn();
         for (int i = 0; i < packCount; i++)
         {
-            Wave selectedEntry = RollAmbientSpawnEntry();
+            PackEntry selectedEntry = RollAmbientSpawnEntry();
             if (selectedEntry == null)
             {
                 return;
@@ -93,9 +106,9 @@ public class EnemySpawner : MonoBehaviour
 
     private bool HasAmbientSpawnEntries()
     {
-        for (int i = 0; i < waves.Count; i++)
+        for (int i = 0; i < ambientPacks.Count; i++)
         {
-            if (GetAmbientSpawnWeight(waves[i]) > 0f)
+            if (GetAmbientSpawnWeight(ambientPacks[i]) > 0f)
             {
                 return true;
             }
@@ -121,7 +134,9 @@ public class EnemySpawner : MonoBehaviour
     {
         int completedThresholds = Mathf.FloorToInt(GetVictoryCompletionRate() / 0.25f);
         float intervalReduction = completedThresholds * spawnIntervalReductionPerQuarter;
-        return Mathf.Max(minimumPackSpawnInterval, basePackSpawnInterval - intervalReduction);
+        float naturalInterval = Mathf.Max(minimumPackSpawnInterval, basePackSpawnInterval - intervalReduction);
+        float intervalMultiplier = Mathf.Max(0.1f, 1f + GetRuntimeModifierSum(EnemySpawnerModifierType.PackSpawnInterval));
+        return Mathf.Max(minimumPackSpawnInterval, naturalInterval * intervalMultiplier);
     }
 
     private float GetVictoryCompletionRate()
@@ -141,7 +156,7 @@ public class EnemySpawner : MonoBehaviour
 
     private int GetPackCountPerSpawn()
     {
-        float quantityMultiplier = Mathf.Max(0f, modifiers.quantity);
+        float quantityMultiplier = Mathf.Max(0f, GetEffectiveModifier(EnemySpawnerModifierType.EnemyQuantity));
         int guaranteedPacks = Mathf.FloorToInt(quantityMultiplier);
         float fractionalPackChance = quantityMultiplier - guaranteedPacks;
         int packCount = guaranteedPacks;
@@ -154,38 +169,12 @@ public class EnemySpawner : MonoBehaviour
         return Mathf.Max(1, packCount);
     }
 
-    private Wave RollAmbientSpawnEntry()
+    private PackEntry RollAmbientSpawnEntry()
     {
-        float totalWeight = 0f;
-
-        for (int i = 0; i < waves.Count; i++)
-        {
-            totalWeight += GetAmbientSpawnWeight(waves[i]);
-        }
-
-        if (totalWeight <= 0f)
-        {
-            return null;
-        }
-
-        float roll = Random.Range(0f, totalWeight);
-        float currentWeight = 0f;
-
-        for (int i = 0; i < waves.Count; i++)
-        {
-            Wave entry = waves[i];
-            currentWeight += GetAmbientSpawnWeight(entry);
-
-            if (roll <= currentWeight)
-            {
-                return entry;
-            }
-        }
-
-        return null;
+        return RollSpawnEntry(GetAmbientSpawnWeight);
     }
 
-    private float GetAmbientSpawnWeight(Wave entry)
+    private float GetAmbientSpawnWeight(PackEntry entry)
     {
         if (entry == null || entry.enemyPrefab == null)
         {
@@ -198,7 +187,190 @@ public class EnemySpawner : MonoBehaviour
         return archetypeDefinition != null ? archetypeDefinition.AmbientSpawnWeight : 0f;
     }
 
-    private void SpawnPack(Wave entry)
+    public bool SpawnFinalBosses(int count)
+    {
+        return SpawnEventEnemies(EnemyArchetype.Boss, count);
+    }
+
+    public bool SpawnEventEnemies(EnemyArchetype archetype, int count)
+    {
+        return SpawnEventEnemies(archetype, count, null);
+    }
+
+    public bool SpawnEventEnemies(EnemyArchetype archetype, int count, Vector2? spawnOriginOverride)
+    {
+        if (count <= 0)
+        {
+            return false;
+        }
+
+        if (!HasEventEntries(archetype))
+        {
+            Debug.LogError(GetMissingEventSpawnReason(archetype));
+            return false;
+        }
+
+        int spawnedCount = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            PackEntry eventEntry = RollSpawnEntry(eventPacks, entry => GetEventSpawnWeight(entry, archetype));
+            if (eventEntry == null)
+            {
+                break;
+            }
+
+            SpawnPack(eventEntry, BuildEventSpawnContext(), spawnOriginOverride);
+            spawnedCount++;
+        }
+
+        return spawnedCount == count;
+    }
+
+    public void AddRuntimeModifier(EnemySpawnerModifierType modifierType, float additiveValue, float durationSeconds = 0f)
+    {
+        if (durationSeconds > 0f)
+        {
+            temporaryRuntimeModifiers.Add(new RuntimeSpawnerModifier
+            {
+                type = modifierType,
+                additiveValue = additiveValue,
+                remainingDuration = durationSeconds,
+            });
+            return;
+        }
+
+        persistentRuntimeModifiers.TryGetValue(modifierType, out float currentValue);
+        persistentRuntimeModifiers[modifierType] = currentValue + additiveValue;
+    }
+
+    private bool HasEventEntries(EnemyArchetype archetype)
+    {
+        for (int i = 0; i < eventPacks.Count; i++)
+        {
+            if (GetEventSpawnWeight(eventPacks[i], archetype) > 0f)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private string GetMissingEventSpawnReason(EnemyArchetype archetype)
+    {
+        if (eventPacks.Count == 0)
+        {
+            return $"Event spawn for '{archetype}' could not start because the Event Spawn Pool is empty.";
+        }
+
+        for (int i = 0; i < eventPacks.Count; i++)
+        {
+            PackEntry entry = eventPacks[i];
+
+            if (entry == null || entry.enemyPrefab == null)
+            {
+                continue;
+            }
+
+            Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
+            if (enemyTemplate == null)
+            {
+                return $"Event spawn for '{archetype}' could not start because event pack '{entry.enemyPrefab.name}' does not have an Enemy component.";
+            }
+
+            EnemyArchetypeDefinition archetypeDefinition = enemyTemplate.ArchetypeDefinition;
+            if (archetypeDefinition == null)
+            {
+                return $"Event spawn for '{archetype}' could not start because event pack '{entry.enemyPrefab.name}' has no archetype definition assigned.";
+            }
+
+            if (archetypeDefinition.SpawnRole != EnemySpawnRole.EventOnly)
+            {
+                return $"Event spawn for '{archetype}' could not start because event pack '{entry.enemyPrefab.name}' is not marked EventOnly.";
+            }
+
+            if (archetypeDefinition.Archetype != archetype)
+            {
+                return $"Event spawn for '{archetype}' could not start because event pack '{entry.enemyPrefab.name}' is '{archetypeDefinition.Archetype}' instead of '{archetype}'.";
+            }
+        }
+
+        return $"Event spawn for '{archetype}' could not start because no valid {archetype} + EventOnly entry was found in the Event Spawn Pool.";
+    }
+
+    private float GetEventSpawnWeight(PackEntry entry, EnemyArchetype archetype)
+    {
+        if (entry == null || entry.enemyPrefab == null)
+        {
+            return 0f;
+        }
+
+        Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
+        EnemyArchetypeDefinition archetypeDefinition = enemyTemplate != null ? enemyTemplate.ArchetypeDefinition : null;
+
+        if (archetypeDefinition == null
+            || archetypeDefinition.SpawnRole != EnemySpawnRole.EventOnly
+            || archetypeDefinition.Archetype != archetype)
+        {
+            return 0f;
+        }
+
+        return 1f;
+    }
+
+    private PackEntry RollSpawnEntry(System.Func<PackEntry, float> getWeight)
+    {
+        return RollSpawnEntry(ambientPacks, getWeight);
+    }
+
+    private PackEntry RollSpawnEntry(IReadOnlyList<PackEntry> sourceEntries, System.Func<PackEntry, float> getWeight)
+    {
+        if (sourceEntries == null || getWeight == null)
+        {
+            return null;
+        }
+
+        float totalWeight = 0f;
+
+        for (int i = 0; i < sourceEntries.Count; i++)
+        {
+            totalWeight += getWeight(sourceEntries[i]);
+        }
+
+        if (totalWeight <= 0f)
+        {
+            return null;
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        float currentWeight = 0f;
+
+        for (int i = 0; i < sourceEntries.Count; i++)
+        {
+            PackEntry entry = sourceEntries[i];
+            currentWeight += getWeight(entry);
+
+            if (roll <= currentWeight)
+            {
+                return entry;
+            }
+        }
+
+        return null;
+    }
+
+    private void SpawnPack(PackEntry entry)
+    {
+        SpawnPack(entry, BuildSpawnContext());
+    }
+
+    private void SpawnPack(PackEntry entry, EnemySpawnContext packContext)
+    {
+        SpawnPack(entry, packContext, null);
+    }
+
+    private void SpawnPack(PackEntry entry, EnemySpawnContext packContext, Vector2? packOriginOverride)
     {
         if (entry == null || entry.enemyPrefab == null)
         {
@@ -207,8 +379,7 @@ public class EnemySpawner : MonoBehaviour
 
         Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
         int packSize = GetPackSize(enemyTemplate);
-        EnemySpawnContext packContext = BuildSpawnContext();
-        Vector2 packOrigin = GetSpawnPoint();
+        Vector2 packOrigin = packOriginOverride ?? GetSpawnPoint();
 
         for (int i = 0; i < packSize; i++)
         {
@@ -223,8 +394,8 @@ public class EnemySpawner : MonoBehaviour
             return 1;
         }
 
-        int packSize = enemyTemplate.RollPackSize(mapModifiers.quality);
-        return Mathf.Max(1, Mathf.RoundToInt(packSize * Mathf.Max(0f, modifiers.quantity)));
+        int packSize = enemyTemplate.RollPackSize(GetEffectiveModifier(EnemySpawnerModifierType.EnemyQuality));
+        return Mathf.Max(1, Mathf.RoundToInt(packSize * Mathf.Max(0f, GetEffectiveModifier(EnemySpawnerModifierType.EnemyQuantity))));
     }
 
     private void SpawnEnemy(GameObject enemyPrefab, Vector2 packOrigin, EnemySpawnContext packContext)
@@ -247,17 +418,30 @@ public class EnemySpawner : MonoBehaviour
         return new EnemySpawnContext
         {
             rarity = rarity,
-            healthMultiplier = rarityProfile.healthMultiplier * mapModifiers.health,
-            damageMultiplier = rarityProfile.damageMultiplier * mapModifiers.damage,
-            moveSpeedMultiplier = rarityProfile.moveSpeedMultiplier * mapModifiers.moveSpeed,
-            experienceMultiplier = rarityProfile.experienceMultiplier * mapModifiers.experience,
-            dropChanceMultiplier = mapModifiers.dropChance,
+            healthMultiplier = rarityProfile.healthMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.EnemyHealth),
+            damageMultiplier = rarityProfile.damageMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.EnemyDamage),
+            moveSpeedMultiplier = rarityProfile.moveSpeedMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.EnemyMoveSpeed),
+            experienceMultiplier = rarityProfile.experienceMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.ExperienceWorth),
+            dropChanceMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.DropChance),
+        };
+    }
+
+    private EnemySpawnContext BuildEventSpawnContext()
+    {
+        return new EnemySpawnContext
+        {
+            rarity = EnemyRarity.Normal,
+            healthMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.EnemyHealth),
+            damageMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.EnemyDamage),
+            moveSpeedMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.EnemyMoveSpeed),
+            experienceMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.ExperienceWorth),
+            dropChanceMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.DropChance),
         };
     }
 
     private EnemyRarity RollRarity()
     {
-        float quality = Mathf.Max(0f, modifiers.quality);
+        float quality = Mathf.Max(0f, GetEffectiveModifier(EnemySpawnerModifierType.EnemyQuality));
         float rareChance = Mathf.Clamp01(0.03f * quality);
         float uncommonChance = Mathf.Clamp01(0.12f * quality);
         float roll = Random.value;
@@ -313,6 +497,62 @@ public class EnemySpawner : MonoBehaviour
         mapModifiers = BuildMapSpawnModifiers();
         modifiers.quantity = mapModifiers.quantity;
         modifiers.quality = mapModifiers.quality;
+    }
+
+    private float GetEffectiveModifier(EnemySpawnerModifierType modifierType)
+    {
+        float baseValue = modifierType switch
+        {
+            EnemySpawnerModifierType.EnemyQuantity => mapModifiers.quantity,
+            EnemySpawnerModifierType.EnemyQuality => mapModifiers.quality,
+            EnemySpawnerModifierType.EnemyDamage => mapModifiers.damage,
+            EnemySpawnerModifierType.EnemyHealth => mapModifiers.health,
+            EnemySpawnerModifierType.EnemyMoveSpeed => mapModifiers.moveSpeed,
+            EnemySpawnerModifierType.ExperienceWorth => mapModifiers.experience,
+            EnemySpawnerModifierType.DropChance => mapModifiers.dropChance,
+            EnemySpawnerModifierType.PackSpawnInterval => 1f,
+            _ => 1f,
+        };
+
+        return Mathf.Max(0f, baseValue + GetRuntimeModifierSum(modifierType));
+    }
+
+    private float GetRuntimeModifierSum(EnemySpawnerModifierType modifierType)
+    {
+        float total = 0f;
+
+        if (persistentRuntimeModifiers.TryGetValue(modifierType, out float persistentValue))
+        {
+            total += persistentValue;
+        }
+
+        for (int i = 0; i < temporaryRuntimeModifiers.Count; i++)
+        {
+            RuntimeSpawnerModifier modifier = temporaryRuntimeModifiers[i];
+            if (modifier.type == modifierType)
+            {
+                total += modifier.additiveValue;
+            }
+        }
+
+        return total;
+    }
+
+    private void UpdateTemporaryModifiers()
+    {
+        for (int i = temporaryRuntimeModifiers.Count - 1; i >= 0; i--)
+        {
+            RuntimeSpawnerModifier modifier = temporaryRuntimeModifiers[i];
+            modifier.remainingDuration -= Time.deltaTime;
+
+            if (modifier.remainingDuration <= 0f)
+            {
+                temporaryRuntimeModifiers.RemoveAt(i);
+                continue;
+            }
+
+            temporaryRuntimeModifiers[i] = modifier;
+        }
     }
 
     private MapSpawnModifiers BuildMapSpawnModifiers()

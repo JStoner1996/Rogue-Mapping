@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public static event System.Action EnemyKilled;
+    public static event System.Action<Enemy> EnemyKilled;
 
     private const float KnockbackDuration = 0.1f;
 
@@ -147,7 +147,7 @@ public class Enemy : MonoBehaviour
         DropExperience();
         DropPowerUps();
         DropMetaItems();
-        EnemyKilled?.Invoke();
+        EnemyKilled?.Invoke(this);
         PlayDeathEffects();
         Destroy(gameObject);
     }

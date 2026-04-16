@@ -288,11 +288,13 @@ MonoBehaviour:
   rb: {fileID: 8061212314342040822}
   destroyEffect: {fileID: 1424168793998055834, guid: f587819a14468d74fa2f42eccf304135, type: 3}
   rarityOutlineMaterial: {fileID: 0}
-  archetypeDefinition: {fileID: 11400000, guid: 8dd2b55649becf84589aa0941e44a14a, type: 2}
+  archetypeDefinition: {fileID: 11400000, guid: 8cd0851f96342f94b8c86beafd13cce8, type: 2}
   experienceWorth: 400
   moveSpeed: 0.9
   damage: 35
   health: 2000
+  packSizeMin: 1
+  packSizeMax: 1
   knockbackResistance: 100
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}

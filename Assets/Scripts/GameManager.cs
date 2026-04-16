@@ -11,8 +11,12 @@ public class GameManager : MonoBehaviour
     public float gameTime;
     public bool gameActive;
     public int enemyKills { get; private set; }
+    public bool victoryConditionMet { get; private set; }
+    public bool finalBossEncounterActive => remainingFinalBosses > 0;
 
     private bool runCompleted;
+    private EnemySpawner enemySpawner;
+    private int remainingFinalBosses;
 
     void Awake()
     {
@@ -33,6 +37,9 @@ public class GameManager : MonoBehaviour
         gameActive = true;
         enemyKills = 0;
         runCompleted = false;
+        victoryConditionMet = false;
+        remainingFinalBosses = 0;
+        enemySpawner = FindAnyObjectByType<EnemySpawner>();
     }
 
     void OnEnable()
@@ -142,15 +149,27 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    private void OnEnemyKilled()
+    private void OnEnemyKilled(Enemy enemy)
     {
         enemyKills++;
+
+        if (enemy != null && enemy.Archetype == EnemyArchetype.Boss && remainingFinalBosses > 0)
+        {
+            remainingFinalBosses--;
+
+            if (remainingFinalBosses <= 0)
+            {
+                CompleteRun();
+                return;
+            }
+        }
+
         CheckVictoryCondition();
     }
 
     private void CheckVictoryCondition()
     {
-        if (!gameActive || runCompleted || RunData.SelectedMap == null)
+        if (!gameActive || runCompleted || victoryConditionMet || RunData.SelectedMap == null)
         {
             return;
         }
@@ -160,16 +179,45 @@ public class GameManager : MonoBehaviour
             case VictoryConditionType.Time:
                 if (gameTime >= RunData.SelectedMap.VictoryTarget * 60f)
                 {
-                    CompleteRun();
+                    BeginFinalBossEncounter();
                 }
                 break;
 
             case VictoryConditionType.Kills:
                 if (enemyKills >= RunData.SelectedMap.VictoryTarget)
                 {
-                    CompleteRun();
+                    BeginFinalBossEncounter();
                 }
                 break;
         }
+    }
+
+    private void BeginFinalBossEncounter()
+    {
+        if (victoryConditionMet || runCompleted)
+        {
+            return;
+        }
+
+        int bossCount = GetFinalBossCount();
+
+        if (enemySpawner == null)
+        {
+            enemySpawner = FindAnyObjectByType<EnemySpawner>();
+        }
+
+        if (enemySpawner == null || !enemySpawner.SpawnFinalBosses(bossCount))
+        {
+            Debug.LogError("Final boss encounter could not start because no boss spawn entry is available.");
+            return;
+        }
+
+        victoryConditionMet = true;
+        remainingFinalBosses = bossCount;
+    }
+
+    private int GetFinalBossCount()
+    {
+        return 1;
     }
 }
