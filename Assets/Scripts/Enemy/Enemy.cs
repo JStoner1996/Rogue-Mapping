@@ -22,6 +22,9 @@ public class Enemy : MonoBehaviour
     [SerializeField] private GameObject destroyEffect;
     [SerializeField] private Material rarityOutlineMaterial;
 
+    [Header("Archetype")]
+    [SerializeField] private EnemyArchetypeDefinition archetypeDefinition;
+
     [Header("Enemy Stats")]
     [SerializeField] private int experienceWorth;
     [SerializeField] private float moveSpeed;
@@ -48,6 +51,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] private List<MetaLootItem> metaLootTable = new List<MetaLootItem>();
 
     public EnemyRarity Rarity { get; private set; } = EnemyRarity.Normal;
+    public EnemyArchetypeDefinition ArchetypeDefinition => archetypeDefinition;
+    public EnemyArchetype Archetype => archetypeDefinition != null ? archetypeDefinition.Archetype : EnemyArchetype.Fodder;
     private PlayerController player;
     private PlayerHealth playerHealth;
     private RuntimeStats runtimeStats;
@@ -254,13 +259,19 @@ public class Enemy : MonoBehaviour
 
     private RuntimeStats BuildRuntimeStats()
     {
+        float archetypeHealthMultiplier = archetypeDefinition != null ? archetypeDefinition.HealthMultiplier : 1f;
+        float archetypeDamageMultiplier = archetypeDefinition != null ? archetypeDefinition.DamageMultiplier : 1f;
+        float archetypeMoveSpeedMultiplier = archetypeDefinition != null ? archetypeDefinition.MoveSpeedMultiplier : 1f;
+        float archetypeExperienceMultiplier = archetypeDefinition != null ? archetypeDefinition.ExperienceMultiplier : 1f;
+        float archetypeDropChanceMultiplier = archetypeDefinition != null ? archetypeDefinition.DropChanceMultiplier : 1f;
+
         return new RuntimeStats
         {
-            maxHealth = health * spawnContext.healthMultiplier,
-            moveSpeed = moveSpeed * spawnContext.moveSpeedMultiplier,
-            contactDamage = damage * spawnContext.damageMultiplier,
-            experienceWorth = Mathf.RoundToInt(experienceWorth * spawnContext.experienceMultiplier),
-            dropChanceMultiplier = spawnContext.dropChanceMultiplier,
+            maxHealth = health * archetypeHealthMultiplier * spawnContext.healthMultiplier,
+            moveSpeed = moveSpeed * archetypeMoveSpeedMultiplier * spawnContext.moveSpeedMultiplier,
+            contactDamage = damage * archetypeDamageMultiplier * spawnContext.damageMultiplier,
+            experienceWorth = Mathf.RoundToInt(experienceWorth * archetypeExperienceMultiplier * spawnContext.experienceMultiplier),
+            dropChanceMultiplier = archetypeDropChanceMultiplier * spawnContext.dropChanceMultiplier,
         };
     }
 

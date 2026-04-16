@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e1552386dc5baa4eb3a022f0f2dc8f4, type: 3}
+  m_Name: Boss Archetype
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyArchetypeDefinition
+  archetype: 4
+  displayName: Miniboss
+  spawnRole: 1
+  ambientSpawnWeight: 0.15
+  itemLevelOffset: 8
+  healthMultiplier: 1.85
+  damageMultiplier: 1.35
+  moveSpeedMultiplier: 1
+  experienceMultiplier: 1.75
+  dropChanceMultiplier: 1.2
