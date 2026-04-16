@@ -28,7 +28,6 @@ public class EnemySpawner : MonoBehaviour
         public GameObject enemyPrefab;
         public float spawnInterval = 1f;
         public int enemiesPerWave = 10;
-        public int packSize = 1;
         public float minimumSpawnInterval = 0.15f;
         [Range(0.1f, 1f)] public float spawnIntervalDecay = 0.8f;
     }
@@ -49,6 +48,9 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Run Modifiers")]
     [SerializeField] private EnemySpawnModifiers modifiers = new EnemySpawnModifiers();
+
+    [Header("Pack Spawning")]
+    [SerializeField, Min(0f)] private float packSpawnRadius = 1.25f;
 
     private readonly List<SpawnRuntimeState> runtimeStates = new List<SpawnRuntimeState>();
     private MapSpawnModifiers mapModifiers;
@@ -127,23 +129,42 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnPack(Wave wave)
     {
-        int packSize = Mathf.Max(1, Mathf.RoundToInt(wave.packSize * modifiers.quantity));
+        if (wave == null || wave.enemyPrefab == null)
+        {
+            return;
+        }
+
+        Enemy enemyTemplate = wave.enemyPrefab.GetComponent<Enemy>();
+        int packSize = GetPackSize(enemyTemplate);
+        EnemySpawnContext packContext = BuildSpawnContext();
+        Vector2 packOrigin = GetSpawnPoint();
 
         for (int i = 0; i < packSize; i++)
         {
-            SpawnEnemy(wave);
+            SpawnEnemy(wave.enemyPrefab, packOrigin, packContext);
         }
     }
 
-    private void SpawnEnemy(Wave wave)
+    private int GetPackSize(Enemy enemyTemplate)
     {
-        Vector2 spawnPoint = GetSpawnPoint();
-        GameObject enemyObject = Instantiate(wave.enemyPrefab, spawnPoint, transform.rotation);
+        if (enemyTemplate == null)
+        {
+            return 1;
+        }
+
+        int packSize = enemyTemplate.RollPackSize(mapModifiers.quality);
+        return Mathf.Max(1, Mathf.RoundToInt(packSize * Mathf.Max(0f, modifiers.quantity)));
+    }
+
+    private void SpawnEnemy(GameObject enemyPrefab, Vector2 packOrigin, EnemySpawnContext packContext)
+    {
+        Vector2 spawnPoint = GetPackSpawnPoint(packOrigin);
+        GameObject enemyObject = Instantiate(enemyPrefab, spawnPoint, transform.rotation);
         Enemy enemy = enemyObject.GetComponent<Enemy>();
 
         if (enemy != null)
         {
-            enemy.Initialize(BuildSpawnContext());
+            enemy.Initialize(packContext);
         }
     }
 
@@ -295,5 +316,16 @@ public class EnemySpawner : MonoBehaviour
         }
 
         return spawnPoint;
+    }
+
+    private Vector2 GetPackSpawnPoint(Vector2 packOrigin)
+    {
+        if (packSpawnRadius <= 0f)
+        {
+            return packOrigin;
+        }
+
+        Vector2 offset = Random.insideUnitCircle * packSpawnRadius;
+        return packOrigin + offset;
     }
 }

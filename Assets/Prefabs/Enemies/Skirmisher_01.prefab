@@ -293,6 +293,8 @@ MonoBehaviour:
   moveSpeed: 1.2
   damage: 10
   health: 500
+  packSizeMin: 4
+  packSizeMax: 8
   knockbackResistance: 25
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}

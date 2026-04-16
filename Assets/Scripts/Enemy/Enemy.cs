@@ -31,6 +31,10 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float damage;
     [SerializeField] private float health;
 
+    [Header("Pack Spawning")]
+    [SerializeField, Min(1)] private int packSizeMin = 1;
+    [SerializeField, Min(1)] private int packSizeMax = 1;
+
     [Header("Knockback")]
     [SerializeField, Range(0f, 100f)]
     private float knockbackResistance = 0f;
@@ -118,6 +122,24 @@ public class Enemy : MonoBehaviour
         spawnContext = context;
         Rarity = context.rarity;
         ResetRuntimeState();
+    }
+
+    public int RollPackSize(float qualityMultiplier)
+    {
+        if (archetypeDefinition != null && !archetypeDefinition.UsesAmbientSpawnWeight)
+        {
+            return 1;
+        }
+
+        int minimum = GetScaledPackBound(packSizeMin, qualityMultiplier);
+        int maximum = GetScaledPackBound(Mathf.Max(packSizeMin, packSizeMax), qualityMultiplier);
+
+        if (maximum < minimum)
+        {
+            maximum = minimum;
+        }
+
+        return Random.Range(minimum, maximum + 1);
     }
 
     private void Die()
@@ -273,6 +295,12 @@ public class Enemy : MonoBehaviour
             experienceWorth = Mathf.RoundToInt(experienceWorth * archetypeExperienceMultiplier * spawnContext.experienceMultiplier),
             dropChanceMultiplier = archetypeDropChanceMultiplier * spawnContext.dropChanceMultiplier,
         };
+    }
+
+    private int GetScaledPackBound(int baseValue, float qualityMultiplier)
+    {
+        float scaledValue = Mathf.Max(1f, baseValue * Mathf.Max(0f, qualityMultiplier));
+        return Mathf.Max(1, Mathf.RoundToInt(scaledValue));
     }
 
     private bool TryGetActivePlayer()
