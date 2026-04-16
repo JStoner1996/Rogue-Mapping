@@ -153,8 +153,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShrineObjective
   shrineDefinition: {fileID: 11400000, guid: df8b7392e35ac4449873bd752f3fd902, type: 2}
   shrineRenderer: {fileID: 3648768914656614618}
-  areaIndicatorRoot: {fileID: 5202331666851959158}
-  areaIndicatorRenderer: {fileID: 5602219783694106112}
   chargeIndicatorRoot: {fileID: 5551497482554971515}
   chargeSlider: {fileID: 6611829137784352424}
   chargeFillImage: {fileID: 1526371233872841963}

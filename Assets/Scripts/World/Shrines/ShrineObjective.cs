@@ -5,6 +5,8 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Collider2D))]
 public class ShrineObjective : MonoBehaviour
 {
+    public event System.Action<ShrineObjective> Activated;
+
     [Header("Shrine")]
     [SerializeField] private ShrineDefinition shrineDefinition;
 
@@ -29,6 +31,15 @@ public class ShrineObjective : MonoBehaviour
     public ShrineDefinition Definition => shrineDefinition;
     public float ChargeNormalized => shrineDefinition == null ? 0f : Mathf.Clamp01(currentCharge / shrineDefinition.ChargeDuration);
     public bool IsActivated => activated;
+
+    public void Configure(ShrineDefinition definition)
+    {
+        shrineDefinition = definition;
+        activated = false;
+        currentCharge = 0f;
+        ApplyDefinitionVisuals();
+        RefreshChargeVisuals();
+    }
 
     void Awake()
     {
@@ -129,6 +140,7 @@ public class ShrineObjective : MonoBehaviour
         activated = true;
         currentCharge = shrineDefinition.ChargeDuration;
         shrineDefinition.Effect?.Activate(this);
+        Activated?.Invoke(this);
         PlayCompletionSound();
         ApplyActivatedVisuals();
         RefreshChargeVisuals();
