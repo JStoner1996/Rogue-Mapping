@@ -4,6 +4,8 @@ using UnityEngine;
 // Loads and unloads generated chunks around the player.
 public class WorldChunkManager : MonoBehaviour
 {
+    public static WorldChunkManager Instance { get; private set; }
+
     [Header("Scene References")]
     [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform chunkRoot;
@@ -19,6 +21,9 @@ public class WorldChunkManager : MonoBehaviour
     [Header("Loading")]
     [SerializeField, Min(0)] private int loadRadius = 1;
 
+    [Header("Enemy Cleanup")]
+    [SerializeField, Min(0)] private int ambientEnemyDespawnChunkDistance = 3;
+
     [Header("Shrines")]
     [SerializeField, Range(0f, 1f)] private float shrineSpawnChance = 0.5f;
     [SerializeField, Min(0)] private int shrineEdgePaddingTiles = 4;
@@ -29,8 +34,13 @@ public class WorldChunkManager : MonoBehaviour
     private ChunkGenerator chunkGenerator;
     private ChunkCoordinate? currentPlayerChunk;
 
+    public int ChunkSizeTiles => chunkSizeTiles;
+    public float TileSize => tileSize;
+    public int AmbientEnemyDespawnChunkDistance => ambientEnemyDespawnChunkDistance;
+
     void Awake()
     {
+        Instance = this;
         ChunkRuntimeState.Reset();
         chunkGenerator = new ChunkGenerator(
             worldSeed,
@@ -39,6 +49,14 @@ public class WorldChunkManager : MonoBehaviour
             shrineSpawnChance,
             shrineEdgePaddingTiles,
             shrineDefinitions);
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     void Start()

@@ -59,6 +59,7 @@ public class Enemy : MonoBehaviour
     public EnemyArchetype Archetype => archetypeDefinition != null ? archetypeDefinition.Archetype : EnemyArchetype.Fodder;
     private PlayerController player;
     private PlayerHealth playerHealth;
+    private WorldChunkManager worldChunkManager;
     private RuntimeStats runtimeStats;
     private float currentHealth;
     private EnemySpawnContext spawnContext = EnemySpawnContext.Default;
@@ -79,6 +80,12 @@ public class Enemy : MonoBehaviour
         if (!TryGetActivePlayer())
         {
             StopMoving();
+            return;
+        }
+
+        if (ShouldDespawnForChunkDistance())
+        {
+            DespawnWithoutRewards();
             return;
         }
 
@@ -313,6 +320,42 @@ public class Enemy : MonoBehaviour
         return player != null && player.gameObject.activeSelf;
     }
 
+    // Ambient enemies are cleaned up once they fall too many chunks behind the player.
+    private bool ShouldDespawnForChunkDistance()
+    {
+        if (archetypeDefinition == null || archetypeDefinition.SpawnRole != EnemySpawnRole.Ambient)
+        {
+            return false;
+        }
+
+        if (!TryGetWorldChunkManager(out WorldChunkManager chunkManager))
+        {
+            return false;
+        }
+
+        int despawnChunkDistance = chunkManager.AmbientEnemyDespawnChunkDistance;
+        if (despawnChunkDistance <= 0 || player == null)
+        {
+            return false;
+        }
+
+        ChunkCoordinate enemyChunk = ChunkWorldUtility.GetChunkCoordinate(
+            transform.position,
+            chunkManager.ChunkSizeTiles,
+            chunkManager.TileSize);
+        ChunkCoordinate playerChunk = ChunkWorldUtility.GetChunkCoordinate(
+            player.transform.position,
+            chunkManager.ChunkSizeTiles,
+            chunkManager.TileSize);
+
+        return ChunkWorldUtility.GetChebyshevDistance(enemyChunk, playerChunk) > despawnChunkDistance;
+    }
+
+    private void DespawnWithoutRewards()
+    {
+        Destroy(gameObject);
+    }
+
     private void StopMoving()
     {
         if (rb != null)
@@ -411,5 +454,16 @@ public class Enemy : MonoBehaviour
         rarityPropertyBlock.SetColor("_OutlineColor", outlineColor);
         rarityPropertyBlock.SetFloat("_OutlineThickness", outlineThickness);
         spriteRenderer.SetPropertyBlock(rarityPropertyBlock);
+    }
+
+    private bool TryGetWorldChunkManager(out WorldChunkManager chunkManager)
+    {
+        if (worldChunkManager == null)
+        {
+            worldChunkManager = WorldChunkManager.Instance ?? FindAnyObjectByType<WorldChunkManager>();
+        }
+
+        chunkManager = worldChunkManager;
+        return chunkManager != null;
     }
 }
