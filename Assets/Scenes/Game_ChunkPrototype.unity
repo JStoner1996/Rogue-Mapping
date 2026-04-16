@@ -47679,8 +47679,33 @@ MonoBehaviour:
   chunkPrefab: {fileID: 6538586362950154427, guid: 5c4cf7fd3fc266a4e800a1e5e38d698d, type: 3}
   chunkSizeTiles: 32
   tileSize: 1
-  groundTile: {fileID: 11400000, guid: dd857c16ccb946647a004baa7f038755, type: 2}
   worldSeed: 12345
+  terrainPalette:
+    noiseScale: 0.15
+    lowBandThreshold: 0.15
+    highBandThreshold: 0.35
+    lowBandTiles:
+    - {fileID: 11400000, guid: e90a33b66f61a72409a405153f0528ef, type: 2}
+    - {fileID: 11400000, guid: 7a44f1123096b9b4b8d579e7e6d4ad27, type: 2}
+    - {fileID: 11400000, guid: e05dce050219f85468506392922d89b7, type: 2}
+    - {fileID: 11400000, guid: e05dce050219f85468506392922d89b7, type: 2}
+    midBandTiles:
+    - {fileID: 11400000, guid: 41ba712c9f1739a49b0ad4d66f981702, type: 2}
+    - {fileID: 11400000, guid: 608ac8a06eab59145a7a169a7703a440, type: 2}
+    - {fileID: 11400000, guid: d6307fc4bed8308499ede8a863069bb8, type: 2}
+    - {fileID: 11400000, guid: 838245316a892ac4c80d4bd8fb537c16, type: 2}
+    highBandTiles:
+    - {fileID: 11400000, guid: e16d12e59d4ec104b9678c7fae2e5fd3, type: 2}
+  decorationPalette:
+    noiseScale: 0.25
+    placementThreshold: 0.75
+    decorationTiles:
+    - {fileID: 11400000, guid: 042ddb5c00bee5342b54cc2b52af9904, type: 2}
+    - {fileID: 11400000, guid: ca0a2f13d5a424a438a09d86021277c0, type: 2}
+    - {fileID: 11400000, guid: d1dd3fb1ce5aff9408df55107f81d97c, type: 2}
+    - {fileID: 11400000, guid: 4772e6aae4692ce4fb3779424096959a, type: 2}
+    - {fileID: 11400000, guid: e8fd796d3c3e3c8469a64f8bc01b500a, type: 2}
+    - {fileID: 11400000, guid: 1329469f818fbbe4c85062d0926a4c53, type: 2}
   loadRadius: 1
   shrineSpawnChance: 0.5
   shrineEdgePaddingTiles: 4

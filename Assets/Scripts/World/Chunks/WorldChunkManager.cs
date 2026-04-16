@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 // Loads and unloads generated chunks around the player.
 public class WorldChunkManager : MonoBehaviour
@@ -13,8 +12,9 @@ public class WorldChunkManager : MonoBehaviour
     [Header("Generation")]
     [SerializeField, Min(1)] private int chunkSizeTiles = 32;
     [SerializeField, Min(0.01f)] private float tileSize = 1f;
-    [SerializeField] private TileBase groundTile;
     [SerializeField] private int worldSeed = 12345;
+    [SerializeField] private ChunkTerrainPalette terrainPalette = new ChunkTerrainPalette();
+    [SerializeField] private ChunkDecorationPalette decorationPalette = new ChunkDecorationPalette();
 
     [Header("Loading")]
     [SerializeField, Min(0)] private int loadRadius = 1;
@@ -133,7 +133,13 @@ public class WorldChunkManager : MonoBehaviour
         Transform parent = chunkRoot != null ? chunkRoot : transform;
         ChunkView chunkView = Instantiate(chunkPrefab, parent);
         chunkView.name = $"Chunk_{coordinate.x}_{coordinate.y}";
-        chunkView.Render(chunkGenerator.Generate(coordinate), groundTile, shrinePrefab, chunkSizeTiles);
+        chunkView.Render(
+            chunkGenerator.Generate(coordinate),
+            terrainPalette,
+            decorationPalette,
+            worldSeed,
+            shrinePrefab,
+            chunkSizeTiles);
         activeChunks.Add(coordinate, chunkView);
     }
 

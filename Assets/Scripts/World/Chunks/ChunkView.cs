@@ -6,6 +6,7 @@ public class ChunkView : MonoBehaviour
 {
     [Header("Tilemaps")]
     [SerializeField] private Tilemap groundTilemap;
+    [SerializeField] private Tilemap decorationTilemap;
 
     [Header("Chunk Objects")]
     [SerializeField] private Transform objectsRoot;
@@ -13,16 +14,28 @@ public class ChunkView : MonoBehaviour
     private ChunkCoordinate currentCoordinate;
     private ShrineObjective spawnedShrine;
 
-    public void Render(ChunkData chunkData, TileBase groundTile, ShrineObjective shrinePrefab, int chunkSizeTiles)
+    public void Render(
+        ChunkData chunkData,
+        ChunkTerrainPalette terrainPalette,
+        ChunkDecorationPalette decorationPalette,
+        int worldSeed,
+        ShrineObjective shrinePrefab,
+        int chunkSizeTiles)
     {
         currentCoordinate = chunkData.Coordinate;
         transform.position = chunkData.WorldOrigin;
 
-        RenderGround(groundTile, chunkSizeTiles);
+        RenderGround(chunkData, terrainPalette, worldSeed, chunkSizeTiles);
+        RenderDecorations(decorationPalette, worldSeed, chunkSizeTiles);
         RenderShrine(chunkData, shrinePrefab);
     }
 
-    private void RenderGround(TileBase groundTile, int chunkSizeTiles)
+    // Terrain is sampled in world space so patterns continue across chunk borders.
+    private void RenderGround(
+        ChunkData chunkData,
+        ChunkTerrainPalette terrainPalette,
+        int worldSeed,
+        int chunkSizeTiles)
     {
         if (groundTilemap == null)
         {
@@ -31,15 +44,24 @@ public class ChunkView : MonoBehaviour
 
         groundTilemap.ClearAllTiles();
 
-        if (groundTile == null || chunkSizeTiles <= 0)
+        if (terrainPalette == null || !terrainPalette.HasAnyTiles() || chunkSizeTiles <= 0)
         {
             return;
         }
 
         TileBase[] tiles = new TileBase[chunkSizeTiles * chunkSizeTiles];
-        for (int i = 0; i < tiles.Length; i++)
+        int index = 0;
+
+        for (int y = 0; y < chunkSizeTiles; y++)
         {
-            tiles[i] = groundTile;
+            for (int x = 0; x < chunkSizeTiles; x++)
+            {
+                int worldTileX = currentCoordinate.x * chunkSizeTiles + x;
+                int worldTileY = currentCoordinate.y * chunkSizeTiles + y;
+                float noiseValue = SampleTerrainNoise(worldTileX, worldTileY, worldSeed, terrainPalette.NoiseScale);
+                int variationIndex = GetVariationIndex(worldTileX, worldTileY, worldSeed);
+                tiles[index++] = terrainPalette.GetTileForNoise(noiseValue, variationIndex);
+            }
         }
 
         groundTilemap.SetTilesBlock(
@@ -89,5 +111,67 @@ public class ChunkView : MonoBehaviour
         {
             spawnedShrine.Activated -= HandleShrineActivated;
         }
+    }
+
+    // Decorations are intentionally sparse so the base terrain still reads clearly.
+    private void RenderDecorations(ChunkDecorationPalette decorationPalette, int worldSeed, int chunkSizeTiles)
+    {
+        if (decorationTilemap == null)
+        {
+            return;
+        }
+
+        decorationTilemap.ClearAllTiles();
+
+        if (decorationPalette == null || !decorationPalette.HasTiles() || chunkSizeTiles <= 0)
+        {
+            return;
+        }
+
+        TileBase[] tiles = new TileBase[chunkSizeTiles * chunkSizeTiles];
+        int index = 0;
+
+        for (int y = 0; y < chunkSizeTiles; y++)
+        {
+            for (int x = 0; x < chunkSizeTiles; x++)
+            {
+                int worldTileX = currentCoordinate.x * chunkSizeTiles + x;
+                int worldTileY = currentCoordinate.y * chunkSizeTiles + y;
+                float noiseValue = SampleDecorationNoise(worldTileX, worldTileY, worldSeed, decorationPalette.NoiseScale);
+                int variationIndex = GetVariationIndex(worldTileX, worldTileY, worldSeed + 7919);
+                tiles[index++] = decorationPalette.ShouldPlace(noiseValue)
+                    ? decorationPalette.GetTile(variationIndex)
+                    : null;
+            }
+        }
+
+        decorationTilemap.SetTilesBlock(
+            new BoundsInt(0, 0, 0, chunkSizeTiles, chunkSizeTiles, 1),
+            tiles);
+    }
+
+    private float SampleTerrainNoise(int worldTileX, int worldTileY, int worldSeed, float noiseScale)
+    {
+        float sampleX = (worldTileX + worldSeed * 0.173f) * noiseScale;
+        float sampleY = (worldTileY + worldSeed * 0.271f) * noiseScale;
+        return Mathf.PerlinNoise(sampleX, sampleY);
+    }
+
+    private int GetVariationIndex(int worldTileX, int worldTileY, int worldSeed)
+    {
+        unchecked
+        {
+            int hash = worldSeed;
+            hash = (hash * 397) ^ worldTileX;
+            hash = (hash * 397) ^ worldTileY;
+            return hash;
+        }
+    }
+
+    private float SampleDecorationNoise(int worldTileX, int worldTileY, int worldSeed, float noiseScale)
+    {
+        float sampleX = (worldTileX + worldSeed * 0.347f) * noiseScale;
+        float sampleY = (worldTileY + worldSeed * 0.419f) * noiseScale;
+        return Mathf.PerlinNoise(sampleX, sampleY);
     }
 }
