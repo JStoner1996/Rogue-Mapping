@@ -9,11 +9,9 @@ public class SpawnEventEnemyShrineEffectDefinition : ShrineEffectDefinition
 
     public override void Activate(ShrineObjective shrine)
     {
-        if (shrine == null)
+        if (shrine != null)
         {
-            return;
+            shrine.TrySpawnEventEnemies(enemyArchetype, spawnCount);
         }
-
-        shrine.TrySpawnEventEnemies(enemyArchetype, spawnCount);
     }
 }

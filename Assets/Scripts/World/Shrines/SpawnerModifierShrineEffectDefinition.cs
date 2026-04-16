@@ -10,11 +10,9 @@ public class SpawnerModifierShrineEffectDefinition : ShrineEffectDefinition
 
     public override void Activate(ShrineObjective shrine)
     {
-        if (shrine == null)
+        if (shrine != null)
         {
-            return;
+            shrine.ApplySpawnerModifier(modifierType, modifierPercent / 100f, durationSeconds);
         }
-
-        shrine.ApplySpawnerModifier(modifierType, modifierPercent / 100f, durationSeconds);
     }
 }

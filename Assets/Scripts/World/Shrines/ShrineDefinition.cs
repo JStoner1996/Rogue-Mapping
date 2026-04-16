@@ -10,7 +10,6 @@ public class ShrineDefinition : ScriptableObject
     [Header("Visuals")]
     [SerializeField] private Sprite shrineSprite;
     [SerializeField] private Color shrineTint = Color.white;
-    [SerializeField] private Color areaTint = new Color(1f, 1f, 1f, 0.18f);
 
     [Header("Charge Timing")]
     [SerializeField, Min(0.1f)] private float chargeDuration = 5f;
@@ -22,7 +21,6 @@ public class ShrineDefinition : ScriptableObject
     public string ShrineName => string.IsNullOrWhiteSpace(shrineName) ? name : shrineName;
     public Sprite ShrineSprite => shrineSprite;
     public Color ShrineTint => shrineTint;
-    public Color AreaTint => areaTint;
     public float ChargeDuration => chargeDuration;
     public float DischargeDuration => dischargeDuration;
     public ShrineEffectDefinition Effect => effect;

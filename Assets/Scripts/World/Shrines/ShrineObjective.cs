@@ -49,17 +49,19 @@ public class ShrineObjective : MonoBehaviour
     {
         if (activated || shrineDefinition == null)
         {
-            debugChargeNormalized = ChargeNormalized;
-            return;
+            RefreshDebugCharge();
+            RefreshChargeVisuals();
         }
-
-        UpdateCharge();
-        debugChargeNormalized = ChargeNormalized;
-        RefreshChargeVisuals();
-
-        if (currentCharge >= shrineDefinition.ChargeDuration)
+        else
         {
-            ActivateShrine();
+            UpdateCharge();
+            RefreshDebugCharge();
+            RefreshChargeVisuals();
+
+            if (currentCharge >= shrineDefinition.ChargeDuration)
+            {
+                ActivateShrine();
+            }
         }
     }
 
@@ -85,36 +87,27 @@ public class ShrineObjective : MonoBehaviour
 
     public bool TrySpawnEventEnemies(EnemyArchetype archetype, int count)
     {
-        if (enemySpawner == null)
-        {
-            enemySpawner = FindAnyObjectByType<EnemySpawner>();
-        }
-
-        if (enemySpawner == null)
+        if (!TryGetEnemySpawner(out EnemySpawner spawner))
         {
             Debug.LogError($"Shrine '{name}' could not spawn '{archetype}' because no EnemySpawner was found.");
             return false;
         }
 
-        return enemySpawner.SpawnEventEnemies(archetype, count, transform.position);
+        return spawner.SpawnEventEnemies(archetype, count, transform.position);
     }
 
     public void ApplySpawnerModifier(EnemySpawnerModifierType modifierType, float additiveValue, float durationSeconds)
     {
-        if (enemySpawner == null)
-        {
-            enemySpawner = FindAnyObjectByType<EnemySpawner>();
-        }
-
-        if (enemySpawner == null)
+        if (!TryGetEnemySpawner(out EnemySpawner spawner))
         {
             Debug.LogError($"Shrine '{name}' could not apply '{modifierType}' because no EnemySpawner was found.");
             return;
         }
 
-        enemySpawner.AddRuntimeModifier(modifierType, additiveValue, durationSeconds);
+        spawner.AddRuntimeModifier(modifierType, additiveValue, durationSeconds);
     }
 
+    // Charge rises while the player is inside and drains when they step out.
     private void UpdateCharge()
     {
         if (playerInside)
@@ -130,6 +123,7 @@ public class ShrineObjective : MonoBehaviour
             currentCharge - Time.deltaTime * GetDischargeRate());
     }
 
+    // Activation is a one-time handoff to the definition-driven shrine effect.
     private void ActivateShrine()
     {
         activated = true;
@@ -208,6 +202,11 @@ public class ShrineObjective : MonoBehaviour
         chargeSlider.normalizedValue = ChargeNormalized;
     }
 
+    private void RefreshDebugCharge()
+    {
+        debugChargeNormalized = ChargeNormalized;
+    }
+
     private void ApplyActivatedVisuals()
     {
         if (shrineRenderer != null)
@@ -224,5 +223,16 @@ public class ShrineObjective : MonoBehaviour
         }
 
         AudioManager.Instance.Play(SoundType.ShrineComplete);
+    }
+
+    private bool TryGetEnemySpawner(out EnemySpawner spawner)
+    {
+        if (enemySpawner == null)
+        {
+            enemySpawner = FindAnyObjectByType<EnemySpawner>();
+        }
+
+        spawner = enemySpawner;
+        return spawner != null;
     }
 }
