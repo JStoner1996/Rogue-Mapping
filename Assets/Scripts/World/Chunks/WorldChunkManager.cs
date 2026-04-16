@@ -58,7 +58,7 @@ public class WorldChunkManager : MonoBehaviour
             return;
         }
 
-        ChunkCoordinate playerChunk = GetChunkCoordinate(player.position);
+        ChunkCoordinate playerChunk = ChunkWorldUtility.GetChunkCoordinate(player.position, chunkSizeTiles, tileSize);
         if (!force && currentPlayerChunk.HasValue && currentPlayerChunk.Value.Equals(playerChunk))
         {
             return;
@@ -152,13 +152,5 @@ public class WorldChunkManager : MonoBehaviour
 
         player = playerTransform;
         return player != null;
-    }
-
-    private ChunkCoordinate GetChunkCoordinate(Vector3 position)
-    {
-        float chunkWorldSize = chunkSizeTiles * tileSize;
-        return new ChunkCoordinate(
-            Mathf.FloorToInt(position.x / chunkWorldSize),
-            Mathf.FloorToInt(position.y / chunkWorldSize));
     }
 }

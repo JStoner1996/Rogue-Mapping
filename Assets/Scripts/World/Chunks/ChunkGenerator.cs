@@ -31,10 +31,7 @@ public sealed class ChunkGenerator
     public ChunkData Generate(ChunkCoordinate coordinate)
     {
         System.Random random = new System.Random(GetChunkSeed(coordinate));
-        Vector3 worldOrigin = new Vector3(
-            coordinate.x * chunkSizeTiles * tileSize,
-            coordinate.y * chunkSizeTiles * tileSize,
-            0f);
+        Vector3 worldOrigin = ChunkWorldUtility.GetChunkWorldOrigin(coordinate, chunkSizeTiles, tileSize);
 
         bool hasShrine = ShouldSpawnShrine(random);
         ShrineDefinition shrineDefinition = hasShrine ? RollShrineDefinition(random) : null;
