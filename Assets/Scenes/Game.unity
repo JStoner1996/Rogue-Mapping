@@ -35192,9 +35192,49 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -2209103029147179469, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Radius
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 155522732123109697, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_Name
       value: Shrine (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 895277983674455202, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1526371233872841963, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1526371233872841963, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Color.r
+      value: 0.18953556
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927449863578687555, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927449863578687555, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598234736964680296, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598234736964680296, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3648768914656614618, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_Color.g
@@ -35203,6 +35243,18 @@ PrefabInstance:
     - target: {fileID: 3648768914656614618, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_Color.r
       value: 0.18953556
+      objectReference: {fileID: 0}
+    - target: {fileID: 5269911510521305845, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5269911510521305845, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5293204484856167949, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -35248,6 +35300,10 @@ PrefabInstance:
       propertyPath: shrineDefinition
       value: 
       objectReference: {fileID: 11400000, guid: d18215a49c5c7c14aa967dc4bd2bc2ca, type: 2}
+    - target: {fileID: 9130285884401191363, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 519420031}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -35558,6 +35614,46 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shrine (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 895277983674455202, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927449863578687555, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927449863578687555, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598234736964680296, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598234736964680296, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5269911510521305845, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5269911510521305845, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5293204484856167949, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 17.846645
@@ -35598,6 +35694,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9130285884401191363, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 519420031}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -36122,9 +36222,85 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 108453666098700623, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 205.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 108453666098700623, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 21.157
+      objectReference: {fileID: 0}
+    - target: {fileID: 108453666098700623, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 102.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 108453666098700623, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -10.578
+      objectReference: {fileID: 0}
     - target: {fileID: 155522732123109697, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_Name
       value: Shrine (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 895277983674455202, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1526371233872841963, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1526371233872841963, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Color.g
+      value: 0.053261757
+      objectReference: {fileID: 0}
+    - target: {fileID: 1526371233872841963, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.000030517578
+      objectReference: {fileID: 0}
+    - target: {fileID: 2208100681349976363, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 15.7396
+      objectReference: {fileID: 0}
+    - target: {fileID: 2208100681349976363, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 4.6609
+      objectReference: {fileID: 0}
+    - target: {fileID: 2208100681349976363, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.063
+      objectReference: {fileID: 0}
+    - target: {fileID: 2208100681349976363, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 1.1647
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927449863578687555, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927449863578687555, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598234736964680296, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598234736964680296, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3648768914656614618, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_Color.b
@@ -36136,6 +36312,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3648768914656614618, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5269911510521305845, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5269911510521305845, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5293204484856167949, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
@@ -36182,6 +36370,26 @@ PrefabInstance:
       propertyPath: shrineDefinition
       value: 
       objectReference: {fileID: 11400000, guid: f18759c2fb2dd254d9a7cedb9a575fe1, type: 2}
+    - target: {fileID: 8235003486755331413, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 419.385
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235003486755331413, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 77.757
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235003486755331413, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 1.234
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235003486755331413, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.143
+      objectReference: {fileID: 0}
+    - target: {fileID: 9130285884401191363, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 519420031}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -42693,9 +42901,53 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shrine (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 895277983674455202, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1526371233872841963, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Color.g
+      value: 0.9615048
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2191258664622427198, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927449863578687555, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927449863578687555, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598234736964680296, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598234736964680296, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3648768914656614618, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_Color.g
       value: 0.9615048
+      objectReference: {fileID: 0}
+    - target: {fileID: 5269911510521305845, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5269911510521305845, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5293204484856167949, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -42741,6 +42993,10 @@ PrefabInstance:
       propertyPath: shrineDefinition
       value: 
       objectReference: {fileID: 11400000, guid: 73cb7b7c9d8f2e4448da69e45f5727e1, type: 2}
+    - target: {fileID: 9130285884401191363, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 519420031}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -47883,63 +48139,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6391fc04b6104814fa31d3201359f5a9, type: 3}
---- !u!1001 &8822376685627002526
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 155522732123109697, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_Name
-      value: Shrine
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6006388471939548726, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -47955,7 +48154,6 @@ SceneRoots:
   - {fileID: 1230208791}
   - {fileID: 1247759623}
   - {fileID: 1851667643}
-  - {fileID: 8822376685627002526}
   - {fileID: 877492903}
   - {fileID: 886677289}
   - {fileID: 607993382}

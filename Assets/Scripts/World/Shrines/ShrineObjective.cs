@@ -172,16 +172,19 @@ public class ShrineObjective : MonoBehaviour
 
     private void ApplyDefinitionVisuals()
     {
-        if (shrineRenderer == null || shrineDefinition == null)
+        if (shrineDefinition == null)
         {
             return;
         }
 
-        shrineRenderer.sprite = shrineDefinition.ShrineSprite;
-
-        if (!activated)
+        if (shrineRenderer != null)
         {
-            shrineRenderer.color = shrineDefinition.ShrineTint;
+            shrineRenderer.sprite = shrineDefinition.ShrineSprite;
+
+            if (!activated)
+            {
+                shrineRenderer.color = shrineDefinition.ShrineTint;
+            }
         }
 
         if (chargeFillImage != null)
@@ -194,7 +197,7 @@ public class ShrineObjective : MonoBehaviour
     {
         if (chargeIndicatorRoot != null)
         {
-            chargeIndicatorRoot.SetActive(!activated && shrineDefinition != null);
+            chargeIndicatorRoot.SetActive(!activated && shrineDefinition != null && ChargeNormalized > 0f);
         }
 
         if (chargeSlider == null)
