@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 // Handles the shared shrine loop of proximity, charging, and one-time activation.
 [RequireComponent(typeof(Collider2D))]
@@ -9,6 +10,12 @@ public class ShrineObjective : MonoBehaviour
 
     [Header("Visual References")]
     [SerializeField] private SpriteRenderer shrineRenderer;
+    [SerializeField] private GameObject chargeIndicatorRoot;
+    [SerializeField] private Slider chargeSlider;
+    [SerializeField] private Image chargeFillImage;
+
+    [Header("Visual State")]
+    [SerializeField] private Color depletedTint = new Color(0.45f, 0.45f, 0.45f, 1f);
 
     [Header("Debug")]
     [SerializeField, Range(0f, 1f)] private float debugChargeNormalized;
@@ -29,11 +36,13 @@ public class ShrineObjective : MonoBehaviour
         enemySpawner = FindAnyObjectByType<EnemySpawner>();
         ConfigureTrigger();
         ApplyDefinitionVisuals();
+        RefreshChargeVisuals();
     }
 
     void OnValidate()
     {
         ApplyDefinitionVisuals();
+        RefreshChargeVisuals();
     }
 
     void Update()
@@ -46,6 +55,7 @@ public class ShrineObjective : MonoBehaviour
 
         UpdateCharge();
         debugChargeNormalized = ChargeNormalized;
+        RefreshChargeVisuals();
 
         if (currentCharge >= shrineDefinition.ChargeDuration)
         {
@@ -125,6 +135,9 @@ public class ShrineObjective : MonoBehaviour
         activated = true;
         currentCharge = shrineDefinition.ChargeDuration;
         shrineDefinition.Effect?.Activate(this);
+        PlayCompletionSound();
+        ApplyActivatedVisuals();
+        RefreshChargeVisuals();
     }
 
     private float GetDischargeRate()
@@ -165,6 +178,48 @@ public class ShrineObjective : MonoBehaviour
         }
 
         shrineRenderer.sprite = shrineDefinition.ShrineSprite;
-        shrineRenderer.color = shrineDefinition.ShrineTint;
+
+        if (!activated)
+        {
+            shrineRenderer.color = shrineDefinition.ShrineTint;
+        }
+
+        if (chargeFillImage != null)
+        {
+            chargeFillImage.color = shrineDefinition.ShrineTint;
+        }
+    }
+
+    private void RefreshChargeVisuals()
+    {
+        if (chargeIndicatorRoot != null)
+        {
+            chargeIndicatorRoot.SetActive(!activated && shrineDefinition != null);
+        }
+
+        if (chargeSlider == null)
+        {
+            return;
+        }
+
+        chargeSlider.normalizedValue = ChargeNormalized;
+    }
+
+    private void ApplyActivatedVisuals()
+    {
+        if (shrineRenderer != null)
+        {
+            shrineRenderer.color = depletedTint;
+        }
+    }
+
+    private void PlayCompletionSound()
+    {
+        if (AudioManager.Instance == null)
+        {
+            return;
+        }
+
+        AudioManager.Instance.Play(SoundType.ShrineComplete);
     }
 }

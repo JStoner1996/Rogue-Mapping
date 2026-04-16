@@ -16,6 +16,7 @@ public enum SoundType
     MapPickup,
     EquipmentDrop,
     EquipmentPickup,
+    ShrineComplete,
     AreaWeapon,
     BeamWeapon,
     ChainLightningWeapon,

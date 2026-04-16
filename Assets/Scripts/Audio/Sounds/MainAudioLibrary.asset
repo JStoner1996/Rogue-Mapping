@@ -38,9 +38,11 @@ MonoBehaviour:
   - type: 11
     sound: {fileID: 11400000, guid: 2d0e3b113ed1654408b2fa5f02e5e323, type: 2}
   - type: 16
-    sound: {fileID: 11400000, guid: 800bc89b0934f2e43a84ccf37f430c30, type: 2}
+    sound: {fileID: 11400000, guid: 38eb26c1a002a904fab5dedef2b1ffb0, type: 2}
   - type: 17
     sound: {fileID: 11400000, guid: e3ca903d834189c4491807c74c0c2c24, type: 2}
+  - type: 20
+    sound: {fileID: 11400000, guid: add662664993a284bbcdc1c97e271598, type: 2}
   - type: 18
     sound: {fileID: 11400000, guid: f29bffd24a3f8a24db9e411f6ec27670, type: 2}
   - type: 19
