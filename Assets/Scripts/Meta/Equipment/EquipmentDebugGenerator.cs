@@ -38,6 +38,7 @@ public class EquipmentDebugGenerator : MonoBehaviour
         builder.AppendLine($"Generated Item: {item.DisplayName}");
         builder.AppendLine($"Rarity: {item.Rarity}");
         builder.AppendLine($"Tier: {item.ItemTier}");
+        builder.AppendLine($"Item Level: {item.ItemLevel}");
         builder.AppendLine($"Slot: {item.SlotType}");
 
         AppendRolls(builder, "Implicit", item.ImplicitRolls);

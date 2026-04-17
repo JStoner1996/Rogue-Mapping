@@ -591,16 +591,23 @@ public class EnemySpawner : MonoBehaviour
 
     private MapSpawnModifiers BuildMapSpawnModifiers()
     {
+        EquipmentStatSummary equipmentSummary = MetaProgressionService.GetEquippedEquipmentStatSummary();
+
         return new MapSpawnModifiers
         {
-            quantity = 1f + GetMapModifier(MapStatType.EnemyQuantity),
-            quality = 1f + GetMapModifier(MapStatType.EnemyQuality),
+            quantity = 1f + GetMapModifier(MapStatType.EnemyQuantity) + GetEquipmentPercentModifier(equipmentSummary, EquipmentStatType.EnemyQuantity),
+            quality = 1f + GetMapModifier(MapStatType.EnemyQuality) + GetEquipmentPercentModifier(equipmentSummary, EquipmentStatType.EnemyQuality),
             damage = 1f + GetMapModifier(MapStatType.EnemyDamage),
             health = 1f + GetMapModifier(MapStatType.EnemyHealth),
             moveSpeed = 1f + GetMapModifier(MapStatType.EnemyMoveSpeed),
             experience = 1f + GetMapModifier(MapStatType.ExperienceWorth),
             dropChance = 1f + GetMapModifier(MapStatType.DropChance),
         };
+    }
+
+    private float GetEquipmentPercentModifier(EquipmentStatSummary summary, EquipmentStatType statType)
+    {
+        return summary?.GetEntry(statType)?.percentValue ?? 0f;
     }
 
     private float GetMapModifier(MapStatType statType)

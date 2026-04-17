@@ -9,4 +9,7 @@ public enum EquipmentStatType
     MovementSpeed,
     PickupRange,
     Knockback,
+    ShrineQuantity,
+    EnemyQuantity,
+    EnemyQuality,
 }

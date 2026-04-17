@@ -143,9 +143,11 @@ public static class EquipmentCatalogSeeder
                 "Curing",
                 EquipmentAffixType.Prefix,
                 1,
+                "health",
                 new[] { EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 1,
                 4,
+                10,
                 new EquipmentModifierDefinition
                 {
                     statType = EquipmentStatType.HealthRegen,
@@ -159,9 +161,11 @@ public static class EquipmentCatalogSeeder
                 "Healing",
                 EquipmentAffixType.Prefix,
                 2,
+                "health",
                 new[] { EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 5,
                 7,
+                40,
                 new EquipmentModifierDefinition
                 {
                     statType = EquipmentStatType.HealthRegen,
@@ -175,9 +179,11 @@ public static class EquipmentCatalogSeeder
                 "Doctor's",
                 EquipmentAffixType.Prefix,
                 3,
+                "health",
                 new[] { EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 8,
                 10,
+                70,
                 new EquipmentModifierDefinition
                 {
                     statType = EquipmentStatType.HealthRegen,
@@ -191,8 +197,10 @@ public static class EquipmentCatalogSeeder
                 "Stout",
                 EquipmentAffixType.Prefix,
                 1,
+                "health",
                 new[] { EquipmentSlotType.Head, EquipmentSlotType.Chest, EquipmentSlotType.Legs, EquipmentSlotType.Hands },
                 1,
+                10,
                 10,
                 new EquipmentModifierDefinition
                 {
@@ -207,8 +215,10 @@ public static class EquipmentCatalogSeeder
                 "Swift",
                 EquipmentAffixType.Prefix,
                 1,
+                "movementspeed",
                 new[] { EquipmentSlotType.Feet },
                 1,
+                10,
                 10,
                 new EquipmentModifierDefinition
                 {
@@ -223,8 +233,10 @@ public static class EquipmentCatalogSeeder
                 "of Guarding",
                 EquipmentAffixType.Suffix,
                 1,
+                "armor",
                 new[] { EquipmentSlotType.Head, EquipmentSlotType.Chest, EquipmentSlotType.Legs, EquipmentSlotType.Hands },
                 1,
+                10,
                 10,
                 new EquipmentModifierDefinition
                 {
@@ -239,8 +251,10 @@ public static class EquipmentCatalogSeeder
                 "of the Boar",
                 EquipmentAffixType.Suffix,
                 1,
+                "health",
                 new[] { EquipmentSlotType.Head, EquipmentSlotType.Chest, EquipmentSlotType.Legs, EquipmentSlotType.Hands, EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 1,
+                10,
                 10,
                 new EquipmentModifierDefinition
                 {
@@ -255,8 +269,10 @@ public static class EquipmentCatalogSeeder
                 "of Force",
                 EquipmentAffixType.Suffix,
                 1,
+                "damage",
                 new[] { EquipmentSlotType.Hands, EquipmentSlotType.Ring, EquipmentSlotType.Necklace },
                 1,
+                10,
                 10,
                 new EquipmentModifierDefinition
                 {
@@ -305,9 +321,11 @@ public static class EquipmentCatalogSeeder
         string affixName,
         EquipmentAffixType affixType,
         int affixTier,
+        string affixTag,
         EquipmentSlotType[] allowedSlots,
         int minTier,
         int maxTier,
+        int requiredItemLevel,
         EquipmentModifierDefinition modifier)
     {
         string assetPath = $"{AffixesFolder}/{SanitizeFileName(affixName)}.asset";
@@ -323,8 +341,10 @@ public static class EquipmentCatalogSeeder
         serializedObject.FindProperty("affixName").stringValue = affixName;
         serializedObject.FindProperty("affixType").enumValueIndex = (int)affixType;
         serializedObject.FindProperty("affixTier").intValue = affixTier;
+        serializedObject.FindProperty("affixTag").stringValue = affixTag;
         serializedObject.FindProperty("minItemTier").intValue = minTier;
         serializedObject.FindProperty("maxItemTier").intValue = maxTier;
+        serializedObject.FindProperty("requiredItemLevel").intValue = requiredItemLevel;
 
         SerializedProperty allowedSlotsProperty = serializedObject.FindProperty("allowedSlots");
         allowedSlotsProperty.arraySize = allowedSlots.Length;

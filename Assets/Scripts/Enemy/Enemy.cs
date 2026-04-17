@@ -283,13 +283,15 @@ public class Enemy : MonoBehaviour
     {
         EquipmentBaseCatalog baseCatalog = EquipmentCatalogResources.BaseCatalog;
         EquipmentAffixCatalog affixCatalog = EquipmentCatalogResources.AffixCatalog;
+        MapInstance selectedMap = RunData.GetSelectedMapOrDefault();
 
         if (baseCatalog == null || affixCatalog == null)
         {
             return;
         }
 
-        EquipmentGenerationRequest request = lootItem.equipmentDropSettings.BuildRequest(RunData.GetSelectedMapOrDefault());
+        EquipmentGenerationRequest request = lootItem.equipmentDropSettings.BuildRequest(selectedMap);
+        request.itemLevel = EquipmentItemLevelResolver.Resolve(selectedMap, archetypeDefinition);
         EquipmentInstance droppedEquipment = EquipmentGenerator.Generate(
             baseCatalog,
             affixCatalog,

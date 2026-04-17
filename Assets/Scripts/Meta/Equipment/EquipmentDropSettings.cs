@@ -23,11 +23,13 @@ public class EquipmentDropSettings
         if (selectedMap != null)
         {
             int resolvedTier = Mathf.Clamp(Mathf.Max(1, selectedMap.Tier), 1, maximumGeneratedTier);
+            int resolvedItemLevel = EquipmentItemLevelResolver.Resolve(selectedMap, null);
 
             return new EquipmentGenerationRequest
             {
                 minItemTier = resolvedTier,
                 maxItemTier = resolvedTier,
+                itemLevel = resolvedItemLevel,
             };
         }
 
@@ -37,6 +39,7 @@ public class EquipmentDropSettings
         {
             minItemTier = fallbackTier,
             maxItemTier = fallbackTier,
+            itemLevel = fallbackTier,
         };
     }
 }

@@ -8,6 +8,7 @@ public class EquipmentInstance
     [SerializeField] private string instanceId;
     [SerializeField] private EquipmentRarity rarity;
     [SerializeField] private int itemTier;
+    [SerializeField] private int itemLevel;
     [SerializeField] private EquipmentBaseDefinition baseDefinition;
     [SerializeField] private List<EquipmentModifierRoll> implicitRolls = new List<EquipmentModifierRoll>();
     [SerializeField] private List<EquipmentRolledAffix> prefixAffixes = new List<EquipmentRolledAffix>();
@@ -16,6 +17,7 @@ public class EquipmentInstance
     public string InstanceId => instanceId;
     public EquipmentRarity Rarity => rarity;
     public int ItemTier => itemTier;
+    public int ItemLevel => itemLevel;
     public EquipmentBaseDefinition BaseDefinition => baseDefinition;
     public IReadOnlyList<EquipmentModifierRoll> ImplicitRolls => implicitRolls;
     public IReadOnlyList<EquipmentRolledAffix> PrefixAffixes => prefixAffixes;
@@ -42,6 +44,7 @@ public class EquipmentInstance
     public EquipmentInstance(
         EquipmentRarity rarity,
         int itemTier,
+        int itemLevel,
         EquipmentBaseDefinition baseDefinition,
         List<EquipmentModifierRoll> implicitRolls,
         List<EquipmentRolledAffix> prefixAffixes,
@@ -50,6 +53,7 @@ public class EquipmentInstance
         instanceId = Guid.NewGuid().ToString("N");
         this.rarity = rarity;
         this.itemTier = itemTier;
+        this.itemLevel = Mathf.Max(1, itemLevel);
         this.baseDefinition = baseDefinition;
         this.implicitRolls = implicitRolls ?? new List<EquipmentModifierRoll>();
         this.prefixAffixes = prefixAffixes ?? new List<EquipmentRolledAffix>();
@@ -60,6 +64,7 @@ public class EquipmentInstance
         string instanceId,
         EquipmentRarity rarity,
         int itemTier,
+        int itemLevel,
         EquipmentBaseDefinition baseDefinition,
         List<EquipmentModifierRoll> implicitRolls,
         List<EquipmentRolledAffix> prefixAffixes,
@@ -68,6 +73,7 @@ public class EquipmentInstance
         this.instanceId = string.IsNullOrWhiteSpace(instanceId) ? Guid.NewGuid().ToString("N") : instanceId;
         this.rarity = rarity;
         this.itemTier = itemTier;
+        this.itemLevel = Mathf.Max(1, itemLevel);
         this.baseDefinition = baseDefinition;
         this.implicitRolls = implicitRolls ?? new List<EquipmentModifierRoll>();
         this.prefixAffixes = prefixAffixes ?? new List<EquipmentRolledAffix>();

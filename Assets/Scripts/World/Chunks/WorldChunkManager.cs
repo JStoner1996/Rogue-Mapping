@@ -177,7 +177,7 @@ public class WorldChunkManager : MonoBehaviour
             worldSeed,
             chunkSizeTiles,
             tileSize,
-            shrineSpawnChance,
+            GetEffectiveShrineSpawnChance(),
             shrineEdgePaddingTiles,
             GetShrineDefinitions());
     }
@@ -221,6 +221,13 @@ public class WorldChunkManager : MonoBehaviour
         }
 
         return fallbackShrineDefinitions;
+    }
+
+    private float GetEffectiveShrineSpawnChance()
+    {
+        EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
+        float quantityModifier = summary?.GetEntry(EquipmentStatType.ShrineQuantity)?.percentValue ?? 0f;
+        return Mathf.Clamp01(shrineSpawnChance * Mathf.Max(0f, 1f + quantityModifier));
     }
 
     private bool TryGetPlayerTransform(out Transform player)

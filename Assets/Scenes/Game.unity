@@ -36384,8 +36384,9 @@ MonoBehaviour:
   baseCatalog: {fileID: 11400000, guid: c49776b7d95237e41aac8cf9ef4a4216, type: 2}
   affixCatalog: {fileID: 11400000, guid: 9ba0aca4a74677d48b476bd5c6b18426, type: 2}
   request:
-    minItemTier: 3
+    minItemTier: 1
     maxItemTier: 10
+    itemLevel: 33
     forceSlotType: 0
     forcedSlotType: 0
     requiredAffixStats: 
@@ -41813,6 +41814,8 @@ MonoBehaviour:
   bombPoolSize: 3
   mapPickupPrefab: {fileID: 2066601071888850287, guid: df2da134bb066264f97d967cb153490a, type: 3}
   mapPickupPoolSize: 10
+  equipmentPickupPrefab: {fileID: 1374317019943833755, guid: 8826da7efa40515498b1cfa260da47b5, type: 3}
+  equipmentPickupPoolSize: 10
 --- !u!1 &1701788648
 GameObject:
   m_ObjectHideFlags: 0

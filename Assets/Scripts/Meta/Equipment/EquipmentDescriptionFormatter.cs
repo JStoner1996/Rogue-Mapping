@@ -14,6 +14,7 @@ public static class EquipmentDescriptionFormatter
 
         StringBuilder builder = new StringBuilder();
         builder.AppendLine($"Tier: {item.ItemTier}");
+        builder.AppendLine($"Item Level: {item.ItemLevel}");
         builder.AppendLine($"Rarity: {item.Rarity}");
         builder.AppendLine($"Slot: {item.SlotType}");
 

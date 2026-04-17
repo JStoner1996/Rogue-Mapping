@@ -15671,7 +15671,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5445428670359200234, guid: 73e73b5360f4dfe43a7c625fb5ba1dc1, type: 3}
       propertyPath: m_text
-      value: 'Enemy Quanlity: '
+      value: 'Enemy Quality: '
       objectReference: {fileID: 0}
     - target: {fileID: 6809408722476031688, guid: 73e73b5360f4dfe43a7c625fb5ba1dc1, type: 3}
       propertyPath: m_Name

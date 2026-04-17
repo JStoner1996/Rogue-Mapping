@@ -56,10 +56,11 @@ public class PlayerStatsPanelUI : MonoBehaviour
 
         // Reserved for future equipment stats that are not yet modeled in EquipmentStatType.
         SetStaticZeroRow(experienceGainRow, "+0%");
-        SetStaticZeroRow(enemyQuantityRow, "+0%");
-        SetStaticZeroRow(enemyQualityRow, "+0%");
+        SetPercentRow(enemyQuantityRow, GetEntry(summary, EquipmentStatType.EnemyQuantity));
+        SetPercentRow(enemyQualityRow, GetEntry(summary, EquipmentStatType.EnemyQuality));
 
-        bool hasUniqueStats = false;
+        EquipmentStatSummaryEntry shrineQuantityEntry = GetEntry(summary, EquipmentStatType.ShrineQuantity);
+        bool hasUniqueStats = shrineQuantityEntry != null && shrineQuantityEntry.HasPercentValue;
         if (page2Button != null)
         {
             page2Button.interactable = hasUniqueStats;
@@ -67,8 +68,16 @@ public class PlayerStatsPanelUI : MonoBehaviour
 
         if (uniqueStatsText != null)
         {
-            uniqueStatsText.text = noUniqueStatsText;
-            uniqueStatsText.color = neutralColor;
+            if (hasUniqueStats)
+            {
+                uniqueStatsText.text = $"Shrine Quantity: {FormatPercent(shrineQuantityEntry.percentValue)}";
+                uniqueStatsText.color = GetColorForValue(shrineQuantityEntry.percentValue);
+            }
+            else
+            {
+                uniqueStatsText.text = noUniqueStatsText;
+                uniqueStatsText.color = neutralColor;
+            }
         }
     }
 

@@ -11,7 +11,8 @@ public class EquipmentAffixCatalog : ScriptableObject
     public List<EquipmentAffixDefinition> GetValidAffixes(
         EquipmentAffixType affixType,
         EquipmentSlotType slotType,
-        int itemTier)
+        int itemTier,
+        int itemLevel)
     {
         List<EquipmentAffixDefinition> validAffixes = new List<EquipmentAffixDefinition>();
 
@@ -22,7 +23,7 @@ public class EquipmentAffixCatalog : ScriptableObject
                 continue;
             }
 
-            if (affixDefinition.AffixType != affixType || !affixDefinition.CanRollFor(slotType, itemTier))
+            if (affixDefinition.AffixType != affixType || !affixDefinition.CanRollFor(slotType, itemTier, itemLevel))
             {
                 continue;
             }

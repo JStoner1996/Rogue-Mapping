@@ -7,6 +7,7 @@ public class OwnedEquipmentRecord
     public string instanceId;
     public EquipmentRarity rarity;
     public int itemTier;
+    public int itemLevel;
     public string baseName;
     public List<OwnedEquipmentAffixRecord> prefixAffixes = new List<OwnedEquipmentAffixRecord>();
     public List<OwnedEquipmentAffixRecord> suffixAffixes = new List<OwnedEquipmentAffixRecord>();
