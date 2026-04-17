@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 // Loads and unloads generated chunks around the player.
 public class WorldChunkManager : MonoBehaviour
@@ -15,8 +16,16 @@ public class WorldChunkManager : MonoBehaviour
     [SerializeField, Min(1)] private int chunkSizeTiles = 32;
     [SerializeField, Min(0.01f)] private float tileSize = 1f;
     [SerializeField] private int worldSeed = 12345;
-    [SerializeField] private ChunkTerrainPalette terrainPalette = new ChunkTerrainPalette();
-    [SerializeField] private ChunkDecorationPalette decorationPalette = new ChunkDecorationPalette();
+
+    [Header("Scene Fallback Theme")]
+    [FormerlySerializedAs("terrainPalette")]
+    [SerializeField] private ChunkTerrainPalette fallbackTerrainPalette = new ChunkTerrainPalette();
+    [FormerlySerializedAs("decorationPalette")]
+    [SerializeField] private ChunkDecorationPalette fallbackDecorationPalette = new ChunkDecorationPalette();
+    [FormerlySerializedAs("shrinePrefab")]
+    [SerializeField] private ShrineObjective fallbackShrinePrefab;
+    [FormerlySerializedAs("shrineDefinitions")]
+    [SerializeField] private List<ShrineDefinition> fallbackShrineDefinitions = new List<ShrineDefinition>();
 
     [Header("Loading")]
     [SerializeField, Min(0)] private int loadRadius = 1;
@@ -24,32 +33,27 @@ public class WorldChunkManager : MonoBehaviour
     [Header("Enemy Cleanup")]
     [SerializeField, Min(0)] private int ambientEnemyDespawnChunkDistance = 3;
 
-    [Header("Shrines")]
+    [Header("Chunk Content")]
     [SerializeField, Range(0f, 1f)] private float shrineSpawnChance = 0.5f;
     [SerializeField, Min(0)] private int shrineEdgePaddingTiles = 4;
-    [SerializeField] private ShrineObjective shrinePrefab;
-    [SerializeField] private List<ShrineDefinition> shrineDefinitions = new List<ShrineDefinition>();
 
     private readonly Dictionary<ChunkCoordinate, ChunkView> activeChunks = new Dictionary<ChunkCoordinate, ChunkView>();
     private ChunkGenerator chunkGenerator;
     private ChunkCoordinate? currentPlayerChunk;
+    private MapWorldThemeDefinition activeTheme;
 
     public int ChunkSizeTiles => chunkSizeTiles;
     public float TileSize => tileSize;
     public int AmbientEnemyDespawnChunkDistance => ambientEnemyDespawnChunkDistance;
     public int LoadRadius => loadRadius;
+    public MapWorldThemeDefinition ActiveTheme => activeTheme;
 
     void Awake()
     {
         Instance = this;
         ChunkRuntimeState.Reset();
-        chunkGenerator = new ChunkGenerator(
-            worldSeed,
-            chunkSizeTiles,
-            tileSize,
-            shrineSpawnChance,
-            shrineEdgePaddingTiles,
-            shrineDefinitions);
+        ResolveActiveTheme();
+        chunkGenerator = BuildChunkGenerator();
     }
 
     void OnDestroy()
@@ -154,12 +158,69 @@ public class WorldChunkManager : MonoBehaviour
         chunkView.name = $"Chunk_{coordinate.x}_{coordinate.y}";
         chunkView.Render(
             chunkGenerator.Generate(coordinate),
-            terrainPalette,
-            decorationPalette,
+            GetTerrainPalette(),
+            GetDecorationPalette(),
             worldSeed,
-            shrinePrefab,
+            GetShrinePrefab(),
             chunkSizeTiles);
         activeChunks.Add(coordinate, chunkView);
+    }
+
+    private void ResolveActiveTheme()
+    {
+        activeTheme = RunData.GetSelectedMapOrDefault()?.WorldTheme;
+    }
+
+    private ChunkGenerator BuildChunkGenerator()
+    {
+        return new ChunkGenerator(
+            worldSeed,
+            chunkSizeTiles,
+            tileSize,
+            shrineSpawnChance,
+            shrineEdgePaddingTiles,
+            GetShrineDefinitions());
+    }
+
+    // The selected map theme wins. The scene fallback keeps the shared Game scene safe while themes are being authored.
+    private ChunkTerrainPalette GetTerrainPalette()
+    {
+        if (activeTheme != null && activeTheme.HasTerrainPalette())
+        {
+            return activeTheme.TerrainPalette;
+        }
+
+        return fallbackTerrainPalette;
+    }
+
+    private ChunkDecorationPalette GetDecorationPalette()
+    {
+        if (activeTheme != null && activeTheme.HasDecorationPalette())
+        {
+            return activeTheme.DecorationPalette;
+        }
+
+        return fallbackDecorationPalette;
+    }
+
+    private ShrineObjective GetShrinePrefab()
+    {
+        if (activeTheme != null && activeTheme.HasShrineContent())
+        {
+            return activeTheme.ShrinePrefab;
+        }
+
+        return fallbackShrinePrefab;
+    }
+
+    private IReadOnlyList<ShrineDefinition> GetShrineDefinitions()
+    {
+        if (activeTheme != null && activeTheme.HasShrineContent())
+        {
+            return activeTheme.ShrineDefinitions;
+        }
+
+        return fallbackShrineDefinitions;
     }
 
     private bool TryGetPlayerTransform(out Transform player)

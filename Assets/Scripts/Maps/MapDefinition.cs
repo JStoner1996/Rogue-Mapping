@@ -101,8 +101,16 @@ public class MapBaseDefinition
     public MapTilesetTheme tilesetTheme;
     public string sceneName;
     public Sprite icon;
+    public MapWorldThemeDefinition worldTheme;
 
-    public MapBaseDefinition(string id, string displayName, int tier, MapTilesetTheme tilesetTheme, string sceneName = "", Sprite icon = null)
+    public MapBaseDefinition(
+        string id,
+        string displayName,
+        int tier,
+        MapTilesetTheme tilesetTheme,
+        string sceneName = "",
+        Sprite icon = null,
+        MapWorldThemeDefinition worldTheme = null)
     {
         this.id = id;
         this.displayName = displayName;
@@ -110,6 +118,7 @@ public class MapBaseDefinition
         this.tilesetTheme = tilesetTheme;
         this.sceneName = sceneName;
         this.icon = icon;
+        this.worldTheme = worldTheme;
     }
 }
 
@@ -127,6 +136,7 @@ public class MapInstance
     public MapTilesetTheme TilesetTheme => baseMap != null ? baseMap.tilesetTheme : MapTilesetTheme.Default;
     public string SceneName => baseMap != null ? baseMap.sceneName : string.Empty;
     public Sprite Icon => baseMap != null ? MapIconCatalog.ResolveIcon(baseMap.icon) : MapIconCatalog.PlaceholderMapIcon;
+    public MapWorldThemeDefinition WorldTheme => baseMap != null ? baseMap.worldTheme : null;
     public VictoryConditionType VictoryConditionType { get; set; }
     public int VictoryTarget { get; set; }
 

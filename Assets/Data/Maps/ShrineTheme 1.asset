@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b0d273fd25915d4fbb107c3c07fb6d1, type: 3}
+  m_Name: ShrineTheme 1
+  m_EditorClassIdentifier: Assembly-CSharp::MapWorldThemeDefinition
+  themeName: Shrine
+  terrainPalette:
+    noiseScale: 0.15
+    lowBandThreshold: 0.15
+    highBandThreshold: 0.35
+    lowBandTiles:
+    - {fileID: 11400000, guid: e90a33b66f61a72409a405153f0528ef, type: 2}
+    - {fileID: 11400000, guid: 7a44f1123096b9b4b8d579e7e6d4ad27, type: 2}
+    - {fileID: 11400000, guid: e05dce050219f85468506392922d89b7, type: 2}
+    - {fileID: 11400000, guid: e05dce050219f85468506392922d89b7, type: 2}
+    midBandTiles:
+    - {fileID: 11400000, guid: 41ba712c9f1739a49b0ad4d66f981702, type: 2}
+    - {fileID: 11400000, guid: 608ac8a06eab59145a7a169a7703a440, type: 2}
+    - {fileID: 11400000, guid: d6307fc4bed8308499ede8a863069bb8, type: 2}
+    - {fileID: 11400000, guid: 838245316a892ac4c80d4bd8fb537c16, type: 2}
+    highBandTiles:
+    - {fileID: 11400000, guid: e16d12e59d4ec104b9678c7fae2e5fd3, type: 2}
+  decorationPalette:
+    noiseScale: 0.25
+    placementThreshold: 0.75
+    decorationTiles:
+    - {fileID: 11400000, guid: 042ddb5c00bee5342b54cc2b52af9904, type: 2}
+    - {fileID: 11400000, guid: ca0a2f13d5a424a438a09d86021277c0, type: 2}
+    - {fileID: 11400000, guid: d1dd3fb1ce5aff9408df55107f81d97c, type: 2}
+    - {fileID: 11400000, guid: 4772e6aae4692ce4fb3779424096959a, type: 2}
+    - {fileID: 11400000, guid: e8fd796d3c3e3c8469a64f8bc01b500a, type: 2}
+    - {fileID: 11400000, guid: 1329469f818fbbe4c85062d0926a4c53, type: 2}
+  shrinePrefab: {fileID: 7734354430778477988, guid: c54c087ea5126a240b8bb2423031203d, type: 3}
+  shrineDefinitions:
+  - {fileID: 11400000, guid: d18215a49c5c7c14aa967dc4bd2bc2ca, type: 2}
+  - {fileID: 11400000, guid: df8b7392e35ac4449873bd752f3fd902, type: 2}
+  - {fileID: 11400000, guid: 73cb7b7c9d8f2e4448da69e45f5727e1, type: 2}
+  - {fileID: 11400000, guid: f18759c2fb2dd254d9a7cedb9a575fe1, type: 2}
