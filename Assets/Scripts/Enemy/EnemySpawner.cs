@@ -42,10 +42,6 @@ public class EnemySpawner : MonoBehaviour
     [Header("Event Spawn Pool")]
     [SerializeField] private List<PackEntry> eventPacks = new List<PackEntry>();
 
-    [Header("Spawn Bounds")]
-    [SerializeField] private Transform minPos;
-    [SerializeField] private Transform maxPos;
-
     [Header("Run Modifiers")]
     [SerializeField] private EnemySpawnModifiers modifiers = new EnemySpawnModifiers();
 
@@ -55,8 +51,18 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField, Min(0.1f)] private float minimumPackSpawnInterval = 2f;
     [SerializeField, Min(0f)] private float packSpawnRadius = 1.25f;
 
+    [Header("Chunk-Aware Spawning")]
+    [SerializeField, Min(0f)] private float ambientSpawnMinimumWorldDistance = 12f;
+    [SerializeField, Min(0f)] private float ambientSpawnMaximumWorldDistance = 22f;
+    [SerializeField, Min(0)] private int ambientSpawnMaxAttempts = 8;
+
+    [Header("Pooling")]
+    [SerializeField, Min(1)] private int initialPoolSizePerEnemy = 8;
+
     private MapSpawnModifiers mapModifiers;
     private PlayerController player;
+    private WorldChunkManager worldChunkManager;
+    private EnemyPools enemyPools;
     private float spawnTimer;
     private readonly List<RuntimeSpawnerModifier> temporaryRuntimeModifiers = new List<RuntimeSpawnerModifier>();
     private readonly Dictionary<EnemySpawnerModifierType, float> persistentRuntimeModifiers = new Dictionary<EnemySpawnerModifierType, float>();
@@ -64,6 +70,7 @@ public class EnemySpawner : MonoBehaviour
     void Awake()
     {
         ApplyRunModifiers();
+        BuildEnemyPools();
         spawnTimer = 0f;
     }
 
@@ -101,7 +108,10 @@ public class EnemySpawner : MonoBehaviour
             player = PlayerController.Instance;
         }
 
-        return player != null && player.gameObject.activeSelf && HasAmbientSpawnEntries();
+        return player != null
+            && player.gameObject.activeSelf
+            && HasAmbientSpawnEntries()
+            && TryGetWorldChunkManager(out _);
     }
 
     private bool HasAmbientSpawnEntries()
@@ -379,7 +389,14 @@ public class EnemySpawner : MonoBehaviour
 
         Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
         int packSize = GetPackSize(enemyTemplate);
-        Vector2 packOrigin = packOriginOverride ?? GetSpawnPoint();
+        // Ambient packs choose a chunk-aware origin, while event spawns can override it.
+        Vector2? generatedPackOrigin = packOriginOverride ?? GetAmbientPackSpawnOrigin();
+        if (!generatedPackOrigin.HasValue)
+        {
+            return;
+        }
+
+        Vector2 packOrigin = generatedPackOrigin.Value;
 
         for (int i = 0; i < packSize; i++)
         {
@@ -401,13 +418,30 @@ public class EnemySpawner : MonoBehaviour
     private void SpawnEnemy(GameObject enemyPrefab, Vector2 packOrigin, EnemySpawnContext packContext)
     {
         Vector2 spawnPoint = GetPackSpawnPoint(packOrigin);
-        GameObject enemyObject = Instantiate(enemyPrefab, spawnPoint, transform.rotation);
-        Enemy enemy = enemyObject.GetComponent<Enemy>();
+        Enemy enemy = GetPooledEnemy(enemyPrefab);
 
         if (enemy != null)
         {
+            enemy.transform.SetPositionAndRotation(spawnPoint, transform.rotation);
+            enemy.ConfigurePool(this, enemyPrefab);
             enemy.Initialize(packContext);
         }
+    }
+
+    public void ReturnEnemyToPool(Enemy enemy, GameObject prefabKey)
+    {
+        if (enemy == null || prefabKey == null)
+        {
+            return;
+        }
+
+        if (!TryGetEnemyPools(out EnemyPools pools))
+        {
+            Destroy(enemy.gameObject);
+            return;
+        }
+
+        pools.ReturnEnemy(enemy, prefabKey);
     }
 
     private EnemySpawnContext BuildSpawnContext()
@@ -579,38 +613,61 @@ public class EnemySpawner : MonoBehaviour
         return RunData.SelectedMap.GetModifier(statType) / 100f;
     }
 
-    private Vector2 GetSpawnPoint()
+    private Vector2? GetAmbientPackSpawnOrigin()
     {
-        Vector2 spawnPoint;
-
-        if (Random.Range(0f, 1f) > 0.5)
+        if (!TryGetWorldChunkManager(out WorldChunkManager chunkManager) || player == null)
         {
-            spawnPoint.x = Random.Range(minPos.position.x, maxPos.position.x);
-
-            if (Random.Range(0f, 1f) > 0.5)
-            {
-                spawnPoint.y = minPos.position.y;
-            }
-            else
-            {
-                spawnPoint.y = maxPos.position.y;
-            }
+            return null;
         }
-        else
-        {
-            spawnPoint.y = Random.Range(minPos.position.y, maxPos.position.y);
 
-            if (Random.Range(0f, 1f) > 0.5)
+        float minimumDistance = Mathf.Max(0f, ambientSpawnMinimumWorldDistance);
+        float maximumDistance = Mathf.Max(minimumDistance, ambientSpawnMaximumWorldDistance);
+        int attemptCount = Mathf.Max(1, ambientSpawnMaxAttempts);
+
+        for (int i = 0; i < attemptCount; i++)
+        {
+            Vector2 candidatePoint = player.transform.position
+                + (Vector3)(Random.insideUnitCircle.normalized * Random.Range(minimumDistance, maximumDistance));
+            ChunkCoordinate candidateChunk = ChunkWorldUtility.GetChunkCoordinate(
+                candidatePoint,
+                chunkManager.ChunkSizeTiles,
+                chunkManager.TileSize);
+
+            if (chunkManager.IsChunkLoaded(candidateChunk))
             {
-                spawnPoint.x = minPos.position.x;
-            }
-            else
-            {
-                spawnPoint.x = maxPos.position.x;
+                return candidatePoint;
             }
         }
 
-        return spawnPoint;
+        return null;
+    }
+
+    private bool TryGetWorldChunkManager(out WorldChunkManager chunkManager)
+    {
+        if (worldChunkManager == null)
+        {
+            worldChunkManager = WorldChunkManager.Instance ?? FindAnyObjectByType<WorldChunkManager>();
+        }
+
+        chunkManager = worldChunkManager;
+        return chunkManager != null;
+    }
+
+    private bool TryGetEnemyPools(out EnemyPools pools)
+    {
+        if (enemyPools == null)
+        {
+            enemyPools = EnemyPools.Instance ?? FindAnyObjectByType<EnemyPools>();
+
+            if (enemyPools == null)
+            {
+                GameObject poolsObject = new GameObject("EnemyPools");
+                enemyPools = poolsObject.AddComponent<EnemyPools>();
+            }
+        }
+
+        pools = enemyPools;
+        return pools != null;
     }
 
     private Vector2 GetPackSpawnPoint(Vector2 packOrigin)
@@ -622,5 +679,47 @@ public class EnemySpawner : MonoBehaviour
 
         Vector2 offset = Random.insideUnitCircle * packSpawnRadius;
         return packOrigin + offset;
+    }
+
+    private void BuildEnemyPools()
+    {
+        if (!TryGetEnemyPools(out EnemyPools pools))
+        {
+            return;
+        }
+
+        HashSet<GameObject> uniquePrefabs = new HashSet<GameObject>();
+        CollectPoolPrefabs(ambientPacks, uniquePrefabs);
+        CollectPoolPrefabs(eventPacks, uniquePrefabs);
+        pools.EnsurePools(new List<GameObject>(uniquePrefabs), initialPoolSizePerEnemy);
+    }
+
+    private Enemy GetPooledEnemy(GameObject enemyPrefab)
+    {
+        if (enemyPrefab == null || !TryGetEnemyPools(out EnemyPools pools))
+        {
+            return null;
+        }
+
+        return pools.GetEnemy(enemyPrefab, initialPoolSizePerEnemy);
+    }
+
+    private void CollectPoolPrefabs(IReadOnlyList<PackEntry> entries, ISet<GameObject> output)
+    {
+        if (entries == null || output == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            PackEntry entry = entries[i];
+            if (entry == null || entry.enemyPrefab == null)
+            {
+                continue;
+            }
+
+            output.Add(entry.enemyPrefab);
+        }
     }
 }

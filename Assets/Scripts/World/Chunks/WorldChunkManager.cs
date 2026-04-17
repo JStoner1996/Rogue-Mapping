@@ -37,6 +37,7 @@ public class WorldChunkManager : MonoBehaviour
     public int ChunkSizeTiles => chunkSizeTiles;
     public float TileSize => tileSize;
     public int AmbientEnemyDespawnChunkDistance => ambientEnemyDespawnChunkDistance;
+    public int LoadRadius => loadRadius;
 
     void Awake()
     {
@@ -170,5 +171,33 @@ public class WorldChunkManager : MonoBehaviour
 
         player = playerTransform;
         return player != null;
+    }
+
+    public bool TryGetPlayerChunk(out ChunkCoordinate playerChunk)
+    {
+        if (!TryGetPlayerTransform(out Transform player))
+        {
+            playerChunk = default;
+            return false;
+        }
+
+        playerChunk = ChunkWorldUtility.GetChunkCoordinate(player.position, chunkSizeTiles, tileSize);
+        return true;
+    }
+
+    public bool IsChunkLoaded(ChunkCoordinate coordinate)
+    {
+        return activeChunks.ContainsKey(coordinate);
+    }
+
+    public Vector2 GetRandomPointInChunk(ChunkCoordinate coordinate, float edgePaddingWorld = 0f)
+    {
+        Vector3 origin = ChunkWorldUtility.GetChunkWorldOrigin(coordinate, chunkSizeTiles, tileSize);
+        float chunkWorldSize = ChunkWorldUtility.GetChunkWorldSize(chunkSizeTiles, tileSize);
+        float padding = Mathf.Clamp(edgePaddingWorld, 0f, chunkWorldSize * 0.5f - 0.01f);
+
+        return new Vector2(
+            Random.Range(origin.x + padding, origin.x + chunkWorldSize - padding),
+            Random.Range(origin.y + padding, origin.y + chunkWorldSize - padding));
     }
 }

@@ -60,6 +60,8 @@ public class Enemy : MonoBehaviour
     private PlayerController player;
     private PlayerHealth playerHealth;
     private WorldChunkManager worldChunkManager;
+    private EnemySpawner poolOwner;
+    private GameObject poolPrefabKey;
     private RuntimeStats runtimeStats;
     private float currentHealth;
     private EnemySpawnContext spawnContext = EnemySpawnContext.Default;
@@ -131,6 +133,12 @@ public class Enemy : MonoBehaviour
         ResetRuntimeState();
     }
 
+    public void ConfigurePool(EnemySpawner owner, GameObject prefabKey)
+    {
+        poolOwner = owner;
+        poolPrefabKey = prefabKey;
+    }
+
     public int RollPackSize(float qualityMultiplier)
     {
         if (archetypeDefinition != null && !archetypeDefinition.UsesAmbientSpawnWeight)
@@ -156,7 +164,7 @@ public class Enemy : MonoBehaviour
         DropMetaItems();
         EnemyKilled?.Invoke(this);
         PlayDeathEffects();
-        Destroy(gameObject);
+        ReturnToPool();
     }
 
     private void DropExperience()
@@ -353,7 +361,7 @@ public class Enemy : MonoBehaviour
 
     private void DespawnWithoutRewards()
     {
-        Destroy(gameObject);
+        ReturnToPool();
     }
 
     private void StopMoving()
@@ -465,5 +473,22 @@ public class Enemy : MonoBehaviour
 
         chunkManager = worldChunkManager;
         return chunkManager != null;
+    }
+
+    private void ReturnToPool()
+    {
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+
+        // Normal deaths and far-distance cleanup both return through the same pool path.
+        if (poolOwner != null && poolPrefabKey != null)
+        {
+            poolOwner.ReturnEnemyToPool(this, poolPrefabKey);
+            return;
+        }
+
+        Destroy(gameObject);
     }
 }

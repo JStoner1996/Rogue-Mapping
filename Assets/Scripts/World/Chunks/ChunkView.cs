@@ -25,14 +25,13 @@ public class ChunkView : MonoBehaviour
         currentCoordinate = chunkData.Coordinate;
         transform.position = chunkData.WorldOrigin;
 
-        RenderGround(chunkData, terrainPalette, worldSeed, chunkSizeTiles);
+        RenderGround(terrainPalette, worldSeed, chunkSizeTiles);
         RenderDecorations(decorationPalette, worldSeed, chunkSizeTiles);
         RenderShrine(chunkData, shrinePrefab);
     }
 
     // Terrain is sampled in world space so patterns continue across chunk borders.
     private void RenderGround(
-        ChunkData chunkData,
         ChunkTerrainPalette terrainPalette,
         int worldSeed,
         int chunkSizeTiles)
