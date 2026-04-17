@@ -256,6 +256,10 @@ public class Enemy : MonoBehaviour
             case MetaLootType.Map:
                 SpawnMapLoot(lootItem);
                 break;
+
+            case MetaLootType.Equipment:
+                SpawnEquipmentLoot(lootItem);
+                break;
         }
     }
 
@@ -273,6 +277,35 @@ public class Enemy : MonoBehaviour
         MapPickup mapPickup = PickupPools.Instance.GetMapPickup();
         mapPickup.transform.position = transform.position;
         mapPickup.Initialize(droppedMap);
+    }
+
+    private void SpawnEquipmentLoot(MetaLootItem lootItem)
+    {
+        EquipmentBaseCatalog baseCatalog = EquipmentCatalogResources.BaseCatalog;
+        EquipmentAffixCatalog affixCatalog = EquipmentCatalogResources.AffixCatalog;
+
+        if (baseCatalog == null || affixCatalog == null)
+        {
+            return;
+        }
+
+        EquipmentGenerationRequest request = lootItem.equipmentDropSettings.BuildRequest(RunData.GetSelectedMapOrDefault());
+        EquipmentInstance droppedEquipment = EquipmentGenerator.Generate(
+            baseCatalog,
+            affixCatalog,
+            request,
+            lootItem.equipmentDropSettings.CommonWeight,
+            lootItem.equipmentDropSettings.UncommonWeight,
+            lootItem.equipmentDropSettings.RareWeight);
+
+        if (droppedEquipment == null)
+        {
+            return;
+        }
+
+        EquipmentPickup equipmentPickup = PickupPools.Instance.GetEquipmentPickup();
+        equipmentPickup.transform.position = transform.position;
+        equipmentPickup.Initialize(droppedEquipment);
     }
 
     private void CachePlayerReferences()

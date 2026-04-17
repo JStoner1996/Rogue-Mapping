@@ -293,6 +293,8 @@ MonoBehaviour:
   moveSpeed: 1
   damage: 20
   health: 800
+  packSizeMin: 1
+  packSizeMax: 1
   knockbackResistance: 100
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}
@@ -309,6 +311,32 @@ MonoBehaviour:
   - type: 0
     dropChance: 2
     mapDropSettings:
-      sameTierWeight: 0
-      aboveTierWeight: 0
-      belowTierWeight: 0
+      sameTierWeight: 40
+      aboveTierWeight: 50
+      belowTierWeight: 10
+    equipmentDropSettings:
+      useSelectedMapTier: 1
+      minTierOffset: -1
+      maxTierOffset: 1
+      fallbackMinTier: 1
+      fallbackMaxTier: 3
+      maximumGeneratedTier: 10
+      commonWeight: 60
+      uncommonWeight: 30
+      rareWeight: 10
+  - type: 1
+    dropChance: 75
+    mapDropSettings:
+      sameTierWeight: 40
+      aboveTierWeight: 50
+      belowTierWeight: 10
+    equipmentDropSettings:
+      useSelectedMapTier: 1
+      minTierOffset: -1
+      maxTierOffset: 1
+      fallbackMinTier: 1
+      fallbackMaxTier: 3
+      maximumGeneratedTier: 10
+      commonWeight: 60
+      uncommonWeight: 30
+      rareWeight: 10

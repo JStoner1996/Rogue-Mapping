@@ -24,11 +24,16 @@ public class PickupPools : MonoBehaviour
     [SerializeField] private MapPickup mapPickupPrefab;
     [SerializeField] private int mapPickupPoolSize = 10;
 
+    [Header("Equipment Pickup")]
+    [SerializeField] private EquipmentPickup equipmentPickupPrefab;
+    [SerializeField] private int equipmentPickupPoolSize = 10;
+
     private ObjectPool<HealthPickup> healthPool;
     private ObjectPool<ExpCrystal> xpPool;
     private ObjectPool<Magnet> magnetPool;
     private ObjectPool<Bomb> bombPool;
     private ObjectPool<MapPickup> mapPickupPool;
+    private ObjectPool<EquipmentPickup> equipmentPickupPool;
 
     void Awake()
     {
@@ -46,6 +51,7 @@ public class PickupPools : MonoBehaviour
         magnetPool = new ObjectPool<Magnet>(magnetPrefab, magnetPoolSize);
         bombPool = new ObjectPool<Bomb>(bombPrefab, bombPoolSize);
         mapPickupPool = new ObjectPool<MapPickup>(mapPickupPrefab, mapPickupPoolSize);
+        equipmentPickupPool = new ObjectPool<EquipmentPickup>(equipmentPickupPrefab, equipmentPickupPoolSize);
     }
 
     // -------- Health Pickup --------
@@ -101,5 +107,16 @@ public class PickupPools : MonoBehaviour
     public void ReturnMapPickup(MapPickup obj)
     {
         mapPickupPool.ReturnToPool(obj);
+    }
+
+    // -------- Equipment Pickup --------
+    public EquipmentPickup GetEquipmentPickup()
+    {
+        return equipmentPickupPool.Get();
+    }
+
+    public void ReturnEquipmentPickup(EquipmentPickup obj)
+    {
+        equipmentPickupPool.ReturnToPool(obj);
     }
 }
