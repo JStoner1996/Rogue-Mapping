@@ -15,9 +15,11 @@ MonoBehaviour:
   affixName: Stout
   affixType: 0
   affixTier: 1
+  affixTag: health
   allowedSlots: 00000000010000000200000005000000
   minItemTier: 1
   maxItemTier: 10
+  requiredItemLevel: 1
   modifiers:
   - statType: 0
     modifierKind: 0

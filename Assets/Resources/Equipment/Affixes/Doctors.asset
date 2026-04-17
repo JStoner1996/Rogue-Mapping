@@ -15,9 +15,11 @@ MonoBehaviour:
   affixName: Doctor's
   affixType: 0
   affixTier: 3
+  affixTag: health
   allowedSlots: 0600000004000000
   minItemTier: 8
   maxItemTier: 10
+  requiredItemLevel: 1
   modifiers:
   - statType: 2
     modifierKind: 0

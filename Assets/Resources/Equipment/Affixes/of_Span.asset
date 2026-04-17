@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dda34a768f3de4a4dab0bc27c4d77a2b, type: 3}
+  m_Name: of_Span
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
+  affixName: of Span
+  affixType: 1
+  affixTier: 5
+  affixTag: range
+  allowedSlots:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  minItemTier: 8
+  maxItemTier: 9
+  requiredItemLevel: 65
+  modifiers:
+  - statType: 5
+    modifierKind: 1
+    minValue: 0.14
+    maxValue: 0.18
+    tierScalingMode: 1
+    tierScalingAmount: 0.004

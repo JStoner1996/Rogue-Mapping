@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dda34a768f3de4a4dab0bc27c4d77a2b, type: 3}
+  m_Name: Ironbound
+  m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
+  affixName: Ironbound
+  affixType: 0
+  affixTier: 1
+  affixTag: armor
+  allowedSlots:
+  - 1
+  - 2
+  minItemTier: 5
+  maxItemTier: 7
+  requiredItemLevel: 50
+  modifiers:
+  - statType: 1
+    modifierKind: 1
+    minValue: 0.1
+    maxValue: 0.15
+    tierScalingMode: 1
+    tierScalingAmount: 0.015

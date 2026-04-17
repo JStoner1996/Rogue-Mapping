@@ -15,9 +15,11 @@ MonoBehaviour:
   affixName: Curing
   affixType: 0
   affixTier: 1
+  affixTag: health
   allowedSlots: 0600000004000000
   minItemTier: 1
   maxItemTier: 4
+  requiredItemLevel: 1
   modifiers:
   - statType: 2
     modifierKind: 0

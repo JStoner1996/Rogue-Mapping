@@ -15,9 +15,11 @@ MonoBehaviour:
   affixName: of Force
   affixType: 1
   affixTier: 1
+  affixTag: damage
   allowedSlots: 050000000600000004000000
   minItemTier: 1
   maxItemTier: 10
+  requiredItemLevel: 1
   modifiers:
   - statType: 3
     modifierKind: 1

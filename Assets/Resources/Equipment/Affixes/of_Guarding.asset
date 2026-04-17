@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: of_Guarding
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
   affixName: of Guarding
-  affixType: 1
+  affixType: 0
   affixTier: 1
+  affixTag: armor
   allowedSlots: 00000000010000000200000005000000
   minItemTier: 1
   maxItemTier: 10
+  requiredItemLevel: 1
   modifiers:
   - statType: 1
     modifierKind: 0

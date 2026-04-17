@@ -15,9 +15,11 @@ MonoBehaviour:
   affixName: Healing
   affixType: 0
   affixTier: 2
+  affixTag: health
   allowedSlots: 0600000004000000
   minItemTier: 5
   maxItemTier: 7
+  requiredItemLevel: 1
   modifiers:
   - statType: 2
     modifierKind: 0
