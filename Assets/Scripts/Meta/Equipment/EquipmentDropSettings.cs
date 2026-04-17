@@ -5,12 +5,8 @@ using UnityEngine;
 [Serializable]
 public class EquipmentDropSettings
 {
-    [Header("Tier Range")]
-    [SerializeField] private bool useSelectedMapTier = true;
-    [SerializeField] private int minTierOffset = -1;
-    [SerializeField] private int maxTierOffset = 1;
-    [SerializeField, Min(1)] private int fallbackMinTier = 1;
-    [SerializeField, Min(1)] private int fallbackMaxTier = 3;
+    [Header("Item Tier")]
+    [SerializeField, Min(1)] private int fallbackItemTier = 1;
     [SerializeField, Min(1)] private int maximumGeneratedTier = 10;
 
     [Header("Rarity Weights")]
@@ -24,23 +20,23 @@ public class EquipmentDropSettings
 
     public EquipmentGenerationRequest BuildRequest(MapInstance selectedMap)
     {
-        if (useSelectedMapTier && selectedMap != null)
+        if (selectedMap != null)
         {
-            int baseTier = Mathf.Max(1, selectedMap.Tier);
-            int resolvedMinTier = Mathf.Clamp(baseTier + Mathf.Min(minTierOffset, maxTierOffset), 1, maximumGeneratedTier);
-            int resolvedMaxTier = Mathf.Clamp(baseTier + Mathf.Max(minTierOffset, maxTierOffset), resolvedMinTier, maximumGeneratedTier);
+            int resolvedTier = Mathf.Clamp(Mathf.Max(1, selectedMap.Tier), 1, maximumGeneratedTier);
 
             return new EquipmentGenerationRequest
             {
-                minItemTier = resolvedMinTier,
-                maxItemTier = resolvedMaxTier,
+                minItemTier = resolvedTier,
+                maxItemTier = resolvedTier,
             };
         }
 
+        int fallbackTier = Mathf.Clamp(fallbackItemTier, 1, maximumGeneratedTier);
+
         return new EquipmentGenerationRequest
         {
-            minItemTier = Mathf.Clamp(Mathf.Min(fallbackMinTier, fallbackMaxTier), 1, maximumGeneratedTier),
-            maxItemTier = Mathf.Clamp(Mathf.Max(fallbackMinTier, fallbackMaxTier), 1, maximumGeneratedTier),
+            minItemTier = fallbackTier,
+            maxItemTier = fallbackTier,
         };
     }
 }
