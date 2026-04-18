@@ -21,6 +21,9 @@ public class PlayerStatsPanelUI : MonoBehaviour
     [SerializeField] private StatRowUI armorRow;
     [Header("Utility")]
     [SerializeField] private StatRowUI pickupRangeRow;
+    [SerializeField] private StatRowUI shrineQuantityRow;
+    [SerializeField] private StatRowUI mapDropChanceRow;
+    [SerializeField] private StatRowUI equipmentDropChanceRow;
     [SerializeField] private StatRowUI experienceGainRow;
     [SerializeField] private StatRowUI enemyQuantityRow;
     [SerializeField] private StatRowUI enemyQualityRow;
@@ -53,31 +56,22 @@ public class PlayerStatsPanelUI : MonoBehaviour
         SetFlatRow(armorRow, GetEntry(summary, EquipmentStatType.Armor), "{0:+0.##;-0.##;+0}");
 
         SetPercentRow(pickupRangeRow, GetEntry(summary, EquipmentStatType.PickupRange));
-
-        // Reserved for future equipment stats that are not yet modeled in EquipmentStatType.
-        SetStaticZeroRow(experienceGainRow, "+0%");
+        SetPercentRow(shrineQuantityRow, GetEntry(summary, EquipmentStatType.ShrineQuantity));
+        SetPercentRow(mapDropChanceRow, GetEntry(summary, EquipmentStatType.MapDropChance));
+        SetPercentRow(equipmentDropChanceRow, GetEntry(summary, EquipmentStatType.EquipmentDropChance));
+        SetPercentRow(experienceGainRow, GetEntry(summary, EquipmentStatType.ExperienceGain));
         SetPercentRow(enemyQuantityRow, GetEntry(summary, EquipmentStatType.EnemyQuantity));
         SetPercentRow(enemyQualityRow, GetEntry(summary, EquipmentStatType.EnemyQuality));
 
-        EquipmentStatSummaryEntry shrineQuantityEntry = GetEntry(summary, EquipmentStatType.ShrineQuantity);
-        bool hasUniqueStats = shrineQuantityEntry != null && shrineQuantityEntry.HasPercentValue;
         if (page2Button != null)
         {
-            page2Button.interactable = hasUniqueStats;
+            page2Button.interactable = false;
         }
 
         if (uniqueStatsText != null)
         {
-            if (hasUniqueStats)
-            {
-                uniqueStatsText.text = $"Shrine Quantity: {FormatPercent(shrineQuantityEntry.percentValue)}";
-                uniqueStatsText.color = GetColorForValue(shrineQuantityEntry.percentValue);
-            }
-            else
-            {
-                uniqueStatsText.text = noUniqueStatsText;
-                uniqueStatsText.color = neutralColor;
-            }
+            uniqueStatsText.text = noUniqueStatsText;
+            uniqueStatsText.color = neutralColor;
         }
     }
 
@@ -157,11 +151,6 @@ public class PlayerStatsPanelUI : MonoBehaviour
         }
 
         row?.SetValue(text, GetColorForValue(flatValue + percentValue));
-    }
-
-    private void SetStaticZeroRow(StatRowUI row, string valueText)
-    {
-        row?.SetValue(valueText, neutralColor);
     }
 
     private string FormatPercent(float value)

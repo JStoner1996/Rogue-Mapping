@@ -203,7 +203,7 @@ public class Enemy : MonoBehaviour
                 continue;
             }
 
-            float dropChance = lootItem.GetAdjustedDropChance(runtimeStats.dropChanceMultiplier);
+            float dropChance = lootItem.GetAdjustedDropChance(GetMetaDropChanceMultiplier(lootItem));
 
             if (Random.Range(0f, 100f) > dropChance)
             {
@@ -345,6 +345,37 @@ public class Enemy : MonoBehaviour
             experienceWorth = Mathf.RoundToInt(experienceWorth * archetypeExperienceMultiplier * spawnContext.experienceMultiplier),
             dropChanceMultiplier = archetypeDropChanceMultiplier * spawnContext.dropChanceMultiplier,
         };
+    }
+
+    private float GetMetaDropChanceMultiplier(MetaLootItem lootItem)
+    {
+        float multiplier = runtimeStats.dropChanceMultiplier;
+        EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
+
+        if (summary == null || lootItem == null)
+        {
+            return multiplier;
+        }
+
+        EquipmentStatType? bonusStatType = lootItem.type switch
+        {
+            MetaLootType.Map => EquipmentStatType.MapDropChance,
+            MetaLootType.Equipment => EquipmentStatType.EquipmentDropChance,
+            _ => null
+        };
+
+        if (!bonusStatType.HasValue)
+        {
+            return multiplier;
+        }
+
+        EquipmentStatSummaryEntry entry = summary.GetEntry(bonusStatType.Value);
+        if (entry == null || !entry.HasPercentValue)
+        {
+            return multiplier;
+        }
+
+        return multiplier * Mathf.Max(0f, 1f + entry.percentValue);
     }
 
     private int GetScaledPackBound(int baseValue, float qualityMultiplier)

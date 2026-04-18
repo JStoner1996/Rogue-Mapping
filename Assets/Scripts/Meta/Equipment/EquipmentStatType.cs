@@ -12,4 +12,7 @@ public enum EquipmentStatType
     ShrineQuantity,
     EnemyQuantity,
     EnemyQuality,
+    MapDropChance,
+    EquipmentDropChance,
+    ExperienceGain,
 }
