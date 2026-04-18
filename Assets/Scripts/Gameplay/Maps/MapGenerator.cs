@@ -4,6 +4,7 @@ using UnityEngine;
 public static class MapGenerator
 {
     private const string MapCatalogResourcePath = "Maps/MapCatalog";
+    public const string DefaultMapId = "default_map";
 
     private static readonly int[] TimeMinutesByRarity =
     {
@@ -23,87 +24,11 @@ public static class MapGenerator
     private const int KillsPerTier = 25;
 
     private static MapCatalog loadedMapCatalog;
-
-    private static readonly List<MapAffixDefinition> Prefixes = new List<MapAffixDefinition>
-    {
-        new MapAffixDefinition("Gathering", MapAffixTier.Common,
-            new MapModifierRange(MapStatType.EnemyQuantity, 8f, 14f),
-            new MapModifierRange(MapStatType.EnemyQuality, 4f, 8f)),
-        new MapAffixDefinition("Refined", MapAffixTier.Common,
-            new MapModifierRange(MapStatType.EnemyQuantity, 6f, 10f),
-            new MapModifierRange(MapStatType.EnemyQuality, 8f, 14f)),
-        new MapAffixDefinition("Bountiful", MapAffixTier.Common,
-            new MapModifierRange(MapStatType.EnemyQuantity, 10f, 16f),
-            new MapModifierRange(MapStatType.EnemyQuality, 6f, 10f)),
-        new MapAffixDefinition("Conquerer's", MapAffixTier.Uncommon,
-            new MapModifierRange(MapStatType.EnemyQuantity, 14f, 20f),
-            new MapModifierRange(MapStatType.EnemyQuality, 10f, 16f),
-            new MapModifierRange(MapStatType.DropChance, 12f, 18f)),
-        new MapAffixDefinition("Abhorrent", MapAffixTier.Uncommon,
-            new MapModifierRange(MapStatType.EnemyQuantity, 12f, 18f),
-            new MapModifierRange(MapStatType.EnemyQuality, 14f, 20f),
-            new MapModifierRange(MapStatType.DropChance, 14f, 20f)),
-        new MapAffixDefinition("Plunderer's", MapAffixTier.Uncommon,
-            new MapModifierRange(MapStatType.EnemyQuantity, 13f, 19f),
-            new MapModifierRange(MapStatType.EnemyQuality, 11f, 17f),
-            new MapModifierRange(MapStatType.DropChance, 18f, 26f)),
-        new MapAffixDefinition("Mythic", MapAffixTier.Rare,
-            new MapModifierRange(MapStatType.EnemyQuantity, 20f, 30f),
-            new MapModifierRange(MapStatType.EnemyQuality, 14f, 22f),
-            new MapModifierRange(MapStatType.DropChance, 20f, 30f)),
-        new MapAffixDefinition("Tyrannical", MapAffixTier.Rare,
-            new MapModifierRange(MapStatType.EnemyQuantity, 18f, 26f),
-            new MapModifierRange(MapStatType.EnemyQuality, 20f, 30f),
-            new MapModifierRange(MapStatType.DropChance, 22f, 32f)),
-        new MapAffixDefinition("God-Touched", MapAffixTier.Rare,
-            new MapModifierRange(MapStatType.EnemyQuantity, 22f, 32f),
-            new MapModifierRange(MapStatType.EnemyQuality, 18f, 26f),
-            new MapModifierRange(MapStatType.DropChance, 30f, 45f)),
-    };
-
-    private static readonly List<MapAffixDefinition> Suffixes = new List<MapAffixDefinition>
-    {
-        new MapAffixDefinition("of Embers", MapAffixTier.Common,
-            new MapModifierRange(MapStatType.EnemyDamage, 10f, 16f),
-            new MapModifierRange(MapStatType.EnemyHealth, 6f, 10f)),
-        new MapAffixDefinition("of the Boar", MapAffixTier.Common,
-            new MapModifierRange(MapStatType.EnemyDamage, 8f, 12f),
-            new MapModifierRange(MapStatType.EnemyHealth, 14f, 22f)),
-        new MapAffixDefinition("of Stone", MapAffixTier.Common,
-            new MapModifierRange(MapStatType.EnemyDamage, 7f, 11f),
-            new MapModifierRange(MapStatType.EnemyHealth, 18f, 26f)),
-        new MapAffixDefinition("of Fury", MapAffixTier.Uncommon,
-            new MapModifierRange(MapStatType.EnemyDamage, 16f, 24f),
-            new MapModifierRange(MapStatType.EnemyHealth, 18f, 26f),
-            new MapModifierRange(MapStatType.EnemyMoveSpeed, 6f, 10f)),
-        new MapAffixDefinition("of Swiftness", MapAffixTier.Uncommon,
-            new MapModifierRange(MapStatType.EnemyDamage, 12f, 18f),
-            new MapModifierRange(MapStatType.EnemyHealth, 16f, 24f),
-            new MapModifierRange(MapStatType.EnemyMoveSpeed, 12f, 18f)),
-        new MapAffixDefinition("of the Hunt", MapAffixTier.Uncommon,
-            new MapModifierRange(MapStatType.EnemyDamage, 14f, 20f),
-            new MapModifierRange(MapStatType.EnemyHealth, 20f, 28f),
-            new MapModifierRange(MapStatType.EnemyMoveSpeed, 10f, 14f)),
-        new MapAffixDefinition("of Power", MapAffixTier.Rare,
-            new MapModifierRange(MapStatType.EnemyDamage, 24f, 34f),
-            new MapModifierRange(MapStatType.EnemyHealth, 22f, 32f),
-            new MapModifierRange(MapStatType.EnemyMoveSpeed, 12f, 18f),
-            new MapModifierRange(MapStatType.ExperienceWorth, 10f, 16f)),
-        new MapAffixDefinition("of the Abyss", MapAffixTier.Rare,
-            new MapModifierRange(MapStatType.EnemyDamage, 22f, 30f),
-            new MapModifierRange(MapStatType.EnemyHealth, 28f, 40f),
-            new MapModifierRange(MapStatType.EnemyMoveSpeed, 14f, 20f),
-            new MapModifierRange(MapStatType.ExperienceWorth, 14f, 20f)),
-        new MapAffixDefinition("of Endurance", MapAffixTier.Rare,
-            new MapModifierRange(MapStatType.EnemyDamage, 18f, 26f),
-            new MapModifierRange(MapStatType.EnemyHealth, 40f, 55f),
-            new MapModifierRange(MapStatType.EnemyMoveSpeed, 10f, 16f),
-            new MapModifierRange(MapStatType.ExperienceWorth, 12f, 18f)),
-    };
+    private static readonly IReadOnlyList<MapBaseDefinition> EmptyBaseMaps = System.Array.Empty<MapBaseDefinition>();
 
     public static List<MapInstance> GenerateChoices(int count)
     {
-        List<MapInstance> results = new List<MapInstance>(count);
+        List<MapInstance> results = new List<MapInstance>(Mathf.Max(0, count));
 
         if (count <= 0)
         {
@@ -111,21 +36,18 @@ public static class MapGenerator
         }
 
         results.Add(CreateDefaultMap());
-
-        List<MapBaseDefinition> availableBaseMaps = new List<MapBaseDefinition>(GetBaseMapsInternal());
-        availableBaseMaps.RemoveAll(map => map.id == "default_map");
+        List<MapBaseDefinition> choicePool = GetNonDefaultBaseMaps();
 
         for (int i = 1; i < count; i++)
         {
-            if (availableBaseMaps.Count == 0)
+            RefillChoicePool(choicePool);
+            MapBaseDefinition baseMap = TakeRandom(choicePool);
+
+            if (baseMap == null)
             {
-                availableBaseMaps = new List<MapBaseDefinition>(GetBaseMapsInternal());
-                availableBaseMaps.RemoveAll(map => map.id == "default_map");
+                break;
             }
 
-            int baseMapIndex = Random.Range(0, availableBaseMaps.Count);
-            MapBaseDefinition baseMap = availableBaseMaps[baseMapIndex];
-            availableBaseMaps.RemoveAt(baseMapIndex);
             results.Add(CreateGeneratedMap(baseMap));
         }
 
@@ -138,7 +60,7 @@ public static class MapGenerator
     {
         return new MapInstance
         {
-            baseMap = FindBaseMap("default_map"),
+            baseMap = FindBaseMap(DefaultMapId),
             VictoryConditionType = victoryConditionType,
             VictoryTarget = Mathf.Max(1, victoryTarget),
         };
@@ -148,15 +70,14 @@ public static class MapGenerator
     {
         MapDropSettings settings = dropSettings ?? new MapDropSettings();
         int targetTier = RollDroppedMapTier(currentTier, settings);
-        List<MapBaseDefinition> candidates = GetBaseMapsForTier(targetTier);
+        MapBaseDefinition baseMap = RollBaseMapForTier(targetTier);
 
-        if (candidates.Count == 0)
+        if (baseMap == null)
         {
             Debug.LogWarning($"Unable to create dropped map for tier {targetTier}. Falling back to default map.");
             return CreateDefaultMap();
         }
 
-        MapBaseDefinition baseMap = candidates[Random.Range(0, candidates.Count)];
         return CreateGeneratedMap(baseMap);
     }
 
@@ -197,8 +118,8 @@ public static class MapGenerator
         return new MapInstance
         {
             baseMap = baseMap,
-            prefix = FindAffix(Prefixes, record.prefixName),
-            suffix = FindAffix(Suffixes, record.suffixName),
+            prefix = MapAffixLibrary.FindPrefix(record.prefixName),
+            suffix = MapAffixLibrary.FindSuffix(record.suffixName),
             VictoryConditionType = record.victoryConditionType,
             VictoryTarget = Mathf.Max(1, record.victoryTarget),
             modifiers = new List<MapModifierValue>(record.modifiers ?? new List<MapModifierValue>()),
@@ -207,7 +128,22 @@ public static class MapGenerator
 
     public static MapBaseDefinition FindBaseMap(string baseMapId)
     {
-        return GetBaseMapsInternal().Find(map => map.id == baseMapId);
+        if (string.IsNullOrWhiteSpace(baseMapId))
+        {
+            return null;
+        }
+
+        List<MapBaseDefinition> baseMaps = GetBaseMapsInternal();
+
+        for (int i = 0; i < baseMaps.Count; i++)
+        {
+            if (baseMaps[i] != null && baseMaps[i].id == baseMapId)
+            {
+                return baseMaps[i];
+            }
+        }
+
+        return null;
     }
 
     public static IReadOnlyList<MapBaseDefinition> GetBaseMaps()
@@ -217,15 +153,20 @@ public static class MapGenerator
 
     public static List<MapBaseDefinition> GetBaseMapsForTier(int tier)
     {
-        return GetBaseMapsInternal().FindAll(map => map.id != "default_map" && map.tier == tier);
+        return GetMatchingBaseMaps(map => IsNonDefaultBaseMap(map) && map.tier == tier);
     }
 
     private static void AssignVictoryCondition(MapInstance map)
     {
+        if (map == null)
+        {
+            return;
+        }
+
         map.VictoryConditionType = RollVictoryConditionType();
         map.VictoryTarget = map.VictoryConditionType == VictoryConditionType.Time
-            ? GetTimeMinutesTarget(map.Tier, map.Rarity)
-            : GetKillTarget(map.Tier, map.Rarity);
+            ? GetTargetByRarity(TimeMinutesByRarity, map.Tier, map.Rarity, TimeMinutesPerTier)
+            : GetTargetByRarity(KillsByRarity, map.Tier, map.Rarity, KillsPerTier);
     }
 
     private static VictoryConditionType RollVictoryConditionType()
@@ -233,21 +174,10 @@ public static class MapGenerator
         return Random.value < 0.5f ? VictoryConditionType.Time : VictoryConditionType.Kills;
     }
 
-    private static int GetTimeMinutesTarget(int tier, MapAffixTier rarity)
+    private static int GetTargetByRarity(int[] baseTargets, int tier, MapAffixTier rarity, int perTierValue)
     {
-        return TimeMinutesByRarity[(int)rarity] + (tier * TimeMinutesPerTier);
-    }
-
-    private static int GetKillTarget(int tier, MapAffixTier rarity)
-    {
-        return KillsByRarity[(int)rarity] + (tier * KillsPerTier);
-    }
-
-    private static MapAffixDefinition RollAffix(List<MapAffixDefinition> source)
-    {
-        MapAffixTier tier = RollTier();
-        List<MapAffixDefinition> candidates = source.FindAll(entry => entry.tier == tier);
-        return candidates[Random.Range(0, candidates.Count)];
+        int rarityIndex = Mathf.Clamp((int)rarity, 0, baseTargets.Length - 1);
+        return baseTargets[rarityIndex] + (tier * perTierValue);
     }
 
     private static MapAffixTier RollTier()
@@ -269,6 +199,11 @@ public static class MapGenerator
 
     private static void RollModifiersInto(MapAffixDefinition affix, List<MapModifierValue> output)
     {
+        if (affix == null || output == null)
+        {
+            return;
+        }
+
         foreach (MapModifierRange modifier in affix.modifiers)
         {
             output.Add(new MapModifierValue(modifier.statType, modifier.Roll()));
@@ -277,18 +212,15 @@ public static class MapGenerator
 
     private static MapInstance CreateGeneratedMap(MapBaseDefinition baseMap)
     {
-        MapAffixDefinition prefix = RollAffix(Prefixes);
-        MapAffixDefinition suffix = RollAffix(Suffixes);
-
         MapInstance map = new MapInstance
         {
             baseMap = baseMap,
-            prefix = prefix,
-            suffix = suffix,
+            prefix = MapAffixLibrary.RollPrefix(RollTier()),
+            suffix = MapAffixLibrary.RollSuffix(RollTier()),
         };
 
-        RollModifiersInto(prefix, map.modifiers);
-        RollModifiersInto(suffix, map.modifiers);
+        RollModifiersInto(map.prefix, map.modifiers);
+        RollModifiersInto(map.suffix, map.modifiers);
         AssignVictoryCondition(map);
         return map;
     }
@@ -320,7 +252,7 @@ public static class MapGenerator
 
     private static void AddTierWeightCandidate(List<TierWeightOption> candidates, int tier, float weight)
     {
-        if (weight <= 0f || tier < 0 || GetBaseMapsForTier(tier).Count == 0)
+        if (candidates == null || weight <= 0f || tier < 0 || !HasBaseMapsForTier(tier))
         {
             return;
         }
@@ -358,13 +290,14 @@ public static class MapGenerator
         return candidates[candidates.Count - 1].tier;
     }
 
+    // Dropped maps ask for relative tiers, so this walks upward until it finds a tier the authored catalog can actually serve.
     private static int GetNearestAvailableTierAtOrAbove(int minimumTier)
     {
         int targetTier = Mathf.Max(0, minimumTier);
 
         while (targetTier <= 100)
         {
-            if (GetBaseMapsForTier(targetTier).Count > 0)
+            if (HasBaseMapsForTier(targetTier))
             {
                 return targetTier;
             }
@@ -375,14 +308,57 @@ public static class MapGenerator
         return Mathf.Max(0, minimumTier);
     }
 
-    private static MapAffixDefinition FindAffix(List<MapAffixDefinition> source, string affixName)
+    private static void RefillChoicePool(List<MapBaseDefinition> choicePool)
     {
-        if (string.IsNullOrWhiteSpace(affixName))
+        if (choicePool == null || choicePool.Count > 0)
         {
-            return null;
+            return;
         }
 
-        return source.Find(affix => affix.name == affixName);
+        // Choice generation wraps only after the player has been offered every authored non-default map once.
+        choicePool.AddRange(GetNonDefaultBaseMaps());
+    }
+
+    private static MapBaseDefinition RollBaseMapForTier(int tier)
+    {
+        return TakeRandom(GetBaseMapsForTier(tier));
+    }
+
+    private static List<MapBaseDefinition> GetNonDefaultBaseMaps()
+    {
+        return GetMatchingBaseMaps(IsNonDefaultBaseMap);
+    }
+
+    private static List<MapBaseDefinition> GetMatchingBaseMaps(System.Predicate<MapBaseDefinition> match)
+    {
+        List<MapBaseDefinition> baseMaps = GetBaseMapsInternal();
+
+        if (match == null)
+        {
+            return baseMaps;
+        }
+
+        return baseMaps.FindAll(match);
+    }
+
+    private static bool HasBaseMapsForTier(int tier)
+    {
+        List<MapBaseDefinition> baseMaps = GetBaseMapsInternal();
+
+        for (int i = 0; i < baseMaps.Count; i++)
+        {
+            if (IsNonDefaultBaseMap(baseMaps[i]) && baseMaps[i].tier == tier)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsNonDefaultBaseMap(MapBaseDefinition baseMap)
+    {
+        return baseMap != null && baseMap.id != DefaultMapId;
     }
 
     private static List<MapBaseDefinition> GetBaseMapsInternal()
@@ -395,7 +371,7 @@ public static class MapGenerator
         }
 
         Debug.LogError($"MapCatalog asset not found or empty at Resources/{MapCatalogResourcePath}. Map generation requires a valid catalog.");
-        return new List<MapBaseDefinition>();
+        return new List<MapBaseDefinition>(EmptyBaseMaps);
     }
 
     private static void EnsureCatalogLoaded()
@@ -406,6 +382,19 @@ public static class MapGenerator
         }
 
         loadedMapCatalog = Resources.Load<MapCatalog>(MapCatalogResourcePath);
+    }
+
+    private static T TakeRandom<T>(List<T> source)
+    {
+        if (source == null || source.Count == 0)
+        {
+            return default;
+        }
+
+        int index = Random.Range(0, source.Count);
+        T value = source[index];
+        source.RemoveAt(index);
+        return value;
     }
 
     private struct TierWeightOption

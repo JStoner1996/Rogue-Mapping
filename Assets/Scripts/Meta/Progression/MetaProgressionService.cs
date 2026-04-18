@@ -3,8 +3,6 @@ using UnityEngine;
 
 public static class MetaProgressionService
 {
-    private const string DefaultMapId = "default_map";
-
     private static MetaProgressionSaveData saveData;
     private static bool isLoaded;
 
@@ -135,7 +133,7 @@ public static class MetaProgressionService
     {
         EnsureLoaded();
 
-        OwnedMapRecord existingDefaultMap = FindOwnedMapRecord(DefaultMapId);
+        OwnedMapRecord existingDefaultMap = FindOwnedMapRecord(MapGenerator.DefaultMapId);
 
         if (existingDefaultMap == null)
         {
@@ -151,7 +149,7 @@ public static class MetaProgressionService
     {
         EnsureLoaded();
 
-        OwnedMapRecord defaultMapRecord = FindOwnedMapRecord(DefaultMapId);
+        OwnedMapRecord defaultMapRecord = FindOwnedMapRecord(MapGenerator.DefaultMapId);
 
         if (defaultMapRecord == null)
         {

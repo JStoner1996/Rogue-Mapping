@@ -30,6 +30,14 @@ public class EnemySpawner : MonoBehaviour
         public float experienceMultiplier;
     }
 
+    private const float MinimumPackIntervalMultiplier = 0.1f;
+    private const float RareChancePerQuality = 0.03f;
+    private const float UncommonChancePerQuality = 0.12f;
+
+    private static readonly RarityProfile NormalRarityProfile = CreateRarityProfile(1f, 1f, 1f, 1f);
+    private static readonly RarityProfile UncommonRarityProfile = CreateRarityProfile(1.5f, 1.2f, 1.05f, 1.5f);
+    private static readonly RarityProfile RareRarityProfile = CreateRarityProfile(2.5f, 1.5f, 1.1f, 2.5f);
+
     [System.Serializable]
     public class PackEntry
     {
@@ -103,28 +111,19 @@ public class EnemySpawner : MonoBehaviour
 
     private bool CanRunSpawner()
     {
+        return TryGetActivePlayer()
+            && EnemySpawnEntryUtility.HasWeightedEntries(ambientPacks, EnemySpawnEntryUtility.GetAmbientSpawnWeight)
+            && TryGetWorldChunkManager(out _);
+    }
+
+    private bool TryGetActivePlayer()
+    {
         if (player == null)
         {
             player = PlayerController.Instance;
         }
 
-        return player != null
-            && player.gameObject.activeSelf
-            && HasAmbientSpawnEntries()
-            && TryGetWorldChunkManager(out _);
-    }
-
-    private bool HasAmbientSpawnEntries()
-    {
-        for (int i = 0; i < ambientPacks.Count; i++)
-        {
-            if (GetAmbientSpawnWeight(ambientPacks[i]) > 0f)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return player != null && player.gameObject.activeSelf;
     }
 
     private bool ShouldSpawn()
@@ -145,7 +144,7 @@ public class EnemySpawner : MonoBehaviour
         int completedThresholds = Mathf.FloorToInt(GetVictoryCompletionRate() / 0.25f);
         float intervalReduction = completedThresholds * spawnIntervalReductionPerQuarter;
         float naturalInterval = Mathf.Max(minimumPackSpawnInterval, basePackSpawnInterval - intervalReduction);
-        float intervalMultiplier = Mathf.Max(0.1f, 1f + GetRuntimeModifierSum(EnemySpawnerModifierType.PackSpawnInterval));
+        float intervalMultiplier = Mathf.Max(MinimumPackIntervalMultiplier, 1f + GetRuntimeModifierSum(EnemySpawnerModifierType.PackSpawnInterval));
         return Mathf.Max(minimumPackSpawnInterval, naturalInterval * intervalMultiplier);
     }
 
@@ -181,20 +180,7 @@ public class EnemySpawner : MonoBehaviour
 
     private PackEntry RollAmbientSpawnEntry()
     {
-        return RollSpawnEntry(GetAmbientSpawnWeight);
-    }
-
-    private float GetAmbientSpawnWeight(PackEntry entry)
-    {
-        if (entry == null || entry.enemyPrefab == null)
-        {
-            return 0f;
-        }
-
-        Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
-        EnemyArchetypeDefinition archetypeDefinition = enemyTemplate != null ? enemyTemplate.ArchetypeDefinition : null;
-
-        return archetypeDefinition != null ? archetypeDefinition.AmbientSpawnWeight : 0f;
+        return EnemySpawnEntryUtility.RollWeightedEntry(ambientPacks, EnemySpawnEntryUtility.GetAmbientSpawnWeight);
     }
 
     public bool SpawnFinalBosses(int count)
@@ -214,9 +200,11 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        if (!HasEventEntries(archetype))
+        System.Func<PackEntry, float> getWeight = entry => EnemySpawnEntryUtility.GetEventSpawnWeight(entry, archetype);
+
+        if (!EnemySpawnEntryUtility.HasWeightedEntries(eventPacks, getWeight))
         {
-            Debug.LogError(GetMissingEventSpawnReason(archetype));
+            Debug.LogError(EnemySpawnEntryUtility.GetMissingEventSpawnReason(eventPacks, archetype));
             return false;
         }
 
@@ -224,13 +212,13 @@ public class EnemySpawner : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            PackEntry eventEntry = RollSpawnEntry(eventPacks, entry => GetEventSpawnWeight(entry, archetype));
+            PackEntry eventEntry = EnemySpawnEntryUtility.RollWeightedEntry(eventPacks, getWeight);
             if (eventEntry == null)
             {
                 break;
             }
 
-            SpawnPack(eventEntry, BuildEventSpawnContext(), spawnOriginOverride);
+            SpawnPack(eventEntry, BuildSpawnContext(EnemyRarity.Normal), spawnOriginOverride);
             spawnedCount++;
         }
 
@@ -254,122 +242,6 @@ public class EnemySpawner : MonoBehaviour
         persistentRuntimeModifiers[modifierType] = currentValue + additiveValue;
     }
 
-    private bool HasEventEntries(EnemyArchetype archetype)
-    {
-        for (int i = 0; i < eventPacks.Count; i++)
-        {
-            if (GetEventSpawnWeight(eventPacks[i], archetype) > 0f)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private string GetMissingEventSpawnReason(EnemyArchetype archetype)
-    {
-        if (eventPacks.Count == 0)
-        {
-            return $"Event spawn for '{archetype}' could not start because the Event Spawn Pool is empty.";
-        }
-
-        for (int i = 0; i < eventPacks.Count; i++)
-        {
-            PackEntry entry = eventPacks[i];
-
-            if (entry == null || entry.enemyPrefab == null)
-            {
-                continue;
-            }
-
-            Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
-            if (enemyTemplate == null)
-            {
-                return $"Event spawn for '{archetype}' could not start because event pack '{entry.enemyPrefab.name}' does not have an Enemy component.";
-            }
-
-            EnemyArchetypeDefinition archetypeDefinition = enemyTemplate.ArchetypeDefinition;
-            if (archetypeDefinition == null)
-            {
-                return $"Event spawn for '{archetype}' could not start because event pack '{entry.enemyPrefab.name}' has no archetype definition assigned.";
-            }
-
-            if (archetypeDefinition.SpawnRole != EnemySpawnRole.EventOnly)
-            {
-                return $"Event spawn for '{archetype}' could not start because event pack '{entry.enemyPrefab.name}' is not marked EventOnly.";
-            }
-
-            if (archetypeDefinition.Archetype != archetype)
-            {
-                return $"Event spawn for '{archetype}' could not start because event pack '{entry.enemyPrefab.name}' is '{archetypeDefinition.Archetype}' instead of '{archetype}'.";
-            }
-        }
-
-        return $"Event spawn for '{archetype}' could not start because no valid {archetype} + EventOnly entry was found in the Event Spawn Pool.";
-    }
-
-    private float GetEventSpawnWeight(PackEntry entry, EnemyArchetype archetype)
-    {
-        if (entry == null || entry.enemyPrefab == null)
-        {
-            return 0f;
-        }
-
-        Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
-        EnemyArchetypeDefinition archetypeDefinition = enemyTemplate != null ? enemyTemplate.ArchetypeDefinition : null;
-
-        if (archetypeDefinition == null
-            || archetypeDefinition.SpawnRole != EnemySpawnRole.EventOnly
-            || archetypeDefinition.Archetype != archetype)
-        {
-            return 0f;
-        }
-
-        return 1f;
-    }
-
-    private PackEntry RollSpawnEntry(System.Func<PackEntry, float> getWeight)
-    {
-        return RollSpawnEntry(ambientPacks, getWeight);
-    }
-
-    private PackEntry RollSpawnEntry(IReadOnlyList<PackEntry> sourceEntries, System.Func<PackEntry, float> getWeight)
-    {
-        if (sourceEntries == null || getWeight == null)
-        {
-            return null;
-        }
-
-        float totalWeight = 0f;
-
-        for (int i = 0; i < sourceEntries.Count; i++)
-        {
-            totalWeight += getWeight(sourceEntries[i]);
-        }
-
-        if (totalWeight <= 0f)
-        {
-            return null;
-        }
-
-        float roll = Random.Range(0f, totalWeight);
-        float currentWeight = 0f;
-
-        for (int i = 0; i < sourceEntries.Count; i++)
-        {
-            PackEntry entry = sourceEntries[i];
-            currentWeight += getWeight(entry);
-
-            if (roll <= currentWeight)
-            {
-                return entry;
-            }
-        }
-
-        return null;
-    }
-
     private void SpawnPack(PackEntry entry)
     {
         SpawnPack(entry, BuildSpawnContext());
@@ -382,12 +254,13 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnPack(PackEntry entry, EnemySpawnContext packContext, Vector2? packOriginOverride)
     {
-        if (entry == null || entry.enemyPrefab == null)
+        if (entry == null
+            || entry.enemyPrefab == null
+            || !EnemySpawnEntryUtility.TryGetPackDefinition(entry, out Enemy enemyTemplate, out _))
         {
             return;
         }
 
-        Enemy enemyTemplate = entry.enemyPrefab.GetComponent<Enemy>();
         int packSize = GetPackSize(enemyTemplate);
         // Ambient packs choose a chunk-aware origin, while event spawns can override it.
         Vector2? generatedPackOrigin = packOriginOverride ?? GetAmbientPackSpawnOrigin();
@@ -446,7 +319,11 @@ public class EnemySpawner : MonoBehaviour
 
     private EnemySpawnContext BuildSpawnContext()
     {
-        EnemyRarity rarity = RollRarity();
+        return BuildSpawnContext(RollRarity());
+    }
+
+    private EnemySpawnContext BuildSpawnContext(EnemyRarity rarity)
+    {
         RarityProfile rarityProfile = GetRarityProfile(rarity);
 
         return new EnemySpawnContext
@@ -460,24 +337,11 @@ public class EnemySpawner : MonoBehaviour
         };
     }
 
-    private EnemySpawnContext BuildEventSpawnContext()
-    {
-        return new EnemySpawnContext
-        {
-            rarity = EnemyRarity.Normal,
-            healthMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.EnemyHealth),
-            damageMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.EnemyDamage),
-            moveSpeedMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.EnemyMoveSpeed),
-            experienceMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.ExperienceWorth),
-            dropChanceMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.DropChance),
-        };
-    }
-
     private EnemyRarity RollRarity()
     {
         float quality = Mathf.Max(0f, GetEffectiveModifier(EnemySpawnerModifierType.EnemyQuality));
-        float rareChance = Mathf.Clamp01(0.03f * quality);
-        float uncommonChance = Mathf.Clamp01(0.12f * quality);
+        float rareChance = Mathf.Clamp01(RareChancePerQuality * quality);
+        float uncommonChance = Mathf.Clamp01(UncommonChancePerQuality * quality);
         float roll = Random.value;
 
         if (roll < rareChance)
@@ -495,47 +359,30 @@ public class EnemySpawner : MonoBehaviour
 
     private RarityProfile GetRarityProfile(EnemyRarity rarity)
     {
-        switch (rarity)
+        return rarity switch
         {
-            case EnemyRarity.Uncommon:
-                return new RarityProfile
-                {
-                    healthMultiplier = 1.5f,
-                    damageMultiplier = 1.2f,
-                    moveSpeedMultiplier = 1.05f,
-                    experienceMultiplier = 1.5f,
-                };
-
-            case EnemyRarity.Rare:
-                return new RarityProfile
-                {
-                    healthMultiplier = 2.5f,
-                    damageMultiplier = 1.5f,
-                    moveSpeedMultiplier = 1.1f,
-                    experienceMultiplier = 2.5f,
-                };
-
-            default:
-                return new RarityProfile
-                {
-                    healthMultiplier = 1f,
-                    damageMultiplier = 1f,
-                    moveSpeedMultiplier = 1f,
-                    experienceMultiplier = 1f,
-                };
-        }
+            EnemyRarity.Uncommon => UncommonRarityProfile,
+            EnemyRarity.Rare => RareRarityProfile,
+            _ => NormalRarityProfile,
+        };
     }
 
     private void ApplyRunModifiers()
     {
         mapModifiers = BuildMapSpawnModifiers();
+        // Mirrors the resolved map modifiers into the legacy debug fields still shown in the inspector.
         modifiers.quantity = mapModifiers.quantity;
         modifiers.quality = mapModifiers.quality;
     }
 
     private float GetEffectiveModifier(EnemySpawnerModifierType modifierType)
     {
-        float baseValue = modifierType switch
+        return Mathf.Max(0f, GetBaseModifier(modifierType) + GetRuntimeModifierSum(modifierType));
+    }
+
+    private float GetBaseModifier(EnemySpawnerModifierType modifierType)
+    {
+        return modifierType switch
         {
             EnemySpawnerModifierType.EnemyQuantity => mapModifiers.quantity,
             EnemySpawnerModifierType.EnemyQuality => mapModifiers.quality,
@@ -547,8 +394,6 @@ public class EnemySpawner : MonoBehaviour
             EnemySpawnerModifierType.PackSpawnInterval => 1f,
             _ => 1f,
         };
-
-        return Mathf.Max(0f, baseValue + GetRuntimeModifierSum(modifierType));
     }
 
     private float GetRuntimeModifierSum(EnemySpawnerModifierType modifierType)
@@ -595,14 +440,29 @@ public class EnemySpawner : MonoBehaviour
 
         return new MapSpawnModifiers
         {
-            quantity = 1f + GetMapModifier(MapStatType.EnemyQuantity) + GetEquipmentPercentModifier(equipmentSummary, EquipmentStatType.EnemyQuantity),
-            quality = 1f + GetMapModifier(MapStatType.EnemyQuality) + GetEquipmentPercentModifier(equipmentSummary, EquipmentStatType.EnemyQuality),
-            damage = 1f + GetMapModifier(MapStatType.EnemyDamage),
-            health = 1f + GetMapModifier(MapStatType.EnemyHealth),
-            moveSpeed = 1f + GetMapModifier(MapStatType.EnemyMoveSpeed),
-            experience = 1f + GetMapModifier(MapStatType.ExperienceWorth),
-            dropChance = 1f + GetMapModifier(MapStatType.DropChance),
+            quantity = BuildMapModifier(MapStatType.EnemyQuantity, equipmentSummary, EquipmentStatType.EnemyQuantity),
+            quality = BuildMapModifier(MapStatType.EnemyQuality, equipmentSummary, EquipmentStatType.EnemyQuality),
+            damage = BuildMapModifier(MapStatType.EnemyDamage),
+            health = BuildMapModifier(MapStatType.EnemyHealth),
+            moveSpeed = BuildMapModifier(MapStatType.EnemyMoveSpeed),
+            experience = BuildMapModifier(MapStatType.ExperienceWorth),
+            dropChance = BuildMapModifier(MapStatType.DropChance),
         };
+    }
+
+    private float BuildMapModifier(
+        MapStatType mapStatType,
+        EquipmentStatSummary equipmentSummary = null,
+        EquipmentStatType? equipmentStatType = null)
+    {
+        float modifier = 1f + GetMapModifier(mapStatType);
+
+        if (equipmentSummary != null && equipmentStatType.HasValue)
+        {
+            modifier += GetEquipmentPercentModifier(equipmentSummary, equipmentStatType.Value);
+        }
+
+        return modifier;
     }
 
     private float GetEquipmentPercentModifier(EquipmentStatSummary summary, EquipmentStatType statType)
@@ -668,6 +528,7 @@ public class EnemySpawner : MonoBehaviour
 
             if (enemyPools == null)
             {
+                // Older scenes may miss the pool bootstrap, so the spawner creates a temporary pool root on demand.
                 GameObject poolsObject = new GameObject("EnemyPools");
                 enemyPools = poolsObject.AddComponent<EnemyPools>();
             }
@@ -696,8 +557,8 @@ public class EnemySpawner : MonoBehaviour
         }
 
         HashSet<GameObject> uniquePrefabs = new HashSet<GameObject>();
-        CollectPoolPrefabs(ambientPacks, uniquePrefabs);
-        CollectPoolPrefabs(eventPacks, uniquePrefabs);
+        EnemySpawnEntryUtility.CollectPoolPrefabs(ambientPacks, uniquePrefabs);
+        EnemySpawnEntryUtility.CollectPoolPrefabs(eventPacks, uniquePrefabs);
         pools.EnsurePools(new List<GameObject>(uniquePrefabs), initialPoolSizePerEnemy);
     }
 
@@ -711,22 +572,18 @@ public class EnemySpawner : MonoBehaviour
         return pools.GetEnemy(enemyPrefab, initialPoolSizePerEnemy);
     }
 
-    private void CollectPoolPrefabs(IReadOnlyList<PackEntry> entries, ISet<GameObject> output)
+    private static RarityProfile CreateRarityProfile(
+        float healthMultiplier,
+        float damageMultiplier,
+        float moveSpeedMultiplier,
+        float experienceMultiplier)
     {
-        if (entries == null || output == null)
+        return new RarityProfile
         {
-            return;
-        }
-
-        for (int i = 0; i < entries.Count; i++)
-        {
-            PackEntry entry = entries[i];
-            if (entry == null || entry.enemyPrefab == null)
-            {
-                continue;
-            }
-
-            output.Add(entry.enemyPrefab);
-        }
+            healthMultiplier = healthMultiplier,
+            damageMultiplier = damageMultiplier,
+            moveSpeedMultiplier = moveSpeedMultiplier,
+            experienceMultiplier = experienceMultiplier,
+        };
     }
 }
