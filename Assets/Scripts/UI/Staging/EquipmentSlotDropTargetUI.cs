@@ -136,10 +136,11 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
             return;
         }
 
-        itemIconImage.sprite = equipment != null ? equipment.Icon : null;
-        itemIconImage.color = equipment != null ? Color.Lerp(Color.white, Color.red, Mathf.InverseLerp(1f, 10f, Mathf.Clamp(equipment.ItemTier, 1, 10))) : Color.white;
-        itemIconImage.gameObject.SetActive(itemIconImage.sprite != null);
-        itemIconImage.enabled = itemIconImage.sprite != null;
+        Sprite icon = equipment != null ? equipment.Icon : null;
+        itemIconImage.sprite = icon;
+        itemIconImage.color = equipment != null ? EquipmentItemVisuals.GetTierTint(equipment.ItemTier) : Color.white;
+        itemIconImage.gameObject.SetActive(icon != null);
+        itemIconImage.enabled = icon != null;
     }
 
     private DragItemPayload BuildDragPayload()
@@ -173,8 +174,7 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
         {
             LeftClicked?.Invoke(this);
         }
-
-        if (eventData.button == PointerEventData.InputButton.Right)
+        else if (eventData.button == PointerEventData.InputButton.Right)
         {
             RightClicked?.Invoke(this);
         }

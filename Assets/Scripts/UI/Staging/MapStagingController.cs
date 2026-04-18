@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 // Coordinates the maps tab state, selection, and preview updates.
 public class MapStagingController : SimpleListStagingController<MapInstance>
 {
@@ -13,13 +11,15 @@ public class MapStagingController : SimpleListStagingController<MapInstance>
 
     public MapInstance SelectedMap => SelectedItem;
 
-    public void LoadStarterMaps(int starterCount, VictoryConditionType defaultVictoryCondition, int defaultVictoryTarget)
+    public void Load(int starterCount, VictoryConditionType defaultVictoryCondition, int defaultVictoryTarget)
     {
         dataFacade.EnsureStarterMaps(starterCount, defaultVictoryCondition, defaultVictoryTarget);
-        List<MapInstance> availableMaps = dataFacade.GetOwnedMaps();
-        SetItems(availableMaps);
-        SelectedItem = availableMaps.Count > 0 ? availableMaps[0] : null;
-        ClearHoveredItem();
+        LoadItems(dataFacade.GetOwnedMaps());
+    }
+
+    public void LoadStarterMaps(int starterCount, VictoryConditionType defaultVictoryCondition, int defaultVictoryTarget)
+    {
+        Load(starterCount, defaultVictoryCondition, defaultVictoryTarget);
     }
 
     protected override string GetItemId(MapInstance item) => item.BaseMapId + "|" + item.DisplayName;

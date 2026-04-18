@@ -1,9 +1,10 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 // Coordinates the weapons tab state, selection, and preview updates.
 public class WeaponStagingController : SimpleListStagingController<WeaponData>
 {
+    private const string DefaultWeaponName = "Area Weapon";
+
     public WeaponStagingController(InventoryGridUI weaponGrid, ItemDetailsPanelUI weaponPreviewUI)
         : base(weaponGrid, weaponPreviewUI != null ? new System.Action<WeaponData>(weaponPreviewUI.ShowWeapon) : null)
     {
@@ -13,17 +14,7 @@ public class WeaponStagingController : SimpleListStagingController<WeaponData>
 
     public void Load()
     {
-        List<WeaponData> availableWeapons = new List<WeaponData>(Resources.LoadAll<WeaponData>("WeaponData"));
-        SetItems(availableWeapons);
-        SelectedItem = availableWeapons.Find(w => w != null && w.weaponName == "Area Weapon");
-
-        if (SelectedItem == null && availableWeapons.Count > 0)
-        {
-            SelectedItem = availableWeapons[0];
-        }
-
-        ClearHoveredItem();
-        RunData.SelectedWeapon = SelectedItem;
+        LoadItems(Resources.LoadAll<WeaponData>("WeaponData"), weapon => weapon.weaponName == DefaultWeaponName);
     }
 
     protected override string GetItemId(WeaponData item) => item.weaponName;

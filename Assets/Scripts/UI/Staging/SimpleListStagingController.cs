@@ -25,6 +25,15 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
         set => selectedItem = value;
     }
 
+    // Standardizes the simple staging tabs so they all load, choose a default item, and sync RunData the same way.
+    protected void LoadItems(IEnumerable<T> sourceItems, Predicate<T> preferredSelection = null)
+    {
+        SetItems(sourceItems);
+        selectedItem = FindItem(preferredSelection) ?? GetItemAtIndex(0);
+        hoveredItem = null;
+        OnSelectionChanged(selectedItem);
+    }
+
     protected void SetItems(IEnumerable<T> sourceItems)
     {
         items.Clear();
@@ -75,34 +84,26 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
     protected void SetSelectedItem(T item)
     {
         selectedItem = item;
-        ClearHoveredItem();
+        hoveredItem = null;
         OnSelectionChanged(item);
-        showPreview?.Invoke(item);
-        RefreshGrid();
+        RefreshPresentation();
     }
 
-    private bool TryGetItemAtIndex(int index, out T item)
+    private T GetItemAtIndex(int index)
     {
-        if (index >= 0 && index < items.Count)
-        {
-            item = items[index];
-            return true;
-        }
-
-        item = null;
-        return false;
+        return index >= 0 && index < items.Count ? items[index] : null;
     }
 
     private void SetHoveredItem(T item)
     {
         hoveredItem = item;
-        showPreview?.Invoke(item ?? selectedItem);
-        RefreshGrid();
+        RefreshPresentation();
     }
 
     private void OnSlotClicked(int index, InventorySlotModel data)
     {
-        if (!TryGetItemAtIndex(index, out T item))
+        T item = GetItemAtIndex(index);
+        if (item == null)
         {
             return;
         }
@@ -112,7 +113,8 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
 
     private void OnSlotHoverEnter(int index, InventorySlotModel data)
     {
-        if (!TryGetItemAtIndex(index, out T item))
+        T item = GetItemAtIndex(index);
+        if (item == null)
         {
             return;
         }
@@ -128,6 +130,30 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
     protected void ClearHoveredItem()
     {
         hoveredItem = null;
+    }
+
+    private void RefreshPresentation()
+    {
+        RefreshPreview();
+        RefreshGrid();
+    }
+
+    private T FindItem(Predicate<T> match)
+    {
+        if (match == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (match(items[i]))
+            {
+                return items[i];
+            }
+        }
+
+        return null;
     }
 
     protected abstract string GetItemId(T item);

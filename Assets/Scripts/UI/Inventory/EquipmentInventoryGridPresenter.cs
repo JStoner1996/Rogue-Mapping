@@ -37,7 +37,7 @@ public static class EquipmentInventoryGridPresenter
                 id = equipment.InstanceId,
                 label = equipment.DisplayName,
                 icon = equipment.Icon,
-                iconTint = GetEquipmentTierTint(equipment.ItemTier),
+                iconTint = EquipmentItemVisuals.GetTierTint(equipment.ItemTier),
                 isEmpty = false,
                 isSelected = equipment == selectedEquipment,
                 isHovered = equipment == hoveredEquipment,
@@ -52,11 +52,5 @@ public static class EquipmentInventoryGridPresenter
         }
 
         return new InventoryGridModel(items, maxSlots);
-    }
-
-    private static Color GetEquipmentTierTint(int itemTier)
-    {
-        float normalizedTier = Mathf.InverseLerp(1f, 10f, Mathf.Clamp(itemTier, 1, 10));
-        return Color.Lerp(Color.white, Color.red, normalizedTier);
     }
 }

@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Text;
 
 public class ItemDetailsPanelUI : MonoBehaviour
 {
@@ -16,31 +17,11 @@ public class ItemDetailsPanelUI : MonoBehaviour
 
         if (data == null)
         {
-            Clear("No Weapon Selected");
+            ShowEmpty("No Weapon Selected");
             return;
         }
 
-        titleText.text = data.weaponName;
-        icon.sprite = data.icon;
-        icon.enabled = data.icon != null;
-
-        var stats = data.baseStats;
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Damage: {stats.damage}");
-        sb.AppendLine($"Attack Speed: {stats.attackSpeed}");
-        sb.AppendLine($"Range: {stats.range}");
-        sb.AppendLine($"Knockback: {stats.knockback}");
-
-        if (stats.duration > 0)
-            sb.AppendLine($"Duration: {stats.duration}");
-        if (stats.cooldown > 0)
-            sb.AppendLine($"Cooldown: {stats.cooldown}");
-        if (stats.projectileSpeed > 0)
-            sb.AppendLine($"Projectile Speed: {stats.projectileSpeed}");
-        if (stats.bounceCount > 0)
-            sb.AppendLine($"Bounce Count: {stats.bounceCount}");
-
-        statsText.text = sb.ToString().TrimEnd();
+        ShowContent(data.weaponName, data.icon, BuildWeaponStats(data.baseStats));
     }
 
     public void ShowMap(MapInstance map)
@@ -49,23 +30,17 @@ public class ItemDetailsPanelUI : MonoBehaviour
 
         if (map == null)
         {
-            Clear("No Map Selected");
+            ShowEmpty("No Map Selected");
             return;
         }
 
-        titleText.text = map.DisplayName;
-        icon.sprite = map.Icon;
-        icon.enabled = icon.sprite != null;
-        statsText.text = MapDescriptionFormatter.BuildStats(map);
+        ShowContent(map.DisplayName, map.Icon, MapDescriptionFormatter.BuildStats(map));
     }
 
     public void ShowEquipment()
     {
         ShowPanel();
-        titleText.text = "Character Equipment";
-        icon.sprite = null;
-        icon.enabled = false;
-        statsText.text = "Please hover or click on equipment to see details here.";
+        ShowContent("Character Equipment", null, "Please hover or click on equipment to see details here.");
     }
 
     public void ShowEquipment(EquipmentInstance equipment)
@@ -74,14 +49,11 @@ public class ItemDetailsPanelUI : MonoBehaviour
 
         if (equipment == null)
         {
-            Clear("No Equipment Selected");
+            ShowEmpty("No Equipment Selected");
             return;
         }
 
-        titleText.text = equipment.DisplayName;
-        icon.sprite = equipment.Icon;
-        icon.enabled = icon.sprite != null;
-        statsText.text = EquipmentDescriptionFormatter.BuildStats(equipment);
+        ShowContent(equipment.DisplayName, equipment.Icon, EquipmentDescriptionFormatter.BuildStats(equipment));
     }
 
     public void ShowPanel()
@@ -106,9 +78,62 @@ public class ItemDetailsPanelUI : MonoBehaviour
 
     public void Clear(string message)
     {
-        titleText.text = "Currently Selected";
-        icon.sprite = null;
-        icon.enabled = false;
-        statsText.text = message;
+        ShowEmpty(message);
+    }
+
+    private void ShowEmpty(string message)
+    {
+        ShowContent("Currently Selected", null, message);
+    }
+
+    private void ShowContent(string title, Sprite sprite, string stats)
+    {
+        if (titleText != null)
+        {
+            titleText.text = title;
+        }
+
+        if (icon != null)
+        {
+            icon.sprite = sprite;
+            icon.enabled = sprite != null;
+        }
+
+        if (statsText != null)
+        {
+            statsText.text = stats ?? string.Empty;
+        }
+    }
+
+    private static string BuildWeaponStats(WeaponStats stats)
+    {
+        if (stats == null)
+        {
+            return string.Empty;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.AppendLine($"Damage: {stats.damage}");
+        builder.AppendLine($"Attack Speed: {stats.attackSpeed}");
+        builder.AppendLine($"Range: {stats.range}");
+        builder.AppendLine($"Knockback: {stats.knockback}");
+        AppendOptionalStat(builder, "Duration", stats.duration);
+        AppendOptionalStat(builder, "Cooldown", stats.cooldown);
+        AppendOptionalStat(builder, "Projectile Speed", stats.projectileSpeed);
+
+        if (stats.bounceCount > 0)
+        {
+            builder.AppendLine($"Bounce Count: {stats.bounceCount}");
+        }
+
+        return builder.ToString().TrimEnd();
+    }
+
+    private static void AppendOptionalStat(StringBuilder builder, string label, float value)
+    {
+        if (value > 0f)
+        {
+            builder.AppendLine($"{label}: {value}");
+        }
     }
 }
