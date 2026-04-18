@@ -1,21 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
-public class AudioManager : MonoBehaviour
+public class AudioManager : SingletonBehaviour<AudioManager>
 {
-    public static AudioManager Instance;
-
     [Header("Defaults")]
     [SerializeField] private SoundData defaultMusic;
 
     [Header("Pooling")]
     [SerializeField] private int initialPoolSize = 10;
 
-    private Queue<AudioSource> pool = new Queue<AudioSource>();
-    private List<AudioSource> activeSources = new List<AudioSource>();
+    private readonly Queue<AudioSource> pool = new Queue<AudioSource>();
+    private readonly List<AudioSource> activeSources = new List<AudioSource>();
+    private readonly Dictionary<AudioSource, int> sourcePlaybackVersions = new Dictionary<AudioSource, int>();
 
     [Header("Mixer Sources")]
     [SerializeField] private AudioSource musicSource;
@@ -27,62 +26,60 @@ public class AudioManager : MonoBehaviour
 
     private Dictionary<SoundType, SoundData> soundMap;
 
-
-    void Awake()
+    private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (!TryInitializeSingleton(persistAcrossScenes: true))
         {
-            Destroy(gameObject);
             return;
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-
         BuildSoundMap();
         CreatePool();
+        ConfigureMusicSource();
     }
 
-    void Start()
+    private void Start()
     {
         HandleSceneMusic(SceneManager.GetActiveScene());
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    // Scene-based music control
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         HandleSceneMusic(scene);
     }
 
-    void HandleSceneMusic(Scene scene)
+    private void HandleSceneMusic(Scene scene)
     {
-        if (scene.name == "Game")
-        {
-            PlayMusic(audioLibrary.sounds.Find(s => s.type == SoundType.GameMusic)?.sound);
-        }
-        else
-        {
-            PlayMusic(defaultMusic);
-        }
+        SoundData sceneMusic = scene.name == SceneCatalog.Game
+            ? GetLibrarySound(SoundType.GameMusic) ?? defaultMusic
+            : defaultMusic;
+
+        PlayMusic(sceneMusic);
     }
 
-    // Build the dictionary for quick sound lookup
-    void BuildSoundMap()
+    private void BuildSoundMap()
     {
         soundMap = new Dictionary<SoundType, SoundData>();
 
-        foreach (var entry in audioLibrary.sounds)
+        if (audioLibrary == null || audioLibrary.sounds == null)
         {
+            return;
+        }
+
+        for (int i = 0; i < audioLibrary.sounds.Count; i++)
+        {
+            AudioLibrary.SoundEntry entry = audioLibrary.sounds[i];
+
             if (!soundMap.ContainsKey(entry.type))
             {
                 soundMap.Add(entry.type, entry.sound);
@@ -90,8 +87,15 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    // Pooling system for sound effects
-    void CreatePool()
+    private void ConfigureMusicSource()
+    {
+        if (musicSource != null && musicMixerGroup != null)
+        {
+            musicSource.outputAudioMixerGroup = musicMixerGroup;
+        }
+    }
+
+    private void CreatePool()
     {
         for (int i = 0; i < initialPoolSize; i++)
         {
@@ -99,7 +103,7 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    AudioSource CreateNewSource()
+    private AudioSource CreateNewSource()
     {
         GameObject go = new GameObject("AudioSource_Pooled");
         go.transform.parent = transform;
@@ -113,7 +117,7 @@ public class AudioManager : MonoBehaviour
         return source;
     }
 
-    AudioSource GetSource()
+    private AudioSource GetSource()
     {
         if (pool.Count == 0)
         {
@@ -123,17 +127,23 @@ public class AudioManager : MonoBehaviour
         return pool.Dequeue();
     }
 
-    void ReturnToPool(AudioSource source)
+    private void ReturnToPool(AudioSource source)
     {
+        if (source == null)
+        {
+            return;
+        }
+
         source.Stop();
         source.clip = null;
         source.loop = false;
+        source.pitch = 1f;
+        source.volume = 1f;
 
         activeSources.Remove(source);
         pool.Enqueue(source);
     }
 
-    // Play a sound by type
     public void Play(SoundType type)
     {
         if (!soundMap.TryGetValue(type, out SoundData sound))
@@ -147,44 +157,58 @@ public class AudioManager : MonoBehaviour
 
     public void PlaySound(SoundData sound)
     {
-        AudioSource source = GetSource();
+        if (sound == null || sound.clip == null)
+        {
+            return;
+        }
 
-        // Volume
+        AudioSource source = GetSource();
+        PrepareSource(source);
+
         float volume = sound.randomizeVolume
             ? Random.Range(sound.volumeRange.x, sound.volumeRange.y)
             : sound.volume;
 
-        // Pitch
         float pitch = sound.randomizePitch
             ? Random.Range(sound.pitchRange.x, sound.pitchRange.y)
             : 1f;
 
+        source.clip = sound.clip;
+        source.volume = volume;
         source.pitch = pitch;
         source.loop = sound.loop;
 
         activeSources.Add(source);
+        int playbackVersion = GetNextPlaybackVersion(source);
 
-        source.PlayOneShot(sound.clip, volume);
+        source.Play();
+
+        if (!sound.loop)
+        {
+            StartCoroutine(ReturnWhenFinished(source, playbackVersion));
+        }
     }
 
-    IEnumerator ReturnWhenFinished(AudioSource source)
-    {
-        yield return new WaitWhile(() => source.isPlaying);
-        ReturnToPool(source);
-    }
-
-    // Music control
     public void PlayMusic(SoundData music)
     {
-        if (musicSource == null || music == null) return;
+        if (musicSource == null || music == null || music.clip == null)
+        {
+            return;
+        }
 
         if (musicSource.clip == music.clip && musicSource.isPlaying)
         {
             return;
         }
 
+        if (musicMixerGroup != null)
+        {
+            musicSource.outputAudioMixerGroup = musicMixerGroup;
+        }
+
         musicSource.clip = music.clip;
         musicSource.volume = music.volume;
+        musicSource.pitch = 1f;
         musicSource.loop = true;
         musicSource.Play();
     }
@@ -197,12 +221,58 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    // Global Control
     public void StopAllSounds()
     {
-        foreach (var source in activeSources.ToArray())
+        for (int i = activeSources.Count - 1; i >= 0; i--)
         {
-            ReturnToPool(source);
+            ReturnToPool(activeSources[i]);
         }
+    }
+
+    private SoundData GetLibrarySound(SoundType type)
+    {
+        return soundMap != null && soundMap.TryGetValue(type, out SoundData sound) ? sound : null;
+    }
+
+    private void PrepareSource(AudioSource source)
+    {
+        if (source == null)
+        {
+            return;
+        }
+
+        source.Stop();
+        source.clip = null;
+        source.loop = false;
+        source.pitch = 1f;
+        source.volume = 1f;
+        source.outputAudioMixerGroup = sfxMixerGroup;
+    }
+
+    private int GetNextPlaybackVersion(AudioSource source)
+    {
+        int nextVersion = sourcePlaybackVersions.TryGetValue(source, out int currentVersion)
+            ? currentVersion + 1
+            : 1;
+
+        sourcePlaybackVersions[source] = nextVersion;
+        return nextVersion;
+    }
+
+    private IEnumerator ReturnWhenFinished(AudioSource source, int playbackVersion)
+    {
+        yield return new WaitWhile(() => source != null && source.isPlaying);
+
+        if (source == null)
+        {
+            yield break;
+        }
+
+        if (!sourcePlaybackVersions.TryGetValue(source, out int currentVersion) || currentVersion != playbackVersion)
+        {
+            yield break;
+        }
+
+        ReturnToPool(source);
     }
 }
