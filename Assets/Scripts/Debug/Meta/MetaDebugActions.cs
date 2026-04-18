@@ -6,7 +6,6 @@ public class MetaDebugActions : MonoBehaviour
     [Header("Default Map Rebuild")]
     [SerializeField] private VictoryConditionType defaultMapVictoryCondition = VictoryConditionType.Kills;
     [SerializeField] private int defaultMapVictoryTarget = 10;
-    [SerializeField] private int starterMapCount = 4;
     [Header("Debug Panels")]
     [SerializeField] private EquipmentDebugGenerationPanelUI equipmentDebugGenerationPanel;
 
@@ -45,7 +44,6 @@ public class MetaDebugActions : MonoBehaviour
     public void RebuildStarterMaps()
     {
         MetaProgressionService.EnsureStarterMaps(
-            starterMapCount,
             defaultMapVictoryCondition,
             defaultMapVictoryTarget);
     }

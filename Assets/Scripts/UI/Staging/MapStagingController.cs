@@ -11,15 +11,10 @@ public class MapStagingController : SimpleListStagingController<MapInstance>
 
     public MapInstance SelectedMap => SelectedItem;
 
-    public void Load(int starterCount, VictoryConditionType defaultVictoryCondition, int defaultVictoryTarget)
+    public void Load(VictoryConditionType defaultVictoryCondition, int defaultVictoryTarget)
     {
-        dataFacade.EnsureStarterMaps(starterCount, defaultVictoryCondition, defaultVictoryTarget);
+        dataFacade.EnsureStarterMaps(defaultVictoryCondition, defaultVictoryTarget);
         LoadItems(dataFacade.GetOwnedMaps());
-    }
-
-    public void LoadStarterMaps(int starterCount, VictoryConditionType defaultVictoryCondition, int defaultVictoryTarget)
-    {
-        Load(starterCount, defaultVictoryCondition, defaultVictoryTarget);
     }
 
     protected override string GetItemId(MapInstance item) => item.BaseMapId + "|" + item.DisplayName;

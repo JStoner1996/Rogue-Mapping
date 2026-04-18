@@ -96,7 +96,7 @@ public class StagingManager : MonoBehaviour
         weaponController.Load();
 
         mapController = new MapStagingController(mapGrid, mapPreviewUI);
-        mapController.LoadStarterMaps(4, defaultMapVictoryCondition, defaultMapVictoryTarget);
+        mapController.Load(defaultMapVictoryCondition, defaultMapVictoryTarget);
 
         equipmentController = new EquipmentStagingController(
             equipmentGrid,

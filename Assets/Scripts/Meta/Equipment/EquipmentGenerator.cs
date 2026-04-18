@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public static class EquipmentGenerator
@@ -7,6 +6,13 @@ public static class EquipmentGenerator
     public const float DefaultCommonWeight = 60f;
     public const float DefaultUncommonWeight = 30f;
     public const float DefaultRareWeight = 10f;
+
+    private static readonly (int prefixes, int suffixes)[] RareAffixCombinations =
+    {
+        (2, 2),
+        (2, 1),
+        (1, 2),
+    };
 
     public static EquipmentInstance Generate(
         EquipmentBaseCatalog baseCatalog,
@@ -178,13 +184,8 @@ public static class EquipmentGenerator
         prefixAffixes = null;
         suffixAffixes = null;
 
-        (int prefixes, int suffixes)[] combinations = new[]
-        {
-            (2, 2),
-            (2, 1),
-            (1, 2),
-        };
-
+        var combinations = new (int prefixes, int suffixes)[RareAffixCombinations.Length];
+        RareAffixCombinations.CopyTo(combinations, 0);
         Shuffle(combinations);
 
         for (int i = 0; i < combinations.Length; i++)
@@ -219,11 +220,7 @@ public static class EquipmentGenerator
     {
         List<EquipmentAffixDefinition> validAffixes = affixCatalog.GetValidAffixes(affixType, slotType, itemTier, itemLevel);
         RemoveBlockedAffixes(validAffixes, usedTags);
-
-        if (requiredStats != null && requiredStats.Count > 0)
-        {
-            validAffixes.RemoveAll(affix => !MatchesRequiredStats(affix, requiredStats));
-        }
+        FilterRequiredStats(validAffixes, requiredStats);
 
         if (validAffixes.Count < count)
         {
@@ -261,11 +258,7 @@ public static class EquipmentGenerator
     {
         List<EquipmentAffixDefinition> validAffixes = affixCatalog.GetValidAffixes(affixType, slotType, itemTier, itemLevel);
         RemoveBlockedAffixes(validAffixes, usedTags);
-
-        if (requiredStats != null && requiredStats.Count > 0)
-        {
-            validAffixes.RemoveAll(affix => !MatchesRequiredStats(affix, requiredStats));
-        }
+        FilterRequiredStats(validAffixes, requiredStats);
 
         if (validAffixes.Count == 0)
         {
@@ -284,11 +277,19 @@ public static class EquipmentGenerator
 
     private static bool MatchesRequiredStats(EquipmentAffixDefinition affix, IReadOnlyList<EquipmentStatType> requiredStats)
     {
+        if (affix == null || requiredStats == null || requiredStats.Count == 0)
+        {
+            return false;
+        }
+
         foreach (EquipmentModifierDefinition modifier in affix.Modifiers)
         {
-            if (requiredStats.Contains(modifier.statType))
+            for (int i = 0; i < requiredStats.Count; i++)
             {
-                return true;
+                if (requiredStats[i] == modifier.statType)
+                {
+                    return true;
+                }
             }
         }
 
@@ -351,11 +352,8 @@ public static class EquipmentGenerator
             itemTier,
             itemLevel);
 
-        if (request.requiredAffixStats != null && request.requiredAffixStats.Count > 0)
-        {
-            validPrefixes.RemoveAll(affix => !MatchesRequiredStats(affix, request.requiredAffixStats));
-            validSuffixes.RemoveAll(affix => !MatchesRequiredStats(affix, request.requiredAffixStats));
-        }
+        FilterRequiredStats(validPrefixes, request.requiredAffixStats);
+        FilterRequiredStats(validSuffixes, request.requiredAffixStats);
 
         return rarity switch
         {
@@ -433,6 +431,16 @@ public static class EquipmentGenerator
         }
 
         return reservedCount;
+    }
+
+    private static void FilterRequiredStats(List<EquipmentAffixDefinition> affixes, IReadOnlyList<EquipmentStatType> requiredStats)
+    {
+        if (affixes == null || requiredStats == null || requiredStats.Count == 0)
+        {
+            return;
+        }
+
+        affixes.RemoveAll(affix => !MatchesRequiredStats(affix, requiredStats));
     }
 
     private static void Shuffle<T>(T[] array)

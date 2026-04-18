@@ -3,6 +3,8 @@ using UnityEngine;
 
 public static class MetaProgressionService
 {
+    private const string DefaultMapId = "default_map";
+
     private static MetaProgressionSaveData saveData;
     private static bool isLoaded;
 
@@ -30,20 +32,7 @@ public static class MetaProgressionService
     public static List<MapInstance> GetOwnedMaps()
     {
         EnsureLoaded();
-
-        List<MapInstance> maps = new List<MapInstance>(saveData.ownedMaps.Count);
-
-        foreach (OwnedMapRecord record in saveData.ownedMaps)
-        {
-            MapInstance map = MapGenerator.CreateMapInstanceFromRecord(record);
-
-            if (map != null)
-            {
-                maps.Add(map);
-            }
-        }
-
-        return maps;
+        return ConvertRecords(saveData.ownedMaps, MapGenerator.CreateMapInstanceFromRecord);
     }
 
     public static List<OwnedEquipmentRecord> GetOwnedEquipment()
@@ -55,19 +44,7 @@ public static class MetaProgressionService
     public static List<EquipmentInstance> GetOwnedEquipmentInstances()
     {
         EnsureLoaded();
-        List<EquipmentInstance> equipment = new List<EquipmentInstance>(saveData.ownedEquipment.Count);
-
-        foreach (OwnedEquipmentRecord record in saveData.ownedEquipment)
-        {
-            EquipmentInstance instance = EquipmentRecordConverter.CreateInstance(record);
-
-            if (instance != null)
-            {
-                equipment.Add(instance);
-            }
-        }
-
-        return equipment;
+        return ConvertRecords(saveData.ownedEquipment, EquipmentRecordConverter.CreateInstance);
     }
 
     public static EquipmentLoadoutData GetEquipmentLoadout()
@@ -143,7 +120,6 @@ public static class MetaProgressionService
     }
 
     public static void EnsureStarterMaps(
-        int desiredCount,
         VictoryConditionType defaultVictoryCondition,
         int defaultVictoryTarget)
     {
@@ -159,7 +135,7 @@ public static class MetaProgressionService
     {
         EnsureLoaded();
 
-        OwnedMapRecord existingDefaultMap = saveData.ownedMaps.Find(record => record.baseMapId == "default_map");
+        OwnedMapRecord existingDefaultMap = FindOwnedMapRecord(DefaultMapId);
 
         if (existingDefaultMap == null)
         {
@@ -175,7 +151,7 @@ public static class MetaProgressionService
     {
         EnsureLoaded();
 
-        OwnedMapRecord defaultMapRecord = saveData.ownedMaps.Find(record => record.baseMapId == "default_map");
+        OwnedMapRecord defaultMapRecord = FindOwnedMapRecord(DefaultMapId);
 
         if (defaultMapRecord == null)
         {
@@ -264,31 +240,26 @@ public static class MetaProgressionService
 
     public static void ResetMapProgression()
     {
-        EnsureLoaded();
-        saveData.completedBaseMapIds.Clear();
-        saveData.unspentAtlasPoints = 0;
-        Save();
+        MutateAndSave(() =>
+        {
+            saveData.completedBaseMapIds.Clear();
+            saveData.unspentAtlasPoints = 0;
+        });
     }
 
     public static void ClearMapInventory()
     {
-        EnsureLoaded();
-        saveData.ownedMaps.Clear();
-        Save();
+        MutateAndSave(() => saveData.ownedMaps.Clear());
     }
 
     public static void ClearEquipmentInventory()
     {
-        EnsureLoaded();
-        saveData.ownedEquipment.Clear();
-        Save();
+        MutateAndSave(() => saveData.ownedEquipment.Clear());
     }
 
     public static void ClearEquipmentLoadout()
     {
-        EnsureLoaded();
-        saveData.equipmentLoadout = new EquipmentLoadoutData();
-        Save();
+        MutateAndSave(() => saveData.equipmentLoadout = new EquipmentLoadoutData());
     }
 
     public static void SetEquippedItem(EquipmentSlotType slotType, string equipmentInstanceId, bool saveImmediately = true)
@@ -309,30 +280,25 @@ public static class MetaProgressionService
 
         if (string.IsNullOrWhiteSpace(equipmentInstanceId))
         {
-            if (existingSlot != null)
-            {
-                saveData.equipmentLoadout.equippedItems.Remove(existingSlot);
-            }
-        }
-        else if (existingSlot != null)
-        {
-            UnequipFromOtherSlots(loadoutSlotId, equipmentInstanceId);
-            existingSlot.equipmentInstanceId = equipmentInstanceId;
+            saveData.equipmentLoadout.equippedItems.Remove(existingSlot);
         }
         else
         {
             UnequipFromOtherSlots(loadoutSlotId, equipmentInstanceId);
-            saveData.equipmentLoadout.equippedItems.Add(new EquipmentLoadoutSlot
+
+            if (existingSlot == null)
             {
-                slotId = loadoutSlotId,
-                equipmentInstanceId = equipmentInstanceId,
-            });
+                existingSlot = new EquipmentLoadoutSlot
+                {
+                    slotId = loadoutSlotId,
+                };
+                saveData.equipmentLoadout.equippedItems.Add(existingSlot);
+            }
+
+            existingSlot.equipmentInstanceId = equipmentInstanceId;
         }
 
-        if (saveImmediately)
-        {
-            Save();
-        }
+        PersistIfRequested(saveImmediately);
     }
 
     public static void ResetAllProgress()
@@ -398,6 +364,48 @@ public static class MetaProgressionService
             {
                 saveData.equipmentLoadout.equippedItems.RemoveAt(i);
             }
+        }
+    }
+
+    private static List<TModel> ConvertRecords<TRecord, TModel>(IReadOnlyList<TRecord> records, System.Func<TRecord, TModel> converter)
+        where TModel : class
+    {
+        List<TModel> converted = new List<TModel>(records != null ? records.Count : 0);
+
+        if (records == null || converter == null)
+        {
+            return converted;
+        }
+
+        for (int i = 0; i < records.Count; i++)
+        {
+            TModel model = converter(records[i]);
+            if (model != null)
+            {
+                converted.Add(model);
+            }
+        }
+
+        return converted;
+    }
+
+    private static OwnedMapRecord FindOwnedMapRecord(string baseMapId)
+    {
+        return saveData.ownedMaps.Find(record => record.baseMapId == baseMapId);
+    }
+
+    private static void MutateAndSave(System.Action mutation)
+    {
+        EnsureLoaded();
+        mutation?.Invoke();
+        Save();
+    }
+
+    private static void PersistIfRequested(bool saveImmediately)
+    {
+        if (saveImmediately)
+        {
+            Save();
         }
     }
 }
