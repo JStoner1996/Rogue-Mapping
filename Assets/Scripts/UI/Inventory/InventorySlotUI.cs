@@ -87,10 +87,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Bind(InventorySlotModel.Empty(), clickCallback);
     }
 
-    private bool CanInteractWithCurrentData()
-    {
-        return currentData != null && !currentData.isEmpty && currentData.isInteractable;
-    }
+    private bool CanInteractWithCurrentData() => currentData != null && !currentData.isEmpty && currentData.isInteractable;
 
     private void RefreshVisuals()
     {
@@ -111,57 +108,20 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             itemNameText.enabled = !string.IsNullOrWhiteSpace(itemNameText.text);
         }
 
-        if (selectionOutlineRoot != null)
-        {
-            bool showOutline = !isEmpty && currentData.isSelected;
-            selectionOutlineRoot.SetActive(showOutline);
-
-            if (showOutline && selectionOutlineImage != null)
-            {
-                selectionOutlineImage.color = selectedOutlineColor;
-            }
-        }
-
-        if (discardOverlay != null)
-        {
-            discardOverlay.SetActive(!isEmpty && currentData.isDiscarded);
-        }
-
-        if (slotBorderImage != null)
-        {
-            slotBorderImage.color = GetBorderColor(isEmpty);
-        }
-
-        if (button != null)
-        {
-            button.interactable = !isEmpty && currentData.isInteractable;
-        }
-
-        if (draggableItem != null)
-        {
-            draggableItem.SetDragEnabled(!isEmpty && currentData.isInteractable && currentData.canDrag);
-        }
+        bool showOutline = !isEmpty && currentData.isSelected;
+        if (selectionOutlineRoot != null) selectionOutlineRoot.SetActive(showOutline);
+        if (showOutline && selectionOutlineImage != null) selectionOutlineImage.color = selectedOutlineColor;
+        if (discardOverlay != null) discardOverlay.SetActive(!isEmpty && currentData.isDiscarded);
+        if (slotBorderImage != null) slotBorderImage.color = GetBorderColor(isEmpty);
+        if (button != null) button.interactable = !isEmpty && currentData.isInteractable;
+        if (draggableItem != null) draggableItem.SetDragEnabled(!isEmpty && currentData.isInteractable && currentData.canDrag);
     }
 
-    private Color GetBorderColor(bool isEmpty)
-    {
-        if (isEmpty)
-        {
-            return emptyBorderColor;
-        }
-
-        if (isDropHovered || currentData.isHovered)
-        {
-            return hoveredBorderColor;
-        }
-
-        if (currentData.isEquipped)
-        {
-            return equippedBorderColor;
-        }
-
-        return filledBorderColor;
-    }
+    private Color GetBorderColor(bool isEmpty) =>
+        isEmpty ? emptyBorderColor
+        : (isDropHovered || currentData.isHovered) ? hoveredBorderColor
+        : currentData.isEquipped ? equippedBorderColor
+        : filledBorderColor;
 
     private DragItemPayload BuildDragPayload()
     {
@@ -227,10 +187,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         onClick?.Invoke(this, currentData);
     }
 
-    public bool CanAcceptDrop(DragItemPayload payload)
-    {
-        return canAcceptDrop != null && canAcceptDrop.Invoke(this, payload);
-    }
+    public bool CanAcceptDrop(DragItemPayload payload) => canAcceptDrop != null && canAcceptDrop.Invoke(this, payload);
 
     public void OnDropReceived(DragItemPayload payload)
     {

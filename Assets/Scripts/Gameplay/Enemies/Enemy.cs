@@ -6,6 +6,7 @@ public class Enemy : MonoBehaviour
     public static event System.Action<Enemy> EnemyKilled;
 
     private const float KnockbackDuration = 0.1f;
+    private static readonly Vector2 ZeroVelocity = Vector2.zero;
 
     private struct RuntimeStats
     {
@@ -160,8 +161,8 @@ public class Enemy : MonoBehaviour
     private void Die()
     {
         DropExperience();
-        DropPowerUps();
-        DropMetaItems();
+        ProcessDrops(powerUpLootTable, lootItem => lootItem.GetAdjustedDropChance(runtimeStats.dropChanceMultiplier), SpawnLoot);
+        ProcessDrops(metaLootTable, lootItem => lootItem.GetAdjustedDropChance(GetMetaDropChanceMultiplier(lootItem)), SpawnMetaLoot);
         EnemyKilled?.Invoke(this);
         PlayDeathEffects();
         ReturnToPool();
@@ -172,46 +173,6 @@ public class Enemy : MonoBehaviour
         ExpCrystal xp = PickupPools.Instance.GetXP();
         xp.transform.position = transform.position;
         xp.Init(runtimeStats.experienceWorth);
-    }
-
-    private void DropPowerUps()
-    {
-        foreach (LootItem lootItem in powerUpLootTable)
-        {
-            if (lootItem == null)
-            {
-                continue;
-            }
-
-            float dropChance = lootItem.GetAdjustedDropChance(runtimeStats.dropChanceMultiplier);
-
-            if (Random.Range(0f, 100f) > dropChance)
-            {
-                continue;
-            }
-
-            SpawnLoot(lootItem);
-        }
-    }
-
-    private void DropMetaItems()
-    {
-        foreach (MetaLootItem lootItem in metaLootTable)
-        {
-            if (lootItem == null)
-            {
-                continue;
-            }
-
-            float dropChance = lootItem.GetAdjustedDropChance(GetMetaDropChanceMultiplier(lootItem));
-
-            if (Random.Range(0f, 100f) > dropChance)
-            {
-                continue;
-            }
-
-            SpawnMetaLoot(lootItem);
-        }
     }
 
     private void ApplyKnockback(Vector2 hitDirection, float force)
@@ -251,16 +212,12 @@ public class Enemy : MonoBehaviour
 
     private void SpawnMetaLoot(MetaLootItem lootItem)
     {
-        switch (lootItem.type)
+        if (lootItem == null)
         {
-            case MetaLootType.Map:
-                SpawnMapLoot(lootItem);
-                break;
-
-            case MetaLootType.Equipment:
-                SpawnEquipmentLoot(lootItem);
-                break;
+            return;
         }
+
+        (lootItem.type == MetaLootType.Map ? (System.Action<MetaLootItem>)SpawnMapLoot : SpawnEquipmentLoot)(lootItem);
     }
 
     private void SpawnMapLoot(MetaLootItem lootItem)
@@ -313,11 +270,7 @@ public class Enemy : MonoBehaviour
     private void CachePlayerReferences()
     {
         player = PlayerController.Instance;
-
-        if (player != null)
-        {
-            playerHealth = player.GetComponent<PlayerHealth>();
-        }
+        if (player != null) playerHealth = player.GetComponent<PlayerHealth>();
     }
 
     private void ResetRuntimeState()
@@ -325,7 +278,7 @@ public class Enemy : MonoBehaviour
         runtimeStats = BuildRuntimeStats();
         currentHealth = runtimeStats.maxHealth;
         knockbackTimer = 0f;
-        knockbackVelocity = Vector2.zero;
+        knockbackVelocity = ZeroVelocity;
         ApplyRarityVisuals();
     }
 
@@ -351,31 +304,9 @@ public class Enemy : MonoBehaviour
     {
         float multiplier = runtimeStats.dropChanceMultiplier;
         EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
-
-        if (summary == null || lootItem == null)
-        {
-            return multiplier;
-        }
-
-        EquipmentStatType? bonusStatType = lootItem.type switch
-        {
-            MetaLootType.Map => EquipmentStatType.MapDropChance,
-            MetaLootType.Equipment => EquipmentStatType.EquipmentDropChance,
-            _ => null
-        };
-
-        if (!bonusStatType.HasValue)
-        {
-            return multiplier;
-        }
-
-        EquipmentStatSummaryEntry entry = summary.GetEntry(bonusStatType.Value);
-        if (entry == null || !entry.HasPercentValue)
-        {
-            return multiplier;
-        }
-
-        return multiplier * Mathf.Max(0f, 1f + entry.percentValue);
+        EquipmentStatType? bonusStatType = GetMetaDropBonusStat(lootItem);
+        EquipmentStatSummaryEntry entry = bonusStatType.HasValue ? summary?.GetEntry(bonusStatType.Value) : null;
+        return entry != null && entry.HasPercentValue ? multiplier * Mathf.Max(0f, 1f + entry.percentValue) : multiplier;
     }
 
     private int GetScaledPackBound(int baseValue, float qualityMultiplier)
@@ -384,15 +315,7 @@ public class Enemy : MonoBehaviour
         return Mathf.Max(1, Mathf.RoundToInt(scaledValue));
     }
 
-    private bool TryGetActivePlayer()
-    {
-        if (player == null)
-        {
-            CachePlayerReferences();
-        }
-
-        return player != null && player.gameObject.activeSelf;
-    }
+    private bool TryGetActivePlayer() => (player != null || TryCachePlayerReferences()) && player.gameObject.activeSelf;
 
     // Ambient enemies are cleaned up once they fall too many chunks behind the player.
     private bool ShouldDespawnForChunkDistance()
@@ -425,18 +348,9 @@ public class Enemy : MonoBehaviour
         return ChunkWorldUtility.GetChebyshevDistance(enemyChunk, playerChunk) > despawnChunkDistance;
     }
 
-    private void DespawnWithoutRewards()
-    {
-        ReturnToPool();
-    }
+    private void DespawnWithoutRewards() => ReturnToPool();
 
-    private void StopMoving()
-    {
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
-    }
+    private void StopMoving() { if (rb != null) rb.linearVelocity = ZeroVelocity; }
 
     private void UpdateFacing()
     {
@@ -543,10 +457,7 @@ public class Enemy : MonoBehaviour
 
     private void ReturnToPool()
     {
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
+        StopMoving();
 
         // Normal deaths and far-distance cleanup both return through the same pool path.
         if (poolOwner != null && poolPrefabKey != null)
@@ -556,5 +467,41 @@ public class Enemy : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    private bool TryCachePlayerReferences()
+    {
+        CachePlayerReferences();
+        return player != null;
+    }
+
+    private static EquipmentStatType? GetMetaDropBonusStat(MetaLootItem lootItem) =>
+        lootItem?.type switch
+        {
+            MetaLootType.Map => EquipmentStatType.MapDropChance,
+            MetaLootType.Equipment => EquipmentStatType.EquipmentDropChance,
+            _ => null
+        };
+
+    private void ProcessDrops<TLoot>(
+        IReadOnlyList<TLoot> lootTable,
+        System.Func<TLoot, float> getDropChance,
+        System.Action<TLoot> spawnLoot)
+        where TLoot : class
+    {
+        if (lootTable == null || getDropChance == null || spawnLoot == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < lootTable.Count; i++)
+        {
+            TLoot lootItem = lootTable[i];
+
+            if (lootItem != null && Random.Range(0f, 100f) <= getDropChance(lootItem))
+            {
+                spawnLoot(lootItem);
+            }
+        }
     }
 }

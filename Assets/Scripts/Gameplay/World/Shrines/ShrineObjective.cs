@@ -58,22 +58,17 @@ public class ShrineObjective : MonoBehaviour
 
     void Update()
     {
-        if (activated || shrineDefinition == null)
-        {
-            RefreshDebugCharge();
-            RefreshChargeVisuals();
-        }
-        else
+        if (!activated && shrineDefinition != null)
         {
             UpdateCharge();
-            RefreshDebugCharge();
-            RefreshChargeVisuals();
 
             if (currentCharge >= shrineDefinition.ChargeDuration)
             {
                 ActivateShrine();
             }
         }
+
+        RefreshChargeState();
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -214,10 +209,7 @@ public class ShrineObjective : MonoBehaviour
         chargeSlider.normalizedValue = ChargeNormalized;
     }
 
-    private void RefreshDebugCharge()
-    {
-        debugChargeNormalized = ChargeNormalized;
-    }
+    private void RefreshDebugCharge() => debugChargeNormalized = ChargeNormalized;
 
     private void ApplyActivatedVisuals()
     {
@@ -227,15 +219,7 @@ public class ShrineObjective : MonoBehaviour
         }
     }
 
-    private void PlayCompletionSound()
-    {
-        if (AudioManager.Instance == null)
-        {
-            return;
-        }
-
-        AudioManager.Instance.Play(SoundType.ShrineComplete);
-    }
+    private void PlayCompletionSound() => AudioManager.Instance?.Play(SoundType.ShrineComplete);
 
     private bool TryGetEnemySpawner(out EnemySpawner spawner)
     {
@@ -246,5 +230,11 @@ public class ShrineObjective : MonoBehaviour
 
         spawner = enemySpawner;
         return spawner != null;
+    }
+
+    private void RefreshChargeState()
+    {
+        RefreshDebugCharge();
+        RefreshChargeVisuals();
     }
 }

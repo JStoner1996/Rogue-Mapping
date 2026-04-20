@@ -4,6 +4,31 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class PlayerStats : MonoBehaviour
 {
+    private static readonly PlayerStatRoll[] DefaultUpgradeRolls =
+    {
+        new() { statType = PlayerStatType.MaximumHealth, minValue = 0.08f, maxValue = 0.14f, weight = 1 },
+        new() { statType = PlayerStatType.MaximumHealth, minValue = 0.14f, maxValue = 0.22f, weight = 3 },
+        new() { statType = PlayerStatType.MaximumHealth, minValue = 0.22f, maxValue = 0.30f, weight = 6 },
+        new() { statType = PlayerStatType.MovementSpeed, minValue = 0.05f, maxValue = 0.08f, weight = 1 },
+        new() { statType = PlayerStatType.MovementSpeed, minValue = 0.08f, maxValue = 0.13f, weight = 3 },
+        new() { statType = PlayerStatType.MovementSpeed, minValue = 0.13f, maxValue = 0.18f, weight = 6 },
+        new() { statType = PlayerStatType.PickupRange, minValue = 0.08f, maxValue = 0.13f, weight = 1 },
+        new() { statType = PlayerStatType.PickupRange, minValue = 0.13f, maxValue = 0.20f, weight = 3 },
+        new() { statType = PlayerStatType.PickupRange, minValue = 0.20f, maxValue = 0.28f, weight = 6 },
+        new() { statType = PlayerStatType.Damage, minValue = 0.05f, maxValue = 0.09f, weight = 1 },
+        new() { statType = PlayerStatType.Damage, minValue = 0.09f, maxValue = 0.14f, weight = 3 },
+        new() { statType = PlayerStatType.Damage, minValue = 0.14f, maxValue = 0.20f, weight = 6 },
+        new() { statType = PlayerStatType.AttackSpeed, minValue = 0.05f, maxValue = 0.08f, weight = 1 },
+        new() { statType = PlayerStatType.AttackSpeed, minValue = 0.08f, maxValue = 0.13f, weight = 3 },
+        new() { statType = PlayerStatType.AttackSpeed, minValue = 0.13f, maxValue = 0.18f, weight = 6 },
+        new() { statType = PlayerStatType.Range, minValue = 0.06f, maxValue = 0.10f, weight = 1 },
+        new() { statType = PlayerStatType.Range, minValue = 0.10f, maxValue = 0.15f, weight = 3 },
+        new() { statType = PlayerStatType.Range, minValue = 0.15f, maxValue = 0.22f, weight = 6 },
+        new() { statType = PlayerStatType.Knockback, minValue = 0.07f, maxValue = 0.12f, weight = 1 },
+        new() { statType = PlayerStatType.Knockback, minValue = 0.12f, maxValue = 0.18f, weight = 3 },
+        new() { statType = PlayerStatType.Knockback, minValue = 0.18f, maxValue = 0.26f, weight = 6 },
+    };
+
     [SerializeField] private List<PlayerStatRoll> upgradeRolls = new List<PlayerStatRoll>();
 
     private PlayerMovement playerMovement;
@@ -34,36 +59,7 @@ public class PlayerStats : MonoBehaviour
             return;
         }
 
-        upgradeRolls = new List<PlayerStatRoll>
-        {
-            new PlayerStatRoll { statType = PlayerStatType.MaximumHealth, minValue = 0.08f, maxValue = 0.14f, weight = 1 },
-            new PlayerStatRoll { statType = PlayerStatType.MaximumHealth, minValue = 0.14f, maxValue = 0.22f, weight = 3 },
-            new PlayerStatRoll { statType = PlayerStatType.MaximumHealth, minValue = 0.22f, maxValue = 0.30f, weight = 6 },
-
-            new PlayerStatRoll { statType = PlayerStatType.MovementSpeed, minValue = 0.05f, maxValue = 0.08f, weight = 1 },
-            new PlayerStatRoll { statType = PlayerStatType.MovementSpeed, minValue = 0.08f, maxValue = 0.13f, weight = 3 },
-            new PlayerStatRoll { statType = PlayerStatType.MovementSpeed, minValue = 0.13f, maxValue = 0.18f, weight = 6 },
-
-            new PlayerStatRoll { statType = PlayerStatType.PickupRange, minValue = 0.08f, maxValue = 0.13f, weight = 1 },
-            new PlayerStatRoll { statType = PlayerStatType.PickupRange, minValue = 0.13f, maxValue = 0.20f, weight = 3 },
-            new PlayerStatRoll { statType = PlayerStatType.PickupRange, minValue = 0.20f, maxValue = 0.28f, weight = 6 },
-
-            new PlayerStatRoll { statType = PlayerStatType.Damage, minValue = 0.05f, maxValue = 0.09f, weight = 1 },
-            new PlayerStatRoll { statType = PlayerStatType.Damage, minValue = 0.09f, maxValue = 0.14f, weight = 3 },
-            new PlayerStatRoll { statType = PlayerStatType.Damage, minValue = 0.14f, maxValue = 0.20f, weight = 6 },
-
-            new PlayerStatRoll { statType = PlayerStatType.AttackSpeed, minValue = 0.05f, maxValue = 0.08f, weight = 1 },
-            new PlayerStatRoll { statType = PlayerStatType.AttackSpeed, minValue = 0.08f, maxValue = 0.13f, weight = 3 },
-            new PlayerStatRoll { statType = PlayerStatType.AttackSpeed, minValue = 0.13f, maxValue = 0.18f, weight = 6 },
-
-            new PlayerStatRoll { statType = PlayerStatType.Range, minValue = 0.06f, maxValue = 0.10f, weight = 1 },
-            new PlayerStatRoll { statType = PlayerStatType.Range, minValue = 0.10f, maxValue = 0.15f, weight = 3 },
-            new PlayerStatRoll { statType = PlayerStatType.Range, minValue = 0.15f, maxValue = 0.22f, weight = 6 },
-
-            new PlayerStatRoll { statType = PlayerStatType.Knockback, minValue = 0.07f, maxValue = 0.12f, weight = 1 },
-            new PlayerStatRoll { statType = PlayerStatType.Knockback, minValue = 0.12f, maxValue = 0.18f, weight = 3 },
-            new PlayerStatRoll { statType = PlayerStatType.Knockback, minValue = 0.18f, maxValue = 0.26f, weight = 6 },
-        };
+        upgradeRolls = new List<PlayerStatRoll>(DefaultUpgradeRolls);
     }
 
     public void ApplyUpgrade(PlayerStatUpgradeResult upgrade)
@@ -112,12 +108,7 @@ public class PlayerStats : MonoBehaviour
 
     private void ApplyStat(PlayerStatType statType, float value)
     {
-        if (!totals.ContainsKey(statType))
-        {
-            totals[statType] = 0f;
-        }
-
-        totals[statType] += value;
+        totals[statType] = GetTotal(statType) + value;
 
         switch (statType)
         {
@@ -159,12 +150,7 @@ public class PlayerStats : MonoBehaviour
 
         if (supportsFlatValue && !Mathf.Approximately(entry.flatValue, 0f))
         {
-            switch (targetStatType)
-            {
-                case PlayerStatType.MaximumHealth:
-                    playerHealth?.ApplyFlatMaxHealthModifier(entry.flatValue);
-                    break;
-            }
+            ApplyFlatEquipmentValue(targetStatType, entry.flatValue);
         }
 
         if (!Mathf.Approximately(entry.percentValue, 0f))
@@ -175,6 +161,14 @@ public class PlayerStats : MonoBehaviour
         if (!supportsFlatValue && !Mathf.Approximately(entry.flatValue, 0f))
         {
             ApplyStat(targetStatType, entry.flatValue);
+        }
+    }
+
+    private void ApplyFlatEquipmentValue(PlayerStatType targetStatType, float value)
+    {
+        if (targetStatType == PlayerStatType.MaximumHealth)
+        {
+            playerHealth?.ApplyFlatMaxHealthModifier(value);
         }
     }
 }

@@ -130,13 +130,13 @@ public class MapInstance
     public MapAffixDefinition suffix;
     public List<MapModifierValue> modifiers = new List<MapModifierValue>();
 
-    public string BaseMapId => baseMap != null ? baseMap.id : string.Empty;
-    public string BaseMapName => baseMap != null ? baseMap.displayName : "Unknown Map";
-    public int Tier => baseMap != null ? baseMap.tier : 0;
-    public MapTilesetTheme TilesetTheme => baseMap != null ? baseMap.tilesetTheme : MapTilesetTheme.Default;
-    public string SceneName => baseMap != null ? baseMap.sceneName : string.Empty;
+    public string BaseMapId => baseMap?.id ?? string.Empty;
+    public string BaseMapName => baseMap?.displayName ?? "Unknown Map";
+    public int Tier => baseMap?.tier ?? 0;
+    public MapTilesetTheme TilesetTheme => baseMap?.tilesetTheme ?? MapTilesetTheme.Default;
+    public string SceneName => baseMap?.sceneName ?? string.Empty;
     public Sprite Icon => baseMap != null ? MapIconCatalog.ResolveIcon(baseMap.icon) : MapIconCatalog.PlaceholderMapIcon;
-    public MapWorldThemeDefinition WorldTheme => baseMap != null ? baseMap.worldTheme : null;
+    public MapWorldThemeDefinition WorldTheme => baseMap?.worldTheme;
     public VictoryConditionType VictoryConditionType { get; set; }
     public int VictoryTarget { get; set; }
 
@@ -144,19 +144,8 @@ public class MapInstance
     {
         get
         {
-            MapAffixTier rarity = MapAffixTier.Common;
-
-            if (prefix != null && prefix.tier > rarity)
-            {
-                rarity = prefix.tier;
-            }
-
-            if (suffix != null && suffix.tier > rarity)
-            {
-                rarity = suffix.tier;
-            }
-
-            return rarity;
+            MapAffixTier rarity = prefix?.tier ?? MapAffixTier.Common;
+            return suffix != null && suffix.tier > rarity ? suffix.tier : rarity;
         }
     }
 
@@ -166,23 +155,14 @@ public class MapInstance
     {
         get
         {
-            string prefixName = prefix != null ? prefix.name + " " : string.Empty;
-            string suffixName = suffix != null ? " " + suffix.name : string.Empty;
-            return prefixName + BaseMapName + suffixName;
+            return $"{(prefix != null ? prefix.name + " " : string.Empty)}{BaseMapName}{(suffix != null ? " " + suffix.name : string.Empty)}";
         }
     }
 
     public float GetModifier(MapStatType statType)
     {
         float total = 0f;
-
-        foreach (MapModifierValue modifier in modifiers)
-        {
-            if (modifier.statType == statType)
-            {
-                total += modifier.percent;
-            }
-        }
+        for (int i = 0; i < modifiers.Count; i++) if (modifiers[i].statType == statType) total += modifiers[i].percent;
 
         return total;
     }

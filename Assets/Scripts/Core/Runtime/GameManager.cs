@@ -79,12 +79,8 @@ public class GameManager : SingletonBehaviour<GameManager>
         runCompleted = true;
         IsGameActive = false;
 
-        bool grantedAtlasPoint = false;
-
-        if (RunData.SelectedMap != null)
-        {
-            grantedAtlasPoint = MapProgressionData.MarkCompleted(RunData.SelectedMap.BaseMapId);
-        }
+        bool grantedAtlasPoint = RunData.SelectedMap != null
+            && MapProgressionData.MarkCompleted(RunData.SelectedMap.BaseMapId);
 
         Debug.Log(grantedAtlasPoint
             ? $"Completed {RunData.SelectedMap?.BaseMapName}. Atlas point awarded."
@@ -116,12 +112,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
         bool isPaused = uiController.PausePanel != null && uiController.PausePanel.activeSelf;
 
-        if (uiController.PausePanel != null)
-        {
-            uiController.PausePanel.SetActive(!isPaused);
-        }
-
-        Time.timeScale = isPaused ? 1f : 0f;
+        SetPanelPausedState(uiController.PausePanel, !isPaused);
         AudioManager.Instance?.Play(isPaused ? SoundType.Unpause : SoundType.Pause);
     }
 
@@ -154,12 +145,7 @@ public class GameManager : SingletonBehaviour<GameManager>
     private IEnumerator ShowGameOverScreen()
     {
         yield return new WaitForSeconds(0.5f);
-
-        if (UIController.Instance?.GameOverPanel != null)
-        {
-            UIController.Instance.GameOverPanel.SetActive(true);
-        }
-
+        SetPanelPausedState(UIController.Instance?.GameOverPanel, true);
         AudioManager.Instance?.Play(SoundType.GameOver);
     }
 
@@ -240,4 +226,14 @@ public class GameManager : SingletonBehaviour<GameManager>
     }
 
     private int GetFinalBossCount() => 1;
+
+    private static void SetPanelPausedState(GameObject panel, bool isVisible)
+    {
+        if (panel != null)
+        {
+            panel.SetActive(isVisible);
+        }
+
+        Time.timeScale = isVisible ? 0f : 1f;
+    }
 }

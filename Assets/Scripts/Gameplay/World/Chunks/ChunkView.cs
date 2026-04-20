@@ -72,10 +72,7 @@ public class ChunkView : MonoBehaviour
     {
         ClearShrine();
 
-        if (!chunkData.HasShrine
-            || chunkData.ShrineDefinition == null
-            || shrinePrefab == null
-            || ChunkRuntimeState.IsShrineConsumed(chunkData.Coordinate))
+        if (!ShouldRenderShrine(chunkData, shrinePrefab))
         {
             return;
         }
@@ -106,10 +103,7 @@ public class ChunkView : MonoBehaviour
 
     void OnDestroy()
     {
-        if (spawnedShrine != null)
-        {
-            spawnedShrine.Activated -= HandleShrineActivated;
-        }
+        if (spawnedShrine != null) spawnedShrine.Activated -= HandleShrineActivated;
     }
 
     // Decorations are intentionally sparse so the base terrain still reads clearly.
@@ -173,4 +167,10 @@ public class ChunkView : MonoBehaviour
         float sampleY = (worldTileY + worldSeed * 0.419f) * noiseScale;
         return Mathf.PerlinNoise(sampleX, sampleY);
     }
+
+    private static bool ShouldRenderShrine(ChunkData chunkData, ShrineObjective shrinePrefab) =>
+        chunkData.HasShrine
+        && chunkData.ShrineDefinition != null
+        && shrinePrefab != null
+        && !ChunkRuntimeState.IsShrineConsumed(chunkData.Coordinate);
 }

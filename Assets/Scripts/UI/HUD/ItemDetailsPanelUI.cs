@@ -13,28 +13,18 @@ public class ItemDetailsPanelUI : MonoBehaviour
 
     public void ShowWeapon(WeaponData data)
     {
-        ShowPanel();
-
-        if (data == null)
-        {
-            ShowEmpty("No Weapon Selected");
-            return;
-        }
-
-        ShowContent(data.weaponName, data.icon, BuildWeaponStats(data.baseStats));
+        ShowWithFallback(
+            data,
+            "No Weapon Selected",
+            weapon => ShowContent(weapon.weaponName, weapon.icon, BuildWeaponStats(weapon.baseStats)));
     }
 
     public void ShowMap(MapInstance map)
     {
-        ShowPanel();
-
-        if (map == null)
-        {
-            ShowEmpty("No Map Selected");
-            return;
-        }
-
-        ShowContent(map.DisplayName, map.Icon, MapDescriptionFormatter.BuildStats(map));
+        ShowWithFallback(
+            map,
+            "No Map Selected",
+            selectedMap => ShowContent(selectedMap.DisplayName, selectedMap.Icon, MapDescriptionFormatter.BuildStats(selectedMap)));
     }
 
     public void ShowEquipment()
@@ -45,35 +35,22 @@ public class ItemDetailsPanelUI : MonoBehaviour
 
     public void ShowEquipment(EquipmentInstance equipment)
     {
-        ShowPanel();
-
-        if (equipment == null)
-        {
-            ShowEmpty("No Equipment Selected");
-            return;
-        }
-
-        ShowContent(equipment.DisplayName, equipment.Icon, EquipmentDescriptionFormatter.BuildStats(equipment));
+        ShowWithFallback(
+            equipment,
+            "No Equipment Selected",
+            selectedEquipment => ShowContent(selectedEquipment.DisplayName, selectedEquipment.Icon, EquipmentDescriptionFormatter.BuildStats(selectedEquipment)));
     }
 
     public void ShowPanel()
     {
-        if (panelRoot != null)
-        {
-            panelRoot.SetActive(true);
-        }
-
+        SetPanelVisible(true);
         hoverFollower?.BeginFollowing();
     }
 
     public void HidePanel()
     {
         hoverFollower?.StopFollowing();
-
-        if (panelRoot != null)
-        {
-            panelRoot.SetActive(false);
-        }
+        SetPanelVisible(false);
     }
 
     public void Clear(string message)
@@ -135,5 +112,23 @@ public class ItemDetailsPanelUI : MonoBehaviour
         {
             builder.AppendLine($"{label}: {value}");
         }
+    }
+
+    private void SetPanelVisible(bool isVisible)
+    {
+        if (panelRoot != null) panelRoot.SetActive(isVisible);
+    }
+
+    private void ShowWithFallback<T>(T value, string emptyMessage, System.Action<T> showValue) where T : class
+    {
+        ShowPanel();
+
+        if (value == null)
+        {
+            ShowEmpty(emptyMessage);
+            return;
+        }
+
+        showValue?.Invoke(value);
     }
 }

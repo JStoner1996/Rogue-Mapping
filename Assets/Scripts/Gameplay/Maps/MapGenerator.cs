@@ -25,6 +25,7 @@ public static class MapGenerator
 
     private static MapCatalog loadedMapCatalog;
     private static readonly IReadOnlyList<MapBaseDefinition> EmptyBaseMaps = System.Array.Empty<MapBaseDefinition>();
+    private static readonly List<MapModifierValue> EmptyModifiers = new();
 
     public static List<MapInstance> GenerateChoices(int count)
     {
@@ -96,7 +97,7 @@ public static class MapGenerator
             suffixName = map.suffix != null ? map.suffix.name : string.Empty,
             victoryConditionType = map.VictoryConditionType,
             victoryTarget = Mathf.Max(1, map.VictoryTarget),
-            modifiers = new List<MapModifierValue>(map.modifiers),
+            modifiers = CopyModifiers(map.modifiers),
         };
     }
 
@@ -122,7 +123,7 @@ public static class MapGenerator
             suffix = MapAffixLibrary.FindSuffix(record.suffixName),
             VictoryConditionType = record.victoryConditionType,
             VictoryTarget = Mathf.Max(1, record.victoryTarget),
-            modifiers = new List<MapModifierValue>(record.modifiers ?? new List<MapModifierValue>()),
+            modifiers = CopyModifiers(record.modifiers),
         };
     }
 
@@ -146,10 +147,7 @@ public static class MapGenerator
         return null;
     }
 
-    public static IReadOnlyList<MapBaseDefinition> GetBaseMaps()
-    {
-        return GetBaseMapsInternal();
-    }
+    public static IReadOnlyList<MapBaseDefinition> GetBaseMaps() => GetBaseMapsInternal();
 
     public static List<MapBaseDefinition> GetBaseMapsForTier(int tier)
     {
@@ -169,10 +167,7 @@ public static class MapGenerator
             : GetTargetByRarity(KillsByRarity, map.Tier, map.Rarity, KillsPerTier);
     }
 
-    private static VictoryConditionType RollVictoryConditionType()
-    {
-        return Random.value < 0.5f ? VictoryConditionType.Time : VictoryConditionType.Kills;
-    }
+    private static VictoryConditionType RollVictoryConditionType() => Random.value < 0.5f ? VictoryConditionType.Time : VictoryConditionType.Kills;
 
     private static int GetTargetByRarity(int[] baseTargets, int tier, MapAffixTier rarity, int perTierValue)
     {
@@ -199,15 +194,8 @@ public static class MapGenerator
 
     private static void RollModifiersInto(MapAffixDefinition affix, List<MapModifierValue> output)
     {
-        if (affix == null || output == null)
-        {
-            return;
-        }
-
-        foreach (MapModifierRange modifier in affix.modifiers)
-        {
-            output.Add(new MapModifierValue(modifier.statType, modifier.Roll()));
-        }
+        if (affix == null || output == null) return;
+        foreach (MapModifierRange modifier in affix.modifiers) output.Add(new MapModifierValue(modifier.statType, modifier.Roll()));
     }
 
     private static MapInstance CreateGeneratedMap(MapBaseDefinition baseMap)
@@ -232,20 +220,10 @@ public static class MapGenerator
             return GetNearestAvailableTierAtOrAbove(1);
         }
 
-        if (currentTier == 1)
-        {
-            return RollTierFromCandidates(new List<TierWeightOption>
-            {
-                new TierWeightOption(1, settings.sameTierWeight),
-                new TierWeightOption(2, settings.aboveTierWeight),
-            });
-        }
-
         List<TierWeightOption> candidates = new List<TierWeightOption>();
-
         AddTierWeightCandidate(candidates, currentTier, settings.sameTierWeight);
         AddTierWeightCandidate(candidates, currentTier + 1, settings.aboveTierWeight);
-        AddTierWeightCandidate(candidates, currentTier - 1, settings.belowTierWeight);
+        if (currentTier > 1) AddTierWeightCandidate(candidates, currentTier - 1, settings.belowTierWeight);
 
         return RollTierFromCandidates(candidates, currentTier);
     }
@@ -319,15 +297,9 @@ public static class MapGenerator
         choicePool.AddRange(GetNonDefaultBaseMaps());
     }
 
-    private static MapBaseDefinition RollBaseMapForTier(int tier)
-    {
-        return TakeRandom(GetBaseMapsForTier(tier));
-    }
+    private static MapBaseDefinition RollBaseMapForTier(int tier) => TakeRandom(GetBaseMapsForTier(tier));
 
-    private static List<MapBaseDefinition> GetNonDefaultBaseMaps()
-    {
-        return GetMatchingBaseMaps(IsNonDefaultBaseMap);
-    }
+    private static List<MapBaseDefinition> GetNonDefaultBaseMaps() => GetMatchingBaseMaps(IsNonDefaultBaseMap);
 
     private static List<MapBaseDefinition> GetMatchingBaseMaps(System.Predicate<MapBaseDefinition> match)
     {
@@ -356,10 +328,7 @@ public static class MapGenerator
         return false;
     }
 
-    private static bool IsNonDefaultBaseMap(MapBaseDefinition baseMap)
-    {
-        return baseMap != null && baseMap.id != DefaultMapId;
-    }
+    private static bool IsNonDefaultBaseMap(MapBaseDefinition baseMap) => baseMap != null && baseMap.id != DefaultMapId;
 
     private static List<MapBaseDefinition> GetBaseMapsInternal()
     {
@@ -396,6 +365,9 @@ public static class MapGenerator
         source.RemoveAt(index);
         return value;
     }
+
+    private static List<MapModifierValue> CopyModifiers(IReadOnlyList<MapModifierValue> modifiers) =>
+        new(modifiers ?? EmptyModifiers);
 
     private struct TierWeightOption
     {

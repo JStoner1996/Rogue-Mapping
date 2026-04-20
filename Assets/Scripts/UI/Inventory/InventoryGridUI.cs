@@ -37,19 +37,7 @@ public class InventoryGridUI : MonoBehaviour
 
         for (int i = 0; i < spawnedSlots.Count; i++)
         {
-            int localIndex = i;
-            InventorySlotModel slotModel = model != null && i < model.SlotCount
-                ? model.GetSlot(i)
-                : InventorySlotModel.Empty();
-
-            spawnedSlots[i].Bind(
-                slotModel,
-                (_, data) => interactions.OnSlotClicked?.Invoke(localIndex, data),
-                (_, data) => interactions.OnSlotRightClicked?.Invoke(localIndex, data),
-                (_, data) => interactions.OnSlotHoverEnter?.Invoke(localIndex, data),
-                (_, data) => interactions.OnSlotHoverExit?.Invoke(localIndex, data),
-                (_, payload) => interactions.CanAcceptDropAtIndex != null && interactions.CanAcceptDropAtIndex.Invoke(localIndex, payload),
-                (_, payload) => interactions.OnSlotDropReceived?.Invoke(localIndex, payload));
+            BindSlot(i, model, interactions);
         }
     }
 
@@ -66,11 +54,7 @@ public class InventoryGridUI : MonoBehaviour
     public void ClearItems()
     {
         EnsureSlotCount();
-
-        foreach (InventorySlotUI slot in spawnedSlots)
-        {
-            slot.SetEmpty();
-        }
+        foreach (InventorySlotUI slot in spawnedSlots) slot.SetEmpty();
     }
 
     [ContextMenu("Rebuild Slots")]
@@ -145,6 +129,19 @@ public class InventoryGridUI : MonoBehaviour
                 spawnedSlots.Add(slot);
             }
         }
+    }
+
+    private void BindSlot(int index, InventoryGridModel model, InventoryGridInteractions interactions)
+    {
+        InventorySlotModel slotModel = model != null && index < model.SlotCount ? model.GetSlot(index) : InventorySlotModel.Empty();
+        spawnedSlots[index].Bind(
+            slotModel,
+            (_, data) => interactions.OnSlotClicked?.Invoke(index, data),
+            (_, data) => interactions.OnSlotRightClicked?.Invoke(index, data),
+            (_, data) => interactions.OnSlotHoverEnter?.Invoke(index, data),
+            (_, data) => interactions.OnSlotHoverExit?.Invoke(index, data),
+            (_, payload) => interactions.CanAcceptDropAtIndex != null && interactions.CanAcceptDropAtIndex.Invoke(index, payload),
+            (_, payload) => interactions.OnSlotDropReceived?.Invoke(index, payload));
     }
 
 #if UNITY_EDITOR

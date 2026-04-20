@@ -76,10 +76,7 @@ public class DragDropManagerUI : SingletonBehaviour<DragDropManagerUI>
         ClearCurrentTarget();
         currentPayload = null;
 
-        if (ghostImage != null)
-        {
-            ghostImage.enabled = false;
-        }
+        if (ghostImage != null) ghostImage.enabled = false;
     }
 
     private IDragDropTargetUI ResolveDropTarget(PointerEventData eventData)
@@ -94,27 +91,11 @@ public class DragDropManagerUI : SingletonBehaviour<DragDropManagerUI>
 
         for (int i = 0; i < raycastResults.Count; i++)
         {
-            GameObject hitObject = raycastResults[i].gameObject;
-
-            if (hitObject == null)
-            {
-                continue;
-            }
-
-            IDragDropTargetUI target = hitObject.GetComponentInParent<IDragDropTargetUI>();
-
-            if (target != null)
-            {
-                return target;
-            }
+            IDragDropTargetUI target = GetDropTarget(raycastResults[i].gameObject);
+            if (target != null) return target;
         }
 
-        if (eventData.pointerEnter == null)
-        {
-            return null;
-        }
-
-        return eventData.pointerEnter.GetComponentInParent<IDragDropTargetUI>();
+        return GetDropTarget(eventData.pointerEnter);
     }
 
     private void ClearCurrentTarget()
@@ -169,7 +150,6 @@ public class DragDropManagerUI : SingletonBehaviour<DragDropManagerUI>
         ghostImage = ghostObject.GetComponent<Image>();
         ghostImage.raycastTarget = false;
         ghostImage.color = ghostTint;
-
         ghostRect.anchorMin = new Vector2(0f, 1f);
         ghostRect.anchorMax = new Vector2(0f, 1f);
         ghostRect.pivot = new Vector2(0.5f, 0.5f);
@@ -215,4 +195,7 @@ public class DragDropManagerUI : SingletonBehaviour<DragDropManagerUI>
 #endif
         return Input.mousePosition;
     }
+
+    private static IDragDropTargetUI GetDropTarget(GameObject hitObject) =>
+        hitObject != null ? hitObject.GetComponentInParent<IDragDropTargetUI>() : null;
 }

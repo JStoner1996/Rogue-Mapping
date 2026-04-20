@@ -110,9 +110,7 @@ public class AudioManager : SingletonBehaviour<AudioManager>
 
         AudioSource source = go.AddComponent<AudioSource>();
         source.playOnAwake = false;
-
-        source.outputAudioMixerGroup = sfxMixerGroup;
-
+        ResetSource(source);
         pool.Enqueue(source);
         return source;
     }
@@ -134,12 +132,7 @@ public class AudioManager : SingletonBehaviour<AudioManager>
             return;
         }
 
-        source.Stop();
-        source.clip = null;
-        source.loop = false;
-        source.pitch = 1f;
-        source.volume = 1f;
-
+        ResetSource(source);
         activeSources.Remove(source);
         pool.Enqueue(source);
     }
@@ -236,17 +229,7 @@ public class AudioManager : SingletonBehaviour<AudioManager>
 
     private void PrepareSource(AudioSource source)
     {
-        if (source == null)
-        {
-            return;
-        }
-
-        source.Stop();
-        source.clip = null;
-        source.loop = false;
-        source.pitch = 1f;
-        source.volume = 1f;
-        source.outputAudioMixerGroup = sfxMixerGroup;
+        ResetSource(source);
     }
 
     private int GetNextPlaybackVersion(AudioSource source)
@@ -274,5 +257,20 @@ public class AudioManager : SingletonBehaviour<AudioManager>
         }
 
         ReturnToPool(source);
+    }
+
+    private void ResetSource(AudioSource source)
+    {
+        if (source == null)
+        {
+            return;
+        }
+
+        source.Stop();
+        source.clip = null;
+        source.loop = false;
+        source.pitch = 1f;
+        source.volume = 1f;
+        source.outputAudioMixerGroup = sfxMixerGroup;
     }
 }

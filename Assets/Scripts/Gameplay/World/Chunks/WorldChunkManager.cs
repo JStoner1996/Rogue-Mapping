@@ -60,12 +60,12 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
 
     private void Start()
     {
-        RefreshLoadedChunks(force: true);
+        RefreshLoadedChunks(true);
     }
 
     private void Update()
     {
-        RefreshLoadedChunks(force: false);
+        RefreshLoadedChunks(false);
     }
 
     private void RefreshLoadedChunks(bool force)
@@ -147,15 +147,14 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
             return;
         }
 
-        Transform parent = chunkRoot != null ? chunkRoot : transform;
-        ChunkView chunkView = Instantiate(chunkPrefab, parent);
+        ChunkView chunkView = Instantiate(chunkPrefab, chunkRoot != null ? chunkRoot : transform);
         chunkView.name = $"Chunk_{coordinate.x}_{coordinate.y}";
         chunkView.Render(
             chunkGenerator.Generate(coordinate),
-            GetTerrainPalette(),
-            GetDecorationPalette(),
+            GetThemeValue(theme => theme.HasTerrainPalette(), theme => theme.TerrainPalette, fallbackTerrainPalette),
+            GetThemeValue(theme => theme.HasDecorationPalette(), theme => theme.DecorationPalette, fallbackDecorationPalette),
             worldSeed,
-            GetShrinePrefab(),
+            GetThemeValue(theme => theme.HasShrineContent(), theme => theme.ShrinePrefab, fallbackShrinePrefab),
             chunkSizeTiles);
         activeChunks.Add(coordinate, chunkView);
     }
@@ -177,45 +176,8 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
     }
 
     // The selected map theme wins. The scene fallback keeps the shared Game scene safe while themes are being authored.
-    private ChunkTerrainPalette GetTerrainPalette()
-    {
-        if (activeTheme != null && activeTheme.HasTerrainPalette())
-        {
-            return activeTheme.TerrainPalette;
-        }
-
-        return fallbackTerrainPalette;
-    }
-
-    private ChunkDecorationPalette GetDecorationPalette()
-    {
-        if (activeTheme != null && activeTheme.HasDecorationPalette())
-        {
-            return activeTheme.DecorationPalette;
-        }
-
-        return fallbackDecorationPalette;
-    }
-
-    private ShrineObjective GetShrinePrefab()
-    {
-        if (activeTheme != null && activeTheme.HasShrineContent())
-        {
-            return activeTheme.ShrinePrefab;
-        }
-
-        return fallbackShrinePrefab;
-    }
-
-    private IReadOnlyList<ShrineDefinition> GetShrineDefinitions()
-    {
-        if (activeTheme != null && activeTheme.HasShrineContent())
-        {
-            return activeTheme.ShrineDefinitions;
-        }
-
-        return fallbackShrineDefinitions;
-    }
+    private IReadOnlyList<ShrineDefinition> GetShrineDefinitions() =>
+        GetThemeValue(theme => theme.HasShrineContent(), theme => theme.ShrineDefinitions, fallbackShrineDefinitions);
 
     private float GetEffectiveShrineSpawnChance()
     {
@@ -247,10 +209,7 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
         return true;
     }
 
-    public bool IsChunkLoaded(ChunkCoordinate coordinate)
-    {
-        return activeChunks.ContainsKey(coordinate);
-    }
+    public bool IsChunkLoaded(ChunkCoordinate coordinate) => activeChunks.ContainsKey(coordinate);
 
     public Vector2 GetRandomPointInChunk(ChunkCoordinate coordinate, float edgePaddingWorld = 0f)
     {
@@ -261,5 +220,13 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
         return new Vector2(
             Random.Range(origin.x + padding, origin.x + chunkWorldSize - padding),
             Random.Range(origin.y + padding, origin.y + chunkWorldSize - padding));
+    }
+
+    private T GetThemeValue<T>(
+        System.Func<MapWorldThemeDefinition, bool> hasValue,
+        System.Func<MapWorldThemeDefinition, T> selectValue,
+        T fallback)
+    {
+        return activeTheme != null && hasValue(activeTheme) ? selectValue(activeTheme) : fallback;
     }
 }

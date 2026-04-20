@@ -62,12 +62,7 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
 
     public void OnDropReceived(DragItemPayload payload)
     {
-        if (!CanAcceptDrop(payload))
-        {
-            return;
-        }
-
-        DropReceived?.Invoke(this, payload);
+        if (CanAcceptDrop(payload)) DropReceived?.Invoke(this, payload);
     }
 
     public void OnDragHoverStart(DragItemPayload payload)
@@ -114,20 +109,10 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
         SetSelectionOutline(isSelected, selectedOutlineColor);
     }
 
-    private Color GetBorderColor()
-    {
-        if (isPointerHovered || isLinkedHovered || isDropHovered)
-        {
-            return hoveredBorderColor;
-        }
-
-        if (isEquipped)
-        {
-            return equippedBorderColor;
-        }
-
-        return filledBorderColor;
-    }
+    private Color GetBorderColor() =>
+        (isPointerHovered || isLinkedHovered || isDropHovered) ? hoveredBorderColor
+        : isEquipped ? equippedBorderColor
+        : filledBorderColor;
 
     private void RefreshEquippedIcon(EquipmentInstance equipment)
     {
@@ -163,10 +148,7 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
         };
     }
 
-    private bool CanDragDisplayedEquipment()
-    {
-        return displayedEquipment != null && DragDropManagerUI.Instance != null;
-    }
+    private bool CanDragDisplayedEquipment() => displayedEquipment != null && DragDropManagerUI.Instance != null;
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -184,11 +166,7 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
     {
         isPointerHovered = displayedEquipment != null;
         RefreshHighlight();
-
-        if (isPointerHovered)
-        {
-            HoverEntered?.Invoke(this);
-        }
+        if (isPointerHovered) HoverEntered?.Invoke(this);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -196,11 +174,7 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
         bool wasHovered = isPointerHovered;
         isPointerHovered = false;
         RefreshHighlight();
-
-        if (wasHovered)
-        {
-            HoverExited?.Invoke(this);
-        }
+        if (wasHovered) HoverExited?.Invoke(this);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -238,12 +212,7 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
 
     private void SetBorderColor(Color color)
     {
-        if (slotBorderImage == null)
-        {
-            return;
-        }
-
-        slotBorderImage.color = color;
+        if (slotBorderImage != null) slotBorderImage.color = color;
     }
 
     private void SetSelectionOutline(bool visible, Color? colorOverride = null)
@@ -255,10 +224,6 @@ public class EquipmentSlotDropTargetUI : MonoBehaviour, IDragDropTargetUI, IPoin
 
         selectionOutlineImage.gameObject.SetActive(visible);
         selectionOutlineImage.enabled = visible;
-
-        if (visible)
-        {
-            selectionOutlineImage.color = colorOverride ?? selectedOutlineColor;
-        }
+        if (visible) selectionOutlineImage.color = colorOverride ?? selectedOutlineColor;
     }
 }

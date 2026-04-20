@@ -3,6 +3,8 @@ using UnityEngine;
 
 public static class EquipmentRecordConverter
 {
+    private static readonly IReadOnlyList<EquipmentModifierRoll> EmptyRolls = System.Array.Empty<EquipmentModifierRoll>();
+
     public static OwnedEquipmentRecord CreateRecord(EquipmentInstance equipment)
     {
         if (equipment == null || equipment.BaseDefinition == null)
@@ -22,9 +24,9 @@ public static class EquipmentRecordConverter
             prefixAffixName = equipment.PrefixAffix != null ? equipment.PrefixAffix.AffixName : string.Empty,
             suffixAffixName = equipment.SuffixAffix != null ? equipment.SuffixAffix.AffixName : string.Empty,
             slotId = equipment.SlotType.ToString(),
-            implicitRolls = new List<EquipmentModifierRoll>(equipment.ImplicitRolls),
-            prefixRolls = new List<EquipmentModifierRoll>(equipment.PrefixRolls),
-            suffixRolls = new List<EquipmentModifierRoll>(equipment.SuffixRolls),
+            implicitRolls = CopyRolls(equipment.ImplicitRolls),
+            prefixRolls = CopyRolls(equipment.PrefixRolls),
+            suffixRolls = CopyRolls(equipment.SuffixRolls),
         };
     }
 
@@ -58,7 +60,7 @@ public static class EquipmentRecordConverter
             Mathf.Max(1, record.itemTier),
             Mathf.Max(1, record.itemLevel > 0 ? record.itemLevel : record.itemTier),
             baseDefinition,
-            new List<EquipmentModifierRoll>(record.implicitRolls ?? new List<EquipmentModifierRoll>()),
+            CopyRolls(record.implicitRolls),
             CreateRolledAffixes(record.prefixAffixes, record.prefixAffixName, record.prefixRolls, EquipmentAffixType.Prefix, affixCatalog),
             CreateRolledAffixes(record.suffixAffixes, record.suffixAffixName, record.suffixRolls, EquipmentAffixType.Suffix, affixCatalog));
     }
@@ -84,7 +86,7 @@ public static class EquipmentRecordConverter
             {
                 affixName = affix.AffixName,
                 affixType = affix.AffixType,
-                modifierRolls = new List<EquipmentModifierRoll>(affix.ModifierRolls ?? new List<EquipmentModifierRoll>())
+                modifierRolls = CopyRolls(affix.ModifierRolls)
             });
         }
 
@@ -113,7 +115,7 @@ public static class EquipmentRecordConverter
 
                 rolledAffixes.Add(new EquipmentRolledAffix(
                     definition,
-                    new List<EquipmentModifierRoll>(record.modifierRolls ?? new List<EquipmentModifierRoll>())));
+                    CopyRolls(record.modifierRolls)));
             }
 
             return rolledAffixes;
@@ -124,7 +126,7 @@ public static class EquipmentRecordConverter
         {
             rolledAffixes.Add(new EquipmentRolledAffix(
                 legacyDefinition,
-                new List<EquipmentModifierRoll>(legacyRolls ?? new List<EquipmentModifierRoll>())));
+                CopyRolls(legacyRolls)));
         }
 
         return rolledAffixes;
@@ -165,4 +167,7 @@ public static class EquipmentRecordConverter
 
         return null;
     }
+
+    private static List<EquipmentModifierRoll> CopyRolls(IReadOnlyList<EquipmentModifierRoll> rolls) =>
+        new(rolls ?? EmptyRolls);
 }

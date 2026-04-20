@@ -24,14 +24,8 @@ public static class EquipmentInventoryLayoutService
         }
 
         for (int i = 0; i < loadout.equippedItems.Count; i++)
-        {
-            EquipmentLoadoutSlot slot = loadout.equippedItems[i];
-            if (slot != null && slot.equipmentInstanceId == equipmentInstanceId)
-            {
+            if (loadout.equippedItems[i]?.equipmentInstanceId == equipmentInstanceId)
                 return true;
-            }
-        }
-
         return false;
     }
 
@@ -46,27 +40,7 @@ public static class EquipmentInventoryLayoutService
         // while displaced and unequipped items keep their previous positions when possible.
         List<string> layout = new List<string>();
         int slotCount = Math.Max(Math.Max(minimumSlotCount, 8), availableEquipment != null ? availableEquipment.Count : 0);
-
-        List<string> availableIds = new List<string>();
-        HashSet<string> availableIdSet = new HashSet<string>();
-
-        if (availableEquipment != null)
-        {
-            for (int i = 0; i < availableEquipment.Count; i++)
-            {
-                EquipmentInstance equipment = availableEquipment[i];
-                if (equipment == null || string.IsNullOrWhiteSpace(equipment.InstanceId))
-                {
-                    continue;
-                }
-
-                if (availableIdSet.Add(equipment.InstanceId))
-                {
-                    availableIds.Add(equipment.InstanceId);
-                }
-            }
-        }
-
+        List<string> availableIds = GetAvailableIds(availableEquipment, out HashSet<string> availableIdSet);
         List<string> equippedPriorityIds = GetEquippedPriorityIds(dropTargets, getEquippedItemId);
         HashSet<string> equippedIdSet = new HashSet<string>(equippedPriorityIds);
 
@@ -90,28 +64,13 @@ public static class EquipmentInventoryLayoutService
             EnsureSize(layout, i + 1);
 
             string displacedId = layout[i];
-            if (!string.IsNullOrWhiteSpace(displacedId) && !equippedIdSet.Contains(displacedId))
-            {
-                displacedIds.Add(displacedId);
-            }
+            if (!string.IsNullOrWhiteSpace(displacedId) && !equippedIdSet.Contains(displacedId)) displacedIds.Add(displacedId);
 
             layout[i] = equippedPriorityIds[i];
         }
 
-        for (int i = 0; i < displacedIds.Count; i++)
-        {
-            int nextEmptyIndex = FindNextEmptyIndex(layout);
-            layout[nextEmptyIndex] = displacedIds[i];
-        }
-
-        HashSet<string> placedIds = new HashSet<string>();
-        for (int i = 0; i < layout.Count; i++)
-        {
-            if (!string.IsNullOrWhiteSpace(layout[i]))
-            {
-                placedIds.Add(layout[i]);
-            }
-        }
+        PlaceItemsInNextEmptySlots(layout, displacedIds);
+        HashSet<string> placedIds = CollectPlacedIds(layout);
 
         for (int i = 0; i < availableIds.Count; i++)
         {
@@ -120,8 +79,7 @@ public static class EquipmentInventoryLayoutService
                 continue;
             }
 
-            int nextEmptyIndex = FindNextEmptyIndex(layout);
-            layout[nextEmptyIndex] = availableIds[i];
+            layout[FindNextEmptyIndex(layout)] = availableIds[i];
         }
 
         return layout;
@@ -132,18 +90,7 @@ public static class EquipmentInventoryLayoutService
         // Collects currently equipped ids in the same order the inventory strip should display them.
         List<string> equippedIds = new List<string>(PriorityOrder.Length);
         List<EquipmentSlotDropTargetUI> orderedTargets = new List<EquipmentSlotDropTargetUI>();
-
-        if (dropTargets != null)
-        {
-            for (int i = 0; i < dropTargets.Count; i++)
-            {
-                if (dropTargets[i] != null)
-                {
-                    orderedTargets.Add(dropTargets[i]);
-                }
-            }
-        }
-
+        if (dropTargets != null) for (int i = 0; i < dropTargets.Count; i++) if (dropTargets[i] != null) orderedTargets.Add(dropTargets[i]);
         orderedTargets.Sort(CompareDropTargetPriority);
 
         for (int i = 0; i < orderedTargets.Count; i++)
@@ -327,5 +274,35 @@ public static class EquipmentInventoryLayoutService
         }
 
         return firstSlot;
+    }
+
+    private static List<string> GetAvailableIds(IReadOnlyList<EquipmentInstance> availableEquipment, out HashSet<string> availableIdSet)
+    {
+        List<string> availableIds = new List<string>();
+        availableIdSet = new HashSet<string>();
+        if (availableEquipment == null) return availableIds;
+
+        for (int i = 0; i < availableEquipment.Count; i++)
+        {
+            EquipmentInstance equipment = availableEquipment[i];
+            if (equipment != null && !string.IsNullOrWhiteSpace(equipment.InstanceId) && availableIdSet.Add(equipment.InstanceId))
+            {
+                availableIds.Add(equipment.InstanceId);
+            }
+        }
+
+        return availableIds;
+    }
+
+    private static void PlaceItemsInNextEmptySlots(List<string> layout, IReadOnlyList<string> items)
+    {
+        for (int i = 0; i < items.Count; i++) layout[FindNextEmptyIndex(layout)] = items[i];
+    }
+
+    private static HashSet<string> CollectPlacedIds(IReadOnlyList<string> layout)
+    {
+        HashSet<string> placedIds = new HashSet<string>();
+        for (int i = 0; i < layout.Count; i++) if (!string.IsNullOrWhiteSpace(layout[i])) placedIds.Add(layout[i]);
+        return placedIds;
     }
 }

@@ -5,6 +5,8 @@ using UnityEngine;
 [Serializable]
 public class EquipmentInstance
 {
+    private static readonly IReadOnlyList<EquipmentModifierRoll> EmptyRolls = Array.Empty<EquipmentModifierRoll>();
+
     [SerializeField] private string instanceId;
     [SerializeField] private EquipmentRarity rarity;
     [SerializeField] private int itemTier;
@@ -49,15 +51,8 @@ public class EquipmentInstance
         List<EquipmentModifierRoll> implicitRolls,
         List<EquipmentRolledAffix> prefixAffixes,
         List<EquipmentRolledAffix> suffixAffixes)
+        : this(Guid.NewGuid().ToString("N"), rarity, itemTier, itemLevel, baseDefinition, implicitRolls, prefixAffixes, suffixAffixes)
     {
-        instanceId = Guid.NewGuid().ToString("N");
-        this.rarity = rarity;
-        this.itemTier = itemTier;
-        this.itemLevel = Mathf.Max(1, itemLevel);
-        this.baseDefinition = baseDefinition;
-        this.implicitRolls = implicitRolls ?? new List<EquipmentModifierRoll>();
-        this.prefixAffixes = prefixAffixes ?? new List<EquipmentRolledAffix>();
-        this.suffixAffixes = suffixAffixes ?? new List<EquipmentRolledAffix>();
     }
 
     public EquipmentInstance(
@@ -109,24 +104,12 @@ public class EquipmentInstance
     private static IReadOnlyList<EquipmentModifierRoll> CollectRolls(IReadOnlyList<EquipmentRolledAffix> affixes)
     {
         List<EquipmentModifierRoll> rolls = new List<EquipmentModifierRoll>();
-
-        if (affixes == null)
-        {
-            return rolls;
-        }
+        if (affixes == null) return rolls;
 
         for (int i = 0; i < affixes.Count; i++)
         {
-            EquipmentRolledAffix affix = affixes[i];
-            if (affix?.ModifierRolls == null)
-            {
-                continue;
-            }
-
-            for (int j = 0; j < affix.ModifierRolls.Count; j++)
-            {
-                rolls.Add(affix.ModifierRolls[j]);
-            }
+            IReadOnlyList<EquipmentModifierRoll> modifierRolls = affixes[i]?.ModifierRolls ?? EmptyRolls;
+            for (int j = 0; j < modifierRolls.Count; j++) rolls.Add(modifierRolls[j]);
         }
 
         return rolls;

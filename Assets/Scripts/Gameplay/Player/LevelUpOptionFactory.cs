@@ -3,6 +3,8 @@ using UnityEngine;
 
 public static class LevelUpOptionFactory
 {
+    private const string AreaWeaponName = "Area Weapon";
+
     public static LevelUpOptionData CreateNewWeaponOption(WeaponData weaponData)
     {
         return new LevelUpOptionData
@@ -64,9 +66,10 @@ public static class LevelUpOptionFactory
 
         for (int i = 0; i < optionCount; i++)
         {
-            LevelUpOptionData option = TryBuildNewWeaponOption(weaponController, availableWeapons, offeredNewWeapons)
-                ?? TryBuildPlayerUpgradeOption(playerStats, offeredPlayerStats, playerUpgradeIcon)
-                ?? TryBuildWeaponUpgradeOption(weapons, usedWeapons);
+            LevelUpOptionData option = TryBuildOption(
+                () => TryBuildNewWeaponOption(weaponController, availableWeapons, offeredNewWeapons),
+                () => TryBuildPlayerUpgradeOption(playerStats, offeredPlayerStats, playerUpgradeIcon),
+                () => TryBuildWeaponUpgradeOption(weapons, usedWeapons));
 
             if (option != null)
             {
@@ -167,14 +170,7 @@ public static class LevelUpOptionFactory
         }
 
         List<PlayerStatRoll> availableRolls = new List<PlayerStatRoll>();
-
-        foreach (PlayerStatRoll roll in playerStats.UpgradeRolls)
-        {
-            if (!alreadyOfferedStats.Contains(roll.statType))
-            {
-                availableRolls.Add(roll);
-            }
-        }
+        foreach (PlayerStatRoll roll in playerStats.UpgradeRolls) if (!alreadyOfferedStats.Contains(roll.statType)) availableRolls.Add(roll);
 
         if (availableRolls.Count == 0)
         {
@@ -189,7 +185,7 @@ public static class LevelUpOptionFactory
     {
         HashSet<StatType> allowed = new HashSet<StatType>(weapon.Data.allowedStats);
 
-        if (weapon.Data.weaponName == "Area Weapon")
+        if (weapon.Data.weaponName == AreaWeaponName)
         {
             allowed.Remove(StatType.Cooldown);
 
@@ -206,29 +202,28 @@ public static class LevelUpOptionFactory
     {
         List<Weapon> pool = new List<Weapon>(weapons);
         pool.RemoveAll(weapon => usedWeapons.Contains(weapon));
-
-        if (pool.Count == 0)
-        {
-            return null;
-        }
-
-        return pool[Random.Range(0, pool.Count)];
+        return pool.Count == 0 ? null : pool[Random.Range(0, pool.Count)];
     }
 
     private static List<WeaponData> GetAvailableWeapons(WeaponController weaponController, List<WeaponData> allWeapons)
     {
         List<WeaponData> available = new List<WeaponData>();
-
         foreach (WeaponData weaponData in allWeapons)
-        {
-            bool alreadyOwned = weaponController.activeWeapons.Exists(weapon => weapon.Data == weaponData);
-
-            if (!alreadyOwned)
-            {
+            if (!weaponController.activeWeapons.Exists(weapon => weapon.Data == weaponData))
                 available.Add(weaponData);
-            }
-        }
 
         return available;
+    }
+
+    // Option generation intentionally falls through new-weapon, then player, then weapon-upgrade rolls to keep choices varied.
+    private static LevelUpOptionData TryBuildOption(params System.Func<LevelUpOptionData>[] builders)
+    {
+        for (int i = 0; i < builders.Length; i++)
+        {
+            LevelUpOptionData option = builders[i]?.Invoke();
+            if (option != null) return option;
+        }
+
+        return null;
     }
 }

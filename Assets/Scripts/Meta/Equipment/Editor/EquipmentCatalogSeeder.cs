@@ -8,15 +8,19 @@ public static class EquipmentCatalogSeeder
     private const string BasesFolder = RootFolder + "/Bases";
     private const string AffixesFolder = RootFolder + "/Affixes";
     private const string CatalogsFolder = RootFolder + "/Catalogs";
+    private static readonly (string parent, string name)[] RequiredFolders =
+    {
+        ("Assets", "Resources"),
+        ("Assets/Resources", "Equipment"),
+        (RootFolder, "Bases"),
+        (RootFolder, "Affixes"),
+        (RootFolder, "Catalogs"),
+    };
 
     [MenuItem("Tools/Equipment/Create Starter Catalogs")]
     public static void CreateStarterCatalogs()
     {
-        EnsureFolder("Assets", "Resources");
-        EnsureFolder("Assets/Resources", "Equipment");
-        EnsureFolder(RootFolder, "Bases");
-        EnsureFolder(RootFolder, "Affixes");
-        EnsureFolder(RootFolder, "Catalogs");
+        EnsureRequiredFolders();
 
         List<EquipmentBaseDefinition> bases = CreateBaseDefinitions();
         List<EquipmentAffixDefinition> affixes = CreateAffixDefinitions();
@@ -362,53 +366,11 @@ public static class EquipmentCatalogSeeder
         return asset;
     }
 
-    private static void CreateOrUpdateBaseCatalog(List<EquipmentBaseDefinition> bases)
-    {
-        string assetPath = $"{CatalogsFolder}/EquipmentBaseCatalog.asset";
-        EquipmentBaseCatalog catalog = AssetDatabase.LoadAssetAtPath<EquipmentBaseCatalog>(assetPath);
+    private static void CreateOrUpdateBaseCatalog(List<EquipmentBaseDefinition> bases) =>
+        AssignCatalogEntries(GetOrCreateAsset<EquipmentBaseCatalog>($"{CatalogsFolder}/EquipmentBaseCatalog.asset"), "baseDefinitions", bases);
 
-        if (catalog == null)
-        {
-            catalog = ScriptableObject.CreateInstance<EquipmentBaseCatalog>();
-            AssetDatabase.CreateAsset(catalog, assetPath);
-        }
-
-        SerializedObject serializedObject = new SerializedObject(catalog);
-        SerializedProperty baseDefinitions = serializedObject.FindProperty("baseDefinitions");
-        baseDefinitions.arraySize = bases.Count;
-
-        for (int i = 0; i < bases.Count; i++)
-        {
-            baseDefinitions.GetArrayElementAtIndex(i).objectReferenceValue = bases[i];
-        }
-
-        serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        EditorUtility.SetDirty(catalog);
-    }
-
-    private static void CreateOrUpdateAffixCatalog(List<EquipmentAffixDefinition> affixes)
-    {
-        string assetPath = $"{CatalogsFolder}/EquipmentAffixCatalog.asset";
-        EquipmentAffixCatalog catalog = AssetDatabase.LoadAssetAtPath<EquipmentAffixCatalog>(assetPath);
-
-        if (catalog == null)
-        {
-            catalog = ScriptableObject.CreateInstance<EquipmentAffixCatalog>();
-            AssetDatabase.CreateAsset(catalog, assetPath);
-        }
-
-        SerializedObject serializedObject = new SerializedObject(catalog);
-        SerializedProperty affixDefinitions = serializedObject.FindProperty("affixDefinitions");
-        affixDefinitions.arraySize = affixes.Count;
-
-        for (int i = 0; i < affixes.Count; i++)
-        {
-            affixDefinitions.GetArrayElementAtIndex(i).objectReferenceValue = affixes[i];
-        }
-
-        serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        EditorUtility.SetDirty(catalog);
-    }
+    private static void CreateOrUpdateAffixCatalog(List<EquipmentAffixDefinition> affixes) =>
+        AssignCatalogEntries(GetOrCreateAsset<EquipmentAffixCatalog>($"{CatalogsFolder}/EquipmentAffixCatalog.asset"), "affixDefinitions", affixes);
 
     private static void WriteModifier(SerializedProperty property, EquipmentModifierDefinition modifier)
     {
@@ -438,5 +400,38 @@ public static class EquipmentCatalogSeeder
         {
             AssetDatabase.CreateFolder(parentFolder, newFolderName);
         }
+    }
+
+    private static void EnsureRequiredFolders()
+    {
+        foreach ((string parent, string name) in RequiredFolders)
+        {
+            EnsureFolder(parent, name);
+        }
+    }
+
+    private static TAsset GetOrCreateAsset<TAsset>(string assetPath) where TAsset : ScriptableObject
+    {
+        TAsset asset = AssetDatabase.LoadAssetAtPath<TAsset>(assetPath);
+        if (asset != null) return asset;
+
+        asset = ScriptableObject.CreateInstance<TAsset>();
+        AssetDatabase.CreateAsset(asset, assetPath);
+        return asset;
+    }
+
+    private static void AssignCatalogEntries<TAsset>(ScriptableObject catalog, string propertyName, List<TAsset> entries) where TAsset : Object
+    {
+        SerializedObject serializedObject = new SerializedObject(catalog);
+        SerializedProperty collection = serializedObject.FindProperty(propertyName);
+        collection.arraySize = entries.Count;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            collection.GetArrayElementAtIndex(i).objectReferenceValue = entries[i];
+        }
+
+        serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(catalog);
     }
 }

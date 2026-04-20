@@ -21,27 +21,15 @@ public class RunCompletePanelUI : MonoBehaviour
 
     public void Show(MapInstance completedMap)
     {
-        if (panelRoot != null)
-        {
-            panelRoot.SetActive(true);
-        }
-
-        if (mapNameText != null)
-        {
-            mapNameText.text = completedMap != null ? completedMap.DisplayName : "Map Complete";
-        }
-
+        SetPanelVisible(true);
+        if (mapNameText != null) mapNameText.text = completedMap != null ? completedMap.DisplayName : "Map Complete";
         hoverPreviewUI?.HidePanel();
         Refresh();
     }
 
     public void Hide()
     {
-        if (panelRoot != null)
-        {
-            panelRoot.SetActive(false);
-        }
-
+        SetPanelVisible(false);
         hoverPreviewUI?.HidePanel();
     }
 
@@ -53,26 +41,7 @@ public class RunCompletePanelUI : MonoBehaviour
         }
 
         IReadOnlyList<RunLootEntry> entries = RunLootService.Entries;
-        List<InventorySlotModel> slotData = new List<InventorySlotModel>(entries.Count);
-
-        foreach (RunLootEntry entry in entries)
-        {
-            if (entry == null)
-            {
-                continue;
-            }
-
-            slotData.Add(new InventorySlotModel
-            {
-                id = entry.id,
-                label = entry.displayName,
-                icon = entry.icon,
-                isEmpty = false,
-                isSelected = false,
-                isDiscarded = entry.isDiscarded,
-                isInteractable = true,
-            });
-        }
+        List<InventorySlotModel> slotData = BuildLootSlotData(entries);
 
         lootGrid.SetItems(
             new InventoryGridModel(slotData, lootGrid.MaxSlots),
@@ -130,5 +99,32 @@ public class RunCompletePanelUI : MonoBehaviour
     private void OnLootSlotHoverExit(int index, InventorySlotModel data)
     {
         hoverPreviewUI?.HidePanel();
+    }
+
+    private void SetPanelVisible(bool isVisible)
+    {
+        if (panelRoot != null) panelRoot.SetActive(isVisible);
+    }
+
+    private static List<InventorySlotModel> BuildLootSlotData(IReadOnlyList<RunLootEntry> entries)
+    {
+        List<InventorySlotModel> slotData = new List<InventorySlotModel>(entries.Count);
+
+        foreach (RunLootEntry entry in entries)
+        {
+            if (entry == null) continue;
+            slotData.Add(new InventorySlotModel
+            {
+                id = entry.id,
+                label = entry.displayName,
+                icon = entry.icon,
+                isEmpty = false,
+                isSelected = false,
+                isDiscarded = entry.isDiscarded,
+                isInteractable = true,
+            });
+        }
+
+        return slotData;
     }
 }

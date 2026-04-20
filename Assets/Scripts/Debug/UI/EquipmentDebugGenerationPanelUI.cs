@@ -5,6 +5,16 @@ using UnityEngine.UI;
 
 public class EquipmentDebugGenerationPanelUI : MonoBehaviour
 {
+    private static readonly (System.Func<EquipmentDebugGenerationPanelUI, TMP_InputField> field, string value)[] DefaultInputs =
+    {
+        (ui => ui.minTierInput, "1"),
+        (ui => ui.maxTierInput, "10"),
+        (ui => ui.itemCountInput, "1"),
+        (ui => ui.commonWeightInput, EquipmentGenerator.DefaultCommonWeight.ToString("0")),
+        (ui => ui.uncommonWeightInput, EquipmentGenerator.DefaultUncommonWeight.ToString("0")),
+        (ui => ui.rareWeightInput, EquipmentGenerator.DefaultRareWeight.ToString("0")),
+    };
+
     [Header("Panel")]
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private TMP_InputField minTierInput;
@@ -34,21 +44,9 @@ public class EquipmentDebugGenerationPanelUI : MonoBehaviour
         Hide();
     }
 
-    public void Show()
-    {
-        if (panelRoot != null)
-        {
-            panelRoot.SetActive(true);
-        }
-    }
+    public void Show() => SetPanelVisible(true);
 
-    public void Hide()
-    {
-        if (panelRoot != null)
-        {
-            panelRoot.SetActive(false);
-        }
-    }
+    public void Hide() => SetPanelVisible(false);
 
     public void GenerateTestItems()
     {
@@ -134,47 +132,24 @@ public class EquipmentDebugGenerationPanelUI : MonoBehaviour
 
     private void RegisterButtons()
     {
-        if (generateButton != null)
-        {
-            generateButton.onClick.RemoveListener(GenerateTestItems);
-            generateButton.onClick.AddListener(GenerateTestItems);
-        }
-
-        if (closeButton != null)
-        {
-            closeButton.onClick.RemoveListener(Hide);
-            closeButton.onClick.AddListener(Hide);
-        }
+        RegisterButton(generateButton, GenerateTestItems);
+        RegisterButton(closeButton, Hide);
     }
 
     private void ApplyDefaultValues()
     {
-        SetInputValue(minTierInput, "1");
-        SetInputValue(maxTierInput, "10");
-        SetInputValue(itemCountInput, "1");
-        SetInputValue(commonWeightInput, EquipmentGenerator.DefaultCommonWeight.ToString("0"));
-        SetInputValue(uncommonWeightInput, EquipmentGenerator.DefaultUncommonWeight.ToString("0"));
-        SetInputValue(rareWeightInput, EquipmentGenerator.DefaultRareWeight.ToString("0"));
-    }
-
-    private void RefreshStagingIfPresent()
-    {
-        StagingManager stagingManager = FindAnyObjectByType<StagingManager>();
-        if (stagingManager != null)
+        for (int i = 0; i < DefaultInputs.Length; i++)
         {
-            stagingManager.RefreshEquipmentDebugData();
+            SetInputValue(DefaultInputs[i].field(this), DefaultInputs[i].value);
         }
     }
 
-    private EquipmentSlotType GetSelectedSlotType()
-    {
-        if (forcedSlotDropdown == null)
-        {
-            return EquipmentSlotType.Head;
-        }
+    private void RefreshStagingIfPresent() => FindAnyObjectByType<StagingManager>()?.RefreshEquipmentDebugData();
 
-        return (EquipmentSlotType)Mathf.Clamp(forcedSlotDropdown.value, 0, forcedSlotDropdown.options.Count - 1);
-    }
+    private EquipmentSlotType GetSelectedSlotType() =>
+        forcedSlotDropdown == null
+            ? EquipmentSlotType.Head
+            : (EquipmentSlotType)Mathf.Clamp(forcedSlotDropdown.value, 0, forcedSlotDropdown.options.Count - 1);
 
     private int ParsePositiveInt(TMP_InputField inputField, int fallback)
     {
@@ -211,5 +186,21 @@ public class EquipmentDebugGenerationPanelUI : MonoBehaviour
             feedbackText.text = message;
             feedbackText.color = color;
         }
+    }
+
+    private void SetPanelVisible(bool isVisible)
+    {
+        if (panelRoot != null) panelRoot.SetActive(isVisible);
+    }
+
+    private static void RegisterButton(Button button, UnityEngine.Events.UnityAction callback)
+    {
+        if (button == null)
+        {
+            return;
+        }
+
+        button.onClick.RemoveListener(callback);
+        button.onClick.AddListener(callback);
     }
 }

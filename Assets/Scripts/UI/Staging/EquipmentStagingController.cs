@@ -65,11 +65,7 @@ public class EquipmentStagingController : IStagingTabController
 
     public void RegisterDropTargets()
     {
-        foreach (EquipmentSlotDropTargetUI dropTarget in equipmentDropTargets)
-        {
-            BindDropTarget(dropTarget);
-        }
-
+        foreach (EquipmentSlotDropTargetUI dropTarget in equipmentDropTargets) BindDropTarget(dropTarget);
         RefreshEquippedSlotVisuals();
     }
 
@@ -112,15 +108,13 @@ public class EquipmentStagingController : IStagingTabController
 
     private void OnEquipmentSlotClicked(int index, InventorySlotModel data)
     {
-        if (TryGetEquipmentAtIndex(index, out EquipmentInstance equipment))
-        {
-            SelectEquipment(equipment);
-        }
+        SelectEquipment(GetEquipmentAtIndex(index));
     }
 
     private void OnEquipmentSlotRightClicked(int index, InventorySlotModel data)
     {
-        if (!TryGetEquipmentAtIndex(index, out EquipmentInstance equipment))
+        EquipmentInstance equipment = GetEquipmentAtIndex(index);
+        if (equipment == null)
         {
             return;
         }
@@ -212,7 +206,8 @@ public class EquipmentStagingController : IStagingTabController
 
     private void HandleEquippedSlotLeftClicked(EquipmentSlotDropTargetUI dropTarget)
     {
-        if (!TryGetDisplayedEquipment(dropTarget, out EquipmentInstance equipment))
+        EquipmentInstance equipment = dropTarget?.DisplayedEquipment;
+        if (equipment == null)
         {
             return;
         }
@@ -243,12 +238,7 @@ public class EquipmentStagingController : IStagingTabController
 
     private void HandleEquippedSlotHoverEntered(EquipmentSlotDropTargetUI dropTarget)
     {
-        if (dropTarget?.DisplayedEquipment == null)
-        {
-            return;
-        }
-
-        ApplyHoveredEquipment(dropTarget.DisplayedEquipment);
+        ApplyHoveredEquipment(dropTarget?.DisplayedEquipment);
     }
 
     private void HandleEquippedSlotHoverExited(EquipmentSlotDropTargetUI dropTarget)
@@ -284,18 +274,6 @@ public class EquipmentStagingController : IStagingTabController
         }
 
         return FindEquipmentById(equipmentInventoryLayout[index]);
-    }
-
-    private bool TryGetEquipmentAtIndex(int index, out EquipmentInstance equipment)
-    {
-        equipment = GetEquipmentAtIndex(index);
-        return equipment != null;
-    }
-
-    private bool TryGetDisplayedEquipment(EquipmentSlotDropTargetUI dropTarget, out EquipmentInstance equipment)
-    {
-        equipment = dropTarget != null ? dropTarget.DisplayedEquipment : null;
-        return equipment != null;
     }
 
     private void SetHoveredEquipment(EquipmentInstance equipment, int inventoryIndex = -1)

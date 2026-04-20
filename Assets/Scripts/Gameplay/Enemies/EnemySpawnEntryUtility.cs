@@ -24,12 +24,10 @@ public static class EnemySpawnEntryUtility
         return false;
     }
 
-    public static float GetAmbientSpawnWeight(EnemySpawner.PackEntry entry)
-    {
-        return TryGetPackDefinition(entry, out _, out EnemyArchetypeDefinition archetypeDefinition)
-            ? archetypeDefinition != null ? archetypeDefinition.AmbientSpawnWeight : 0f
+    public static float GetAmbientSpawnWeight(EnemySpawner.PackEntry entry) =>
+        TryGetPackDefinition(entry, out _, out EnemyArchetypeDefinition archetypeDefinition)
+            ? archetypeDefinition?.AmbientSpawnWeight ?? 0f
             : 0f;
-    }
 
     public static float GetEventSpawnWeight(EnemySpawner.PackEntry entry, EnemyArchetype archetype)
     {
@@ -155,19 +153,7 @@ public static class EnemySpawnEntryUtility
 
     public static void CollectPoolPrefabs(IReadOnlyList<EnemySpawner.PackEntry> entries, ISet<GameObject> output)
     {
-        if (entries == null || output == null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < entries.Count; i++)
-        {
-            EnemySpawner.PackEntry entry = entries[i];
-
-            if (entry != null && entry.enemyPrefab != null)
-            {
-                output.Add(entry.enemyPrefab);
-            }
-        }
+        if (entries == null || output == null) return;
+        for (int i = 0; i < entries.Count; i++) if (entries[i]?.enemyPrefab != null) output.Add(entries[i].enemyPrefab);
     }
 }

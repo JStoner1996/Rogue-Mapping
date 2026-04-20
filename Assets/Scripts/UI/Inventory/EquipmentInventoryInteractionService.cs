@@ -105,20 +105,9 @@ public static class EquipmentInventoryInteractionService
             return false;
         }
 
-        if (payload.sourceType == DragItemSourceType.EquippedSlot
-            && !string.IsNullOrWhiteSpace(payload.sourceSlotId)
-            && payload.sourceSlotId != dropTarget.LoadoutSlotId)
+        if (TrySwapEquippedSlots(dropTarget, payload, availableEquipment, dataFacade, equipment))
         {
-            string targetEquippedItemId = dataFacade.GetEquippedItemId(dropTarget.LoadoutSlotId);
-            EquipmentInstance targetEquippedItem = EquipmentInstanceLookup.FindById(availableEquipment, targetEquippedItemId);
-
-            if (targetEquippedItem != null && targetEquippedItem.SlotType == equipment.SlotType)
-            {
-                dataFacade.SetEquippedItem(payload.sourceSlotId, targetEquippedItem.InstanceId, false);
-                dataFacade.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId, false);
-                dataFacade.Save();
-                return true;
-            }
+            return true;
         }
 
         dataFacade.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId);
@@ -162,9 +151,7 @@ public static class EquipmentInventoryInteractionService
         }
 
         int sourceIndex = equipmentInventoryLayout.FindIndex(id => id == payload.itemId);
-        string targetItemId = targetIndex >= 0 && targetIndex < equipmentInventoryLayout.Count
-            ? equipmentInventoryLayout[targetIndex]
-            : string.Empty;
+        string targetItemId = targetIndex >= 0 && targetIndex < equipmentInventoryLayout.Count ? equipmentInventoryLayout[targetIndex] : string.Empty;
         EquipmentInstance targetEquipment = EquipmentInstanceLookup.FindById(availableEquipment, targetItemId);
 
         if (payload.sourceType == DragItemSourceType.EquippedSlot
@@ -200,6 +187,35 @@ public static class EquipmentInventoryInteractionService
             equipmentInventoryLayout[sourceIndex] = targetItemId;
         }
 
+        return true;
+    }
+
+    private static bool TrySwapEquippedSlots(
+        EquipmentSlotDropTargetUI dropTarget,
+        DragItemPayload payload,
+        IReadOnlyList<EquipmentInstance> availableEquipment,
+        IEquipmentDataFacade dataFacade,
+        EquipmentInstance equipment)
+    {
+        if (payload.sourceType != DragItemSourceType.EquippedSlot
+            || string.IsNullOrWhiteSpace(payload.sourceSlotId)
+            || payload.sourceSlotId == dropTarget.LoadoutSlotId)
+        {
+            return false;
+        }
+
+        EquipmentInstance targetEquippedItem = EquipmentInstanceLookup.FindById(
+            availableEquipment,
+            dataFacade.GetEquippedItemId(dropTarget.LoadoutSlotId));
+
+        if (targetEquippedItem == null || targetEquippedItem.SlotType != equipment.SlotType)
+        {
+            return false;
+        }
+
+        dataFacade.SetEquippedItem(payload.sourceSlotId, targetEquippedItem.InstanceId, false);
+        dataFacade.SetEquippedItem(dropTarget.LoadoutSlotId, equipment.InstanceId, false);
+        dataFacade.Save();
         return true;
     }
 }

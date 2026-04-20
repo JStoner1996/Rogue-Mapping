@@ -61,8 +61,17 @@ public class StagingManager : MonoBehaviour
 
     public void StartRun()
     {
-        if (!TryGetSelectedLoadout(out WeaponData selectedWeapon, out MapInstance selectedMap))
+        WeaponData selectedWeapon = weaponController?.SelectedWeapon;
+        MapInstance selectedMap = mapController?.SelectedMap;
+        if (selectedWeapon == null)
         {
+            Debug.LogWarning("No weapon selected!");
+            return;
+        }
+
+        if (selectedMap == null)
+        {
+            Debug.LogWarning("No map selected!");
             return;
         }
 
@@ -120,28 +129,8 @@ public class StagingManager : MonoBehaviour
 
     private void InitializeDefaults()
     {
-        RunData.SelectedWeapon = weaponController != null ? weaponController.SelectedWeapon : null;
-        RunData.SelectedMap = mapController != null ? mapController.SelectedMap : null;
-    }
-
-    private bool TryGetSelectedLoadout(out WeaponData selectedWeapon, out MapInstance selectedMap)
-    {
-        selectedWeapon = weaponController != null ? weaponController.SelectedWeapon : null;
-        selectedMap = mapController != null ? mapController.SelectedMap : null;
-
-        if (selectedWeapon == null)
-        {
-            Debug.LogWarning("No weapon selected!");
-            return false;
-        }
-
-        if (selectedMap == null)
-        {
-            Debug.LogWarning("No map selected!");
-            return false;
-        }
-
-        return true;
+        RunData.SelectedWeapon = weaponController?.SelectedWeapon;
+        RunData.SelectedMap = mapController?.SelectedMap;
     }
 
     private void HandleTabChanged(StagingTabController.Tab tab)
@@ -151,21 +140,12 @@ public class StagingManager : MonoBehaviour
         activeController?.RefreshPreview();
     }
 
-    private IStagingTabController GetActiveTabController()
-    {
-        switch (tabController != null ? tabController.CurrentTab : StagingTabController.Tab.Weapons)
+    private IStagingTabController GetActiveTabController() =>
+        (tabController != null ? tabController.CurrentTab : StagingTabController.Tab.Weapons) switch
         {
-            case StagingTabController.Tab.Weapons:
-                return weaponController;
-
-            case StagingTabController.Tab.Maps:
-                return mapController;
-
-            case StagingTabController.Tab.Equipment:
-                return equipmentController;
-
-            default:
-                return null;
-        }
-    }
+            StagingTabController.Tab.Weapons => weaponController,
+            StagingTabController.Tab.Maps => mapController,
+            StagingTabController.Tab.Equipment => equipmentController,
+            _ => null,
+        };
 }

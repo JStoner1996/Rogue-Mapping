@@ -79,7 +79,6 @@ public class EnemySpawner : MonoBehaviour
     {
         ApplyRunModifiers();
         BuildEnemyPools();
-        spawnTimer = 0f;
     }
 
     void Update()
@@ -116,15 +115,7 @@ public class EnemySpawner : MonoBehaviour
             && TryGetWorldChunkManager(out _);
     }
 
-    private bool TryGetActivePlayer()
-    {
-        if (player == null)
-        {
-            player = PlayerController.Instance;
-        }
-
-        return player != null && player.gameObject.activeSelf;
-    }
+    private bool TryGetActivePlayer() => (player ??= PlayerController.Instance) != null && player.gameObject.activeSelf;
 
     private bool ShouldSpawn()
     {
@@ -178,20 +169,11 @@ public class EnemySpawner : MonoBehaviour
         return Mathf.Max(1, packCount);
     }
 
-    private PackEntry RollAmbientSpawnEntry()
-    {
-        return EnemySpawnEntryUtility.RollWeightedEntry(ambientPacks, EnemySpawnEntryUtility.GetAmbientSpawnWeight);
-    }
+    private PackEntry RollAmbientSpawnEntry() => EnemySpawnEntryUtility.RollWeightedEntry(ambientPacks, EnemySpawnEntryUtility.GetAmbientSpawnWeight);
 
-    public bool SpawnFinalBosses(int count)
-    {
-        return SpawnEventEnemies(EnemyArchetype.Boss, count);
-    }
+    public bool SpawnFinalBosses(int count) => SpawnEventEnemies(EnemyArchetype.Boss, count);
 
-    public bool SpawnEventEnemies(EnemyArchetype archetype, int count)
-    {
-        return SpawnEventEnemies(archetype, count, null);
-    }
+    public bool SpawnEventEnemies(EnemyArchetype archetype, int count) => SpawnEventEnemies(archetype, count, null);
 
     public bool SpawnEventEnemies(EnemyArchetype archetype, int count, Vector2? spawnOriginOverride)
     {
@@ -242,17 +224,7 @@ public class EnemySpawner : MonoBehaviour
         persistentRuntimeModifiers[modifierType] = currentValue + additiveValue;
     }
 
-    private void SpawnPack(PackEntry entry)
-    {
-        SpawnPack(entry, BuildSpawnContext());
-    }
-
-    private void SpawnPack(PackEntry entry, EnemySpawnContext packContext)
-    {
-        SpawnPack(entry, packContext, null);
-    }
-
-    private void SpawnPack(PackEntry entry, EnemySpawnContext packContext, Vector2? packOriginOverride)
+    private void SpawnPack(PackEntry entry, EnemySpawnContext? packContextOverride = null, Vector2? packOriginOverride = null)
     {
         if (entry == null
             || entry.enemyPrefab == null
@@ -261,6 +233,7 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
+        EnemySpawnContext packContext = packContextOverride ?? BuildSpawnContext();
         int packSize = GetPackSize(enemyTemplate);
         // Ambient packs choose a chunk-aware origin, while event spawns can override it.
         Vector2? generatedPackOrigin = packOriginOverride ?? GetAmbientPackSpawnOrigin();
@@ -317,13 +290,9 @@ public class EnemySpawner : MonoBehaviour
         pools.ReturnEnemy(enemy, prefabKey);
     }
 
-    private EnemySpawnContext BuildSpawnContext()
+    private EnemySpawnContext BuildSpawnContext(EnemyRarity? rarityOverride = null)
     {
-        return BuildSpawnContext(RollRarity());
-    }
-
-    private EnemySpawnContext BuildSpawnContext(EnemyRarity rarity)
-    {
+        EnemyRarity rarity = rarityOverride ?? RollRarity();
         RarityProfile rarityProfile = GetRarityProfile(rarity);
 
         return new EnemySpawnContext
@@ -465,20 +434,9 @@ public class EnemySpawner : MonoBehaviour
         return modifier;
     }
 
-    private float GetEquipmentPercentModifier(EquipmentStatSummary summary, EquipmentStatType statType)
-    {
-        return summary?.GetEntry(statType)?.percentValue ?? 0f;
-    }
+    private static float GetEquipmentPercentModifier(EquipmentStatSummary summary, EquipmentStatType statType) => summary?.GetEntry(statType)?.percentValue ?? 0f;
 
-    private float GetMapModifier(MapStatType statType)
-    {
-        if (RunData.SelectedMap == null)
-        {
-            return 0f;
-        }
-
-        return RunData.SelectedMap.GetModifier(statType) / 100f;
-    }
+    private static float GetMapModifier(MapStatType statType) => RunData.SelectedMap == null ? 0f : RunData.SelectedMap.GetModifier(statType) / 100f;
 
     private Vector2? GetAmbientPackSpawnOrigin()
     {
@@ -538,16 +496,7 @@ public class EnemySpawner : MonoBehaviour
         return pools != null;
     }
 
-    private Vector2 GetPackSpawnPoint(Vector2 packOrigin)
-    {
-        if (packSpawnRadius <= 0f)
-        {
-            return packOrigin;
-        }
-
-        Vector2 offset = Random.insideUnitCircle * packSpawnRadius;
-        return packOrigin + offset;
-    }
+    private Vector2 GetPackSpawnPoint(Vector2 packOrigin) => packSpawnRadius <= 0f ? packOrigin : packOrigin + (Random.insideUnitCircle * packSpawnRadius);
 
     private void BuildEnemyPools()
     {
@@ -562,15 +511,10 @@ public class EnemySpawner : MonoBehaviour
         pools.EnsurePools(new List<GameObject>(uniquePrefabs), initialPoolSizePerEnemy);
     }
 
-    private Enemy GetPooledEnemy(GameObject enemyPrefab)
-    {
-        if (enemyPrefab == null || !TryGetEnemyPools(out EnemyPools pools))
-        {
-            return null;
-        }
-
-        return pools.GetEnemy(enemyPrefab, initialPoolSizePerEnemy);
-    }
+    private Enemy GetPooledEnemy(GameObject enemyPrefab) =>
+        enemyPrefab != null && TryGetEnemyPools(out EnemyPools pools)
+            ? pools.GetEnemy(enemyPrefab, initialPoolSizePerEnemy)
+            : null;
 
     private static RarityProfile CreateRarityProfile(
         float healthMultiplier,

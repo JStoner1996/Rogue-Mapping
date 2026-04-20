@@ -4,6 +4,20 @@ using UnityEngine.UI;
 
 public class PlayerStatsPanelUI : MonoBehaviour
 {
+    private static readonly (EquipmentStatType statType, System.Func<PlayerStatsPanelUI, StatRowUI> getRow)[] PercentRows =
+    {
+        (EquipmentStatType.Damage, ui => ui.damageRow),
+        (EquipmentStatType.AttackSpeed, ui => ui.attackSpeedRow),
+        (EquipmentStatType.Range, ui => ui.rangeRow),
+        (EquipmentStatType.PickupRange, ui => ui.pickupRangeRow),
+        (EquipmentStatType.ShrineQuantity, ui => ui.shrineQuantityRow),
+        (EquipmentStatType.MapDropChance, ui => ui.mapDropChanceRow),
+        (EquipmentStatType.EquipmentDropChance, ui => ui.equipmentDropChanceRow),
+        (EquipmentStatType.ExperienceGain, ui => ui.experienceGainRow),
+        (EquipmentStatType.EnemyQuantity, ui => ui.enemyQuantityRow),
+        (EquipmentStatType.EnemyQuality, ui => ui.enemyQualityRow),
+    };
+
     [Header("Pages")]
     [SerializeField] private GameObject page1;
     [SerializeField] private GameObject page2;
@@ -46,29 +60,11 @@ public class PlayerStatsPanelUI : MonoBehaviour
     public void Refresh()
     {
         EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
-
-        SetPercentRows(
-            summary,
-            (damageRow, EquipmentStatType.Damage),
-            (attackSpeedRow, EquipmentStatType.AttackSpeed),
-            (rangeRow, EquipmentStatType.Range),
-            (pickupRangeRow, EquipmentStatType.PickupRange),
-            (shrineQuantityRow, EquipmentStatType.ShrineQuantity),
-            (mapDropChanceRow, EquipmentStatType.MapDropChance),
-            (equipmentDropChanceRow, EquipmentStatType.EquipmentDropChance),
-            (experienceGainRow, EquipmentStatType.ExperienceGain),
-            (enemyQuantityRow, EquipmentStatType.EnemyQuantity),
-            (enemyQualityRow, EquipmentStatType.EnemyQuality));
-
+        SetPercentRows(summary);
         SetFlatWithOptionalPercentRow(maxHealthRow, GetEntry(summary, EquipmentStatType.MaximumHealth), "{0:+0;-0;+0}", " ({0:+0%;-0%;+0%})");
         SetFlatRow(healthRegenRow, GetEntry(summary, EquipmentStatType.HealthRegen), "{0:+0.##;-0.##;+0}/s");
         SetFlatRow(armorRow, GetEntry(summary, EquipmentStatType.Armor), "{0:+0.##;-0.##;+0}");
-
-        if (page2Button != null)
-        {
-            page2Button.interactable = false;
-        }
-
+        if (page2Button != null) page2Button.interactable = false;
         if (uniqueStatsText != null)
         {
             uniqueStatsText.text = noUniqueStatsText;
@@ -93,23 +89,11 @@ public class PlayerStatsPanelUI : MonoBehaviour
 
     private void RegisterButtons()
     {
-        if (page1Button != null)
-        {
-            page1Button.onClick.RemoveListener(ShowPage1);
-            page1Button.onClick.AddListener(ShowPage1);
-        }
-
-        if (page2Button != null)
-        {
-            page2Button.onClick.RemoveListener(ShowPage2);
-            page2Button.onClick.AddListener(ShowPage2);
-        }
+        RegisterButton(page1Button, ShowPage1);
+        RegisterButton(page2Button, ShowPage2);
     }
 
-    private EquipmentStatSummaryEntry GetEntry(EquipmentStatSummary summary, EquipmentStatType statType)
-    {
-        return summary?.GetEntry(statType);
-    }
+    private EquipmentStatSummaryEntry GetEntry(EquipmentStatSummary summary, EquipmentStatType statType) => summary?.GetEntry(statType);
 
     private void SetPercentRow(StatRowUI row, EquipmentStatSummaryEntry entry)
     {
@@ -117,11 +101,11 @@ public class PlayerStatsPanelUI : MonoBehaviour
         row?.SetValue(FormatPercent(value), GetColorForValue(value));
     }
 
-    private void SetPercentRows(EquipmentStatSummary summary, params (StatRowUI row, EquipmentStatType statType)[] rows)
+    private void SetPercentRows(EquipmentStatSummary summary)
     {
-        for (int i = 0; i < rows.Length; i++)
+        for (int i = 0; i < PercentRows.Length; i++)
         {
-            SetPercentRow(rows[i].row, GetEntry(summary, rows[i].statType));
+            SetPercentRow(PercentRows[i].getRow(this), GetEntry(summary, PercentRows[i].statType));
         }
     }
 
@@ -146,22 +130,12 @@ public class PlayerStatsPanelUI : MonoBehaviour
         row?.SetValue(text, GetColorForValue(flatValue + percentValue));
     }
 
-    private string FormatPercent(float value)
-    {
-        return $"{value:+0%;-0%;+0%}";
-    }
+    private string FormatPercent(float value) => $"{value:+0%;-0%;+0%}";
 
     private void SetPageVisibility(bool showPage1)
     {
-        if (page1 != null)
-        {
-            page1.SetActive(showPage1);
-        }
-
-        if (page2 != null)
-        {
-            page2.SetActive(!showPage1);
-        }
+        if (page1 != null) page1.SetActive(showPage1);
+        if (page2 != null) page2.SetActive(!showPage1);
     }
 
     private Color GetColorForValue(float value)
@@ -177,5 +151,16 @@ public class PlayerStatsPanelUI : MonoBehaviour
         }
 
         return neutralColor;
+    }
+
+    private static void RegisterButton(Button button, UnityEngine.Events.UnityAction callback)
+    {
+        if (button == null)
+        {
+            return;
+        }
+
+        button.onClick.RemoveListener(callback);
+        button.onClick.AddListener(callback);
     }
 }

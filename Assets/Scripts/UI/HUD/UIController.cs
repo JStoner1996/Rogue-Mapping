@@ -4,26 +4,6 @@ using UnityEngine.UI;
 
 public class UIController : SingletonBehaviour<UIController>
 {
-    private enum VictoryDisplayMode
-    {
-        Timer,
-        Counter
-    }
-
-    private struct VictoryDisplayData
-    {
-        public VictoryDisplayMode DisplayMode;
-        public string PrimaryText;
-        public string SecondaryText;
-
-        public VictoryDisplayData(VictoryDisplayMode displayMode, string primaryText, string secondaryText = "")
-        {
-            DisplayMode = displayMode;
-            PrimaryText = primaryText;
-            SecondaryText = secondaryText;
-        }
-    }
-
     [SerializeField] private Slider playerHealthSlider;
     [SerializeField] private TMP_Text healthText;
     [SerializeField] private Slider playerExperienceSlider;
@@ -66,48 +46,33 @@ public class UIController : SingletonBehaviour<UIController>
 
     public void UpdateHealthSlider()
     {
-        if (playerHealth == null)
-        {
-            CachePlayerReferences();
-        }
+        CachePlayerReferences();
 
-        if (playerHealth == null || playerHealthSlider == null || healthText == null)
+        if (playerHealth == null)
         {
             return;
         }
 
-        playerHealthSlider.maxValue = playerHealth.MaxHealth;
-        playerHealthSlider.value = playerHealth.CurrentHealth;
-        int currentHealth = Mathf.RoundToInt(playerHealth.CurrentHealth);
-        int maxHealth = Mathf.RoundToInt(playerHealth.MaxHealth);
-        healthText.text = $"{currentHealth} / {maxHealth}";
+        UpdateSlider(playerHealthSlider, healthText, playerHealth.MaxHealth, playerHealth.CurrentHealth);
     }
 
     public void UpdateExperienceSlider()
     {
-        if (playerExperience == null)
-        {
-            CachePlayerReferences();
-        }
-
-        if (playerExperience == null
-            || playerExperience.LevelThresholds.Count == 0
-            || playerExperienceSlider == null
-            || experienceText == null)
+        CachePlayerReferences();
+        if (playerExperience == null || playerExperience.LevelThresholds.Count == 0)
         {
             return;
         }
 
         int thresholdIndex = Mathf.Clamp(playerExperience.CurrentLevel - 1, 0, playerExperience.LevelThresholds.Count - 1);
-        playerExperienceSlider.maxValue = playerExperience.LevelThresholds[thresholdIndex];
-        playerExperienceSlider.value = playerExperience.CurrentExperience;
-        experienceText.text = $"{playerExperienceSlider.value} / {playerExperienceSlider.maxValue}";
+        UpdateSlider(
+            playerExperienceSlider,
+            experienceText,
+            playerExperience.LevelThresholds[thresholdIndex],
+            playerExperience.CurrentExperience);
     }
 
-    public void UpdateTimer(float timer)
-    {
-        ApplyVictoryDisplay(BuildVictoryDisplayData(timer));
-    }
+    public void UpdateTimer(float timer) => UpdateVictoryConditionUI(timer);
 
     private string FormatTime(float timer)
     {
@@ -119,23 +84,12 @@ public class UIController : SingletonBehaviour<UIController>
     public void LevelUpPanelOpen()
     {
         BuildLevelUpButtons();
-
-        if (levelUpPanel != null)
-        {
-            levelUpPanel.SetActive(true);
-        }
-
-        Time.timeScale = 0f;
+        SetPanelState(levelUpPanel, true, 0f);
     }
 
     public void LevelUpPanelClosed()
     {
-        if (levelUpPanel != null)
-        {
-            levelUpPanel.SetActive(false);
-        }
-
-        Time.timeScale = 1f;
+        SetPanelState(levelUpPanel, false, 1f);
     }
 
     public void ShowRunCompletePanel(MapInstance completedMap)
@@ -152,69 +106,40 @@ public class UIController : SingletonBehaviour<UIController>
 
     public void UpdateVictoryConditionUI(float elapsedTime)
     {
-        VictoryDisplayData displayData = BuildVictoryDisplayData(elapsedTime);
-        ApplyVictoryDisplay(displayData);
+        (string timer, string counter) = BuildVictoryDisplayTexts(elapsedTime);
+        bool showTimer = !string.IsNullOrEmpty(timer);
+        bool showCounter = !string.IsNullOrEmpty(counter);
+
+        if (timerText != null)
+        {
+            timerText.enabled = showTimer;
+            if (showTimer) timerText.text = timer;
+        }
+
+        if (killText != null)
+        {
+            killText.enabled = showCounter;
+            if (showCounter) killText.text = counter;
+        }
     }
 
-    private VictoryDisplayData BuildVictoryDisplayData(float elapsedTime)
+    // The HUD has only two text slots, so this resolves whichever victory state should occupy each one.
+    private (string timer, string counter) BuildVictoryDisplayTexts(float elapsedTime)
     {
         MapInstance selectedMap = RunData.SelectedMap;
         int enemyKills = GameManager.Instance != null ? GameManager.Instance.EnemyKills : 0;
 
         if (selectedMap == null)
         {
-            return new VictoryDisplayData(
-                VictoryDisplayMode.Timer,
-                FormatTime(elapsedTime),
-                enemyKills.ToString());
+            return (FormatTime(elapsedTime), enemyKills.ToString());
         }
 
         return selectedMap.VictoryConditionType switch
         {
-            VictoryConditionType.Time => new VictoryDisplayData(
-                VictoryDisplayMode.Timer,
-                $"{FormatTime(elapsedTime)} / {FormatTime(selectedMap.VictoryTarget * 60f)}"),
-
-            VictoryConditionType.Kills => new VictoryDisplayData(
-                VictoryDisplayMode.Counter,
-                $"{enemyKills} / {selectedMap.VictoryTarget}"),
-
-            _ => new VictoryDisplayData(
-                VictoryDisplayMode.Timer,
-                FormatTime(elapsedTime))
+            VictoryConditionType.Time => ($"{FormatTime(elapsedTime)} / {FormatTime(selectedMap.VictoryTarget * 60f)}", null),
+            VictoryConditionType.Kills => (null, $"{enemyKills} / {selectedMap.VictoryTarget}"),
+            _ => (FormatTime(elapsedTime), null)
         };
-    }
-
-    private void ApplyVictoryDisplay(VictoryDisplayData displayData)
-    {
-        bool showTimer = displayData.DisplayMode == VictoryDisplayMode.Timer;
-        bool showCounter = displayData.DisplayMode == VictoryDisplayMode.Counter;
-
-        // The HUD reuses the counter label for both kill goals and the "secondary" display when time is primary.
-        if (timerText != null)
-        {
-            timerText.enabled = showTimer;
-
-            if (showTimer)
-            {
-                timerText.text = displayData.PrimaryText;
-            }
-        }
-
-        if (killText != null)
-        {
-            bool shouldShowSecondaryCounter = showCounter || !string.IsNullOrEmpty(displayData.SecondaryText);
-            killText.enabled = shouldShowSecondaryCounter;
-
-            if (showCounter)
-            {
-                killText.text = displayData.PrimaryText;
-            }
-            else if (shouldShowSecondaryCounter)
-            {
-                killText.text = displayData.SecondaryText;
-            }
-        }
     }
 
     private void CachePlayerReferences()
@@ -262,6 +187,28 @@ public class UIController : SingletonBehaviour<UIController>
         {
             levelUpButtons[i] = Instantiate(levelUpButtonPrefab, levelUpButtonParent);
         }
+    }
+
+    private static void UpdateSlider(Slider slider, TMP_Text text, float maxValue, float value)
+    {
+        if (slider == null || text == null)
+        {
+            return;
+        }
+
+        slider.maxValue = maxValue;
+        slider.value = value;
+        text.text = $"{Mathf.RoundToInt(value)} / {Mathf.RoundToInt(maxValue)}";
+    }
+
+    private static void SetPanelState(GameObject panel, bool isVisible, float timeScale)
+    {
+        if (panel != null)
+        {
+            panel.SetActive(isVisible);
+        }
+
+        Time.timeScale = timeScale;
     }
 
     private bool NeedsButtonRebuild(int buttonCount)

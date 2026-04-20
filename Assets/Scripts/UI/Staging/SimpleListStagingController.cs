@@ -37,18 +37,11 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
     protected void SetItems(IEnumerable<T> sourceItems)
     {
         items.Clear();
-
-        if (sourceItems == null)
-        {
-            return;
-        }
+        if (sourceItems == null) return;
 
         foreach (T item in sourceItems)
         {
-            if (item != null)
-            {
-                items.Add(item);
-            }
+            if (item != null) items.Add(item);
         }
     }
 
@@ -103,23 +96,13 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
     private void OnSlotClicked(int index, InventorySlotModel data)
     {
         T item = GetItemAtIndex(index);
-        if (item == null)
-        {
-            return;
-        }
-
-        SetSelectedItem(item);
+        if (item != null) SetSelectedItem(item);
     }
 
     private void OnSlotHoverEnter(int index, InventorySlotModel data)
     {
         T item = GetItemAtIndex(index);
-        if (item == null)
-        {
-            return;
-        }
-
-        SetHoveredItem(item);
+        if (item != null) SetHoveredItem(item);
     }
 
     private void OnSlotHoverExit(int index, InventorySlotModel data)
@@ -140,19 +123,8 @@ public abstract class SimpleListStagingController<T> : IStagingTabController
 
     private T FindItem(Predicate<T> match)
     {
-        if (match == null)
-        {
-            return null;
-        }
-
-        for (int i = 0; i < items.Count; i++)
-        {
-            if (match(items[i]))
-            {
-                return items[i];
-            }
-        }
-
+        if (match == null) return null;
+        for (int i = 0; i < items.Count; i++) if (match(items[i])) return items[i];
         return null;
     }
 

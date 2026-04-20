@@ -18,6 +18,13 @@ public class LevelUpButton : MonoBehaviour
 
     private LevelUpOptionData assignedOption;
     private PlayerLevelUpController playerLevelUpController;
+    private static readonly (Color border, Color fill)[] RarityColors =
+    {
+        (new Color(0.55f, 0.27f, 0.07f), new Color(0.72f, 0.45f, 0.20f)),
+        (new Color(0.75f, 0.75f, 0.75f), new Color(0.90f, 0.90f, 0.90f)),
+        (new Color(1.00f, 0.84f, 0.00f), new Color(1.00f, 0.92f, 0.40f)),
+        (new Color(0.45f, 0.10f, 0.70f), new Color(0.70f, 0.40f, 0.90f)),
+    };
 
     void Start()
     {
@@ -41,11 +48,10 @@ public class LevelUpButton : MonoBehaviour
     public void ClearOption()
     {
         assignedOption = null;
-        weaponName.text = string.Empty;
-        weaponIcon.sprite = null;
-        weaponIcon.enabled = false;
-        rarityText.text = string.Empty;
-        weaponDescription.text = string.Empty;
+        SetText(weaponName, string.Empty);
+        SetIcon(null);
+        SetText(rarityText, string.Empty);
+        SetText(weaponDescription, string.Empty);
         ApplyRarityVisuals(UpgradeRarity.Common);
     }
 
@@ -81,47 +87,14 @@ public class LevelUpButton : MonoBehaviour
         }
 
         AudioManager.Instance.Play(SoundType.SelectUpgrade);
-
         UIController.Instance.LevelUpPanelClosed();
-        if (playerLevelUpController == null)
-        {
-            CachePlayerLevelUpController();
-        }
-
+        if (playerLevelUpController == null) CachePlayerLevelUpController();
         playerLevelUpController.OnUpgradeSelected();
     }
 
     private void ApplyRarityVisuals(UpgradeRarity rarity)
     {
-        Color borderColor;
-        Color fillColor;
-
-        switch (rarity)
-        {
-            case UpgradeRarity.Common:
-                borderColor = new Color(0.55f, 0.27f, 0.07f);
-                fillColor = new Color(0.72f, 0.45f, 0.20f);
-                break;
-
-            case UpgradeRarity.Uncommon:
-                borderColor = new Color(0.75f, 0.75f, 0.75f);
-                fillColor = new Color(0.90f, 0.90f, 0.90f);
-                break;
-
-            case UpgradeRarity.Rare:
-                borderColor = new Color(1.00f, 0.84f, 0.00f);
-                fillColor = new Color(1.00f, 0.92f, 0.40f);
-                break;
-            case UpgradeRarity.Legendary:
-                borderColor = new Color(0.45f, 0.10f, 0.70f);
-                fillColor = new Color(0.70f, 0.40f, 0.90f);
-                break;
-            default:
-                borderColor = Color.white;
-                fillColor = Color.gray;
-                break;
-        }
-
+        (Color borderColor, Color fillColor) = GetRarityColors(rarity);
         borderImage.color = borderColor;
         backgroundImage.color = fillColor;
     }
@@ -147,4 +120,23 @@ public class LevelUpButton : MonoBehaviour
             ? playerUpgradeIcon
             : null;
     }
+
+    private static void SetText(TMP_Text text, string value)
+    {
+        if (text != null) text.text = value;
+    }
+
+    private void SetIcon(Sprite sprite)
+    {
+        if (weaponIcon == null)
+        {
+            return;
+        }
+
+        weaponIcon.sprite = sprite;
+        weaponIcon.enabled = sprite != null;
+    }
+
+    private static (Color border, Color fill) GetRarityColors(UpgradeRarity rarity) =>
+        (int)rarity >= 0 && (int)rarity < RarityColors.Length ? RarityColors[(int)rarity] : (Color.white, Color.gray);
 }

@@ -37,18 +37,14 @@ public class PlayerHealth : MonoBehaviour
     {
         float previousMaxHealth = MaxHealth;
         maxHealthMultiplier += value;
-        float newMaxHealth = MaxHealth;
-        CurrentHealth = Mathf.Min(CurrentHealth + (newMaxHealth - previousMaxHealth), newMaxHealth);
-        RefreshHealthUI();
+        AdjustCurrentHealthForMaxHealthChange(previousMaxHealth);
     }
 
     public void ApplyFlatMaxHealthModifier(float value)
     {
         float previousMaxHealth = MaxHealth;
         flatMaxHealthBonus = Mathf.Max(0f, flatMaxHealthBonus + value);
-        float newMaxHealth = MaxHealth;
-        CurrentHealth = Mathf.Min(CurrentHealth + (newMaxHealth - previousMaxHealth), newMaxHealth);
-        RefreshHealthUI();
+        AdjustCurrentHealthForMaxHealthChange(previousMaxHealth);
     }
 
     public void ApplyArmorModifier(float value)
@@ -154,11 +150,12 @@ public class PlayerHealth : MonoBehaviour
         return Mathf.Max(1f, mitigatedDamage);
     }
 
-    private void RefreshHealthUI()
+    private void RefreshHealthUI() => UIController.Instance?.UpdateHealthSlider();
+
+    private void AdjustCurrentHealthForMaxHealthChange(float previousMaxHealth)
     {
-        if (UIController.Instance != null)
-        {
-            UIController.Instance.UpdateHealthSlider();
-        }
+        float newMaxHealth = MaxHealth;
+        CurrentHealth = Mathf.Min(CurrentHealth + (newMaxHealth - previousMaxHealth), newMaxHealth);
+        RefreshHealthUI();
     }
 }

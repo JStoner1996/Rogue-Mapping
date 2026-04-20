@@ -6,14 +6,7 @@ public static class MetaProgressionService
     private static MetaProgressionSaveData saveData;
     private static bool isLoaded;
 
-    public static int UnspentAtlasPoints
-    {
-        get
-        {
-            EnsureLoaded();
-            return saveData.unspentAtlasPoints;
-        }
-    }
+    public static int UnspentAtlasPoints { get { EnsureLoaded(); return saveData.unspentAtlasPoints; } }
 
     public static void EnsureLoaded()
     {
@@ -163,50 +156,12 @@ public static class MetaProgressionService
 
     public static void AddOwnedMap(MapInstance map, bool saveImmediately = true)
     {
-        if (map == null)
-        {
-            return;
-        }
-
-        EnsureLoaded();
-
-        OwnedMapRecord record = MapGenerator.CreateOwnedMapRecord(map);
-
-        if (record == null)
-        {
-            return;
-        }
-
-        saveData.ownedMaps.Add(record);
-
-        if (saveImmediately)
-        {
-            Save();
-        }
+        AddOwnedItem(map, MapGenerator.CreateOwnedMapRecord, saveData.ownedMaps, saveImmediately);
     }
 
     public static void AddOwnedEquipment(EquipmentInstance equipment, bool saveImmediately = true)
     {
-        if (equipment == null)
-        {
-            return;
-        }
-
-        EnsureLoaded();
-
-        OwnedEquipmentRecord record = EquipmentRecordConverter.CreateRecord(equipment);
-
-        if (record == null)
-        {
-            return;
-        }
-
-        saveData.ownedEquipment.Add(record);
-
-        if (saveImmediately)
-        {
-            Save();
-        }
+        AddOwnedItem(equipment, EquipmentRecordConverter.CreateRecord, saveData.ownedEquipment, saveImmediately);
     }
 
     public static bool IsMapCompleted(string baseMapId)
@@ -385,6 +340,32 @@ public static class MetaProgressionService
         }
 
         return converted;
+    }
+
+    private static void AddOwnedItem<TModel, TRecord>(
+        TModel model,
+        System.Func<TModel, TRecord> createRecord,
+        ICollection<TRecord> destination,
+        bool saveImmediately)
+        where TModel : class
+        where TRecord : class
+    {
+        EnsureLoaded();
+
+        if (model == null || createRecord == null || destination == null)
+        {
+            return;
+        }
+
+        TRecord record = createRecord(model);
+
+        if (record == null)
+        {
+            return;
+        }
+
+        destination.Add(record);
+        PersistIfRequested(saveImmediately);
     }
 
     private static OwnedMapRecord FindOwnedMapRecord(string baseMapId)
