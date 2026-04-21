@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: ShrinesRoot
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1400
-  displayName: +20% Shrine Quantity
-  description: 
+  displayName: Shrine Quantity
+  description: '+20% Shrine Quantity '
   category: 3
   nodeSize: 0
   isRootNode: 1

@@ -206,6 +206,12 @@ public static class MetaProgressionService
         return string.IsNullOrEmpty(GetAtlasAllocationBlockReason(tree, node));
     }
 
+    public static string GetAtlasAllocationBlockReasonText(AtlasTreeDefinition tree, AtlasNodeDefinition node)
+    {
+        EnsureLoaded();
+        return GetAtlasAllocationBlockReason(tree, node);
+    }
+
     public static bool TryAllocateAtlasNode(AtlasTreeDefinition tree, AtlasNodeDefinition node, bool saveImmediately = true)
     {
         EnsureLoaded();
@@ -226,6 +232,12 @@ public static class MetaProgressionService
     {
         EnsureLoaded();
         return string.IsNullOrEmpty(GetAtlasRefundBlockReason(tree, node));
+    }
+
+    public static string GetAtlasRefundBlockReasonText(AtlasTreeDefinition tree, AtlasNodeDefinition node)
+    {
+        EnsureLoaded();
+        return GetAtlasRefundBlockReason(tree, node);
     }
 
     public static bool TryRefundAtlasNode(AtlasTreeDefinition tree, AtlasNodeDefinition node, bool saveImmediately = true)
@@ -335,6 +347,10 @@ public static class MetaProgressionService
     public static void ClearEquipmentLoadout()
     {
         MutateAndSave(() => saveData.equipmentLoadout = new EquipmentLoadoutData());
+    }
+    public static void AddAtlasPoint()
+    {
+        MutateAndSave(() => saveData.unspentAtlasPoints++);
     }
 
     public static void SetEquippedItem(EquipmentSlotType slotType, string equipmentInstanceId, bool saveImmediately = true)

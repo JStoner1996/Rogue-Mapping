@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: EquipmentRoot
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1300
-  displayName: +10% Equipment Drop Chance
-  description: 
+  displayName: Equipment Drop Chance
+  description: +10% Equipment Drop Chance
   category: 4
   nodeSize: 0
   isRootNode: 1

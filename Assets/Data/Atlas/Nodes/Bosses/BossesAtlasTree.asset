@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
-  m_Name: AtlasTree
+  m_Name: BossesAtlasTree
   m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
   category: 1
   displayName: Bosses

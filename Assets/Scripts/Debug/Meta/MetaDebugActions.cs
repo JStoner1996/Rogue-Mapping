@@ -35,6 +35,12 @@ public class MetaDebugActions : MonoBehaviour
         Debug.Log("Cleared equipment inventory.");
     }
 
+    public void AddAtlasPoint()
+    {
+        MetaProgressionService.AddAtlasPoint();
+        Debug.Log("Atlas Point Added.");
+    }
+
     public void ClearEquipmentLoadout()
     {
         MetaProgressionService.ClearEquipmentLoadout();

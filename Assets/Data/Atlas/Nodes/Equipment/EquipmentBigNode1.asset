@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: EquipmentBigNode1
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1301
-  displayName: +50% Equipment Drop Chance
-  description: 
-  category: 0
+  displayName: Equipment Drop Chance
+  description: +50% Equipment Drop Chance
+  category: 4
   nodeSize: 1
   isRootNode: 0
   editorPosition: {x: 0, y: 120}

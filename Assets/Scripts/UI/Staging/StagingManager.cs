@@ -8,6 +8,7 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private GameObject weaponsPanel;
     [SerializeField] private GameObject mapsPanel;
     [SerializeField] private GameObject equipmentPanel;
+    [SerializeField] private GameObject atlasPanel;
 
     [Header("Grids")]
     [SerializeField] private InventoryGridUI weaponGrid;
@@ -19,6 +20,7 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private ItemDetailsPanelUI mapPreviewUI;
     [SerializeField] private ItemDetailsPanelUI equipmentPreviewUI;
     [SerializeField] private PlayerStatsPanelUI playerStatsPanelUI;
+    [SerializeField] private AtlasScreenUI atlasScreenUI;
 
     [Header("Player Loadout Slots")]
     [SerializeField] private List<EquipmentSlotDropTargetUI> equipmentDropTargets = new List<EquipmentSlotDropTargetUI>();
@@ -27,6 +29,7 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Button weaponsTabButton;
     [SerializeField] private UnityEngine.UI.Button mapsTabButton;
     [SerializeField] private UnityEngine.UI.Button equipmentTabButton;
+    [SerializeField] private UnityEngine.UI.Button atlasTabButton;
     [SerializeField] private Color activeTabColor = new Color(0.35f, 0.35f, 0.35f, 1f);
     [SerializeField] private Color inactiveTabColor = new Color(0.17f, 0.17f, 0.17f, 0.1f);
 
@@ -35,6 +38,7 @@ public class StagingManager : MonoBehaviour
     [SerializeField] private int defaultMapVictoryTarget = 10;
 
     private EquipmentStagingController equipmentController;
+    private AtlasStagingController atlasController;
     private MapStagingController mapController;
     private StagingTabController tabController;
     private WeaponStagingController weaponController;
@@ -57,6 +61,11 @@ public class StagingManager : MonoBehaviour
     public void ShowEquipmentTab()
     {
         ShowTab(StagingTabController.Tab.Equipment);
+    }
+
+    public void ShowAtlasTab()
+    {
+        ShowTab(StagingTabController.Tab.Atlas);
     }
 
     public void StartRun()
@@ -89,7 +98,7 @@ public class StagingManager : MonoBehaviour
     {
         MetaProgressionService.EnsureLoaded();
         InitializeControllers();
-        tabController.RegisterTabButtons(ShowWeaponsTab, ShowMapsTab, ShowEquipmentTab);
+        tabController.RegisterTabButtons(ShowWeaponsTab, ShowMapsTab, ShowEquipmentTab, ShowAtlasTab);
         equipmentController.RegisterDropTargets();
         ShowWeaponsTab();
     }
@@ -114,13 +123,17 @@ public class StagingManager : MonoBehaviour
             equipmentDropTargets);
         equipmentController.Load();
 
+        atlasController = new AtlasStagingController(atlasScreenUI);
+
         tabController = new StagingTabController(
             weaponsPanel,
             mapsPanel,
             equipmentPanel,
+            atlasPanel,
             weaponsTabButton,
             mapsTabButton,
             equipmentTabButton,
+            atlasTabButton,
             activeTabColor,
             inactiveTabColor);
 
@@ -146,6 +159,7 @@ public class StagingManager : MonoBehaviour
             StagingTabController.Tab.Weapons => weaponController,
             StagingTabController.Tab.Maps => mapController,
             StagingTabController.Tab.Equipment => equipmentController,
+            StagingTabController.Tab.Atlas => atlasController,
             _ => null,
         };
 }

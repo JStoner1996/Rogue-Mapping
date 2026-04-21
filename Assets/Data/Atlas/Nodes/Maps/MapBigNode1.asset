@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: MapBigNode1
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1201
-  displayName: +30% Map Drop Chance
-  description: 
+  displayName: Map Drop Chance
+  description: +30% Map Drop Chance
   category: 2
   nodeSize: 1
   isRootNode: 0

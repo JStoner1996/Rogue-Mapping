@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: ShrinesBigNode1
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1401
-  displayName: +50% Shrine Duration
-  description: 
+  displayName: Shrine Duration
+  description: '+50% Shrine Duration '
   category: 3
   nodeSize: 1
   isRootNode: 0

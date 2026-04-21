@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: EnemyBigNode1
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1001
-  displayName: +50% Enemy Quality
-  description: 
+  displayName: Enemy Quality
+  description: +50% Enemy Quality
   category: 0
   nodeSize: 1
   isRootNode: 0
