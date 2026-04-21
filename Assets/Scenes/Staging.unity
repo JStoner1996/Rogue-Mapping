@@ -12060,6 +12060,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MapsTreePanel
       objectReference: {fileID: 0}
+    - target: {fileID: 7453939221824413462, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00010681152
+      objectReference: {fileID: 0}
     - target: {fileID: 8525515753905214671, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
       propertyPath: treeDefinition
       value: 
@@ -15233,6 +15237,10 @@ PrefabInstance:
     - target: {fileID: 5552371577660836149, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
       propertyPath: m_Name
       value: EquipmentTreePanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 7453939221824413462, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00010681152
       objectReference: {fileID: 0}
     - target: {fileID: 8525515753905214671, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
       propertyPath: treeDefinition
@@ -22056,6 +22064,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 'BossesTreePanel '
       objectReference: {fileID: 0}
+    - target: {fileID: 7453939221824413462, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00010681152
+      objectReference: {fileID: 0}
     - target: {fileID: 8525515753905214671, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
       propertyPath: treeDefinition
       value: 
@@ -27371,6 +27383,10 @@ PrefabInstance:
     - target: {fileID: 5552371577660836149, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
       propertyPath: m_Name
       value: ShrinesTreePanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 7453939221824413462, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00010681152
       objectReference: {fileID: 0}
     - target: {fileID: 8525515753905214671, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
       propertyPath: treeDefinition
@@ -35375,6 +35391,22 @@ PrefabInstance:
     - target: {fileID: 5552371577660836149, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
       propertyPath: m_Name
       value: EnemiesTreePanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 7453939221824413462, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7453939221824413462, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7453939221824413462, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7453939221824413462, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00010681152
       objectReference: {fileID: 0}
     - target: {fileID: 8525515753905214671, guid: 1530c9a0b9791a94180dd40ee47fd3f4, type: 3}
       propertyPath: treeDefinition
