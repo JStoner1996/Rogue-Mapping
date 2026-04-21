@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class MetaProgressionService
@@ -183,6 +184,127 @@ public static class MetaProgressionService
         saveData.unspentAtlasPoints++;
         Save();
         return true;
+    }
+
+    public static IReadOnlyList<string> GetAllocatedAtlasNodeIds(AtlasCategoryType category)
+    {
+        EnsureLoaded();
+        AtlasTreeProgressRecord record = GetOrCreateAtlasTreeRecord(category);
+        return new List<string>(record.allocatedNodeIds);
+    }
+
+    public static bool IsAtlasNodeAllocated(AtlasCategoryType category, string nodeId)
+    {
+        EnsureLoaded();
+        return !string.IsNullOrWhiteSpace(nodeId)
+            && GetOrCreateAtlasTreeRecord(category).allocatedNodeIds.Contains(nodeId);
+    }
+
+    public static bool CanAllocateAtlasNode(AtlasTreeDefinition tree, AtlasNodeDefinition node)
+    {
+        EnsureLoaded();
+        return string.IsNullOrEmpty(GetAtlasAllocationBlockReason(tree, node));
+    }
+
+    public static bool TryAllocateAtlasNode(AtlasTreeDefinition tree, AtlasNodeDefinition node, bool saveImmediately = true)
+    {
+        EnsureLoaded();
+
+        if (!string.IsNullOrEmpty(GetAtlasAllocationBlockReason(tree, node)))
+        {
+            return false;
+        }
+
+        AtlasTreeProgressRecord record = GetOrCreateAtlasTreeRecord(tree.Category);
+        record.allocatedNodeIds.Add(node.NodeId);
+        saveData.unspentAtlasPoints--;
+        PersistIfRequested(saveImmediately);
+        return true;
+    }
+
+    public static bool CanRefundAtlasNode(AtlasTreeDefinition tree, AtlasNodeDefinition node)
+    {
+        EnsureLoaded();
+        return string.IsNullOrEmpty(GetAtlasRefundBlockReason(tree, node));
+    }
+
+    public static bool TryRefundAtlasNode(AtlasTreeDefinition tree, AtlasNodeDefinition node, bool saveImmediately = true)
+    {
+        EnsureLoaded();
+
+        if (!string.IsNullOrEmpty(GetAtlasRefundBlockReason(tree, node)))
+        {
+            return false;
+        }
+
+        AtlasTreeProgressRecord record = GetOrCreateAtlasTreeRecord(tree.Category);
+        if (!record.allocatedNodeIds.Remove(node.NodeId))
+        {
+            return false;
+        }
+
+        saveData.unspentAtlasPoints++;
+        PersistIfRequested(saveImmediately);
+        return true;
+    }
+
+    public static int RefundAtlasTree(AtlasTreeDefinition tree, bool saveImmediately = true)
+    {
+        EnsureLoaded();
+
+        if (tree == null)
+        {
+            return 0;
+        }
+
+        AtlasTreeProgressRecord record = GetOrCreateAtlasTreeRecord(tree.Category);
+        int refundedCount = record.allocatedNodeIds.Count;
+
+        if (refundedCount <= 0)
+        {
+            return 0;
+        }
+
+        record.allocatedNodeIds.Clear();
+        saveData.unspentAtlasPoints += refundedCount;
+        PersistIfRequested(saveImmediately);
+        return refundedCount;
+    }
+
+    public static AtlasEffectSummary BuildAtlasEffectSummary(IEnumerable<AtlasTreeDefinition> trees)
+    {
+        EnsureLoaded();
+
+        AtlasEffectSummary summary = new AtlasEffectSummary();
+
+        if (trees == null)
+        {
+            return summary;
+        }
+
+        foreach (AtlasTreeDefinition tree in trees)
+        {
+            if (tree == null)
+            {
+                continue;
+            }
+
+            HashSet<string> allocatedNodeIds = new HashSet<string>(GetOrCreateAtlasTreeRecord(tree.Category).allocatedNodeIds);
+            foreach (AtlasNodeDefinition node in tree.Nodes)
+            {
+                if (node == null || !allocatedNodeIds.Contains(node.NodeId))
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < node.Effects.Count; i++)
+                {
+                    summary.Add(node.Effects[i]);
+                }
+            }
+        }
+
+        return summary;
     }
 
     public static void Save()
@@ -371,6 +493,140 @@ public static class MetaProgressionService
     private static OwnedMapRecord FindOwnedMapRecord(string baseMapId)
     {
         return saveData.ownedMaps.Find(record => record.baseMapId == baseMapId);
+    }
+
+    private static AtlasTreeProgressRecord GetOrCreateAtlasTreeRecord(AtlasCategoryType category)
+    {
+        AtlasTreeProgressRecord record = saveData.atlasTreeProgress.Find(entry => entry.category == category);
+
+        if (record != null)
+        {
+            return record;
+        }
+
+        record = new AtlasTreeProgressRecord
+        {
+            category = category,
+        };
+        saveData.atlasTreeProgress.Add(record);
+        return record;
+    }
+
+    private static string GetAtlasAllocationBlockReason(AtlasTreeDefinition tree, AtlasNodeDefinition node)
+    {
+        if (!TryValidateAtlasNodeReference(tree, node))
+        {
+            return "Invalid atlas node reference.";
+        }
+
+        if (saveData.unspentAtlasPoints <= 0)
+        {
+            return "No atlas points available.";
+        }
+
+        AtlasTreeProgressRecord record = GetOrCreateAtlasTreeRecord(tree.Category);
+        if (record.allocatedNodeIds.Contains(node.NodeId))
+        {
+            return "Node is already allocated.";
+        }
+
+        if (node.IsRootNode)
+        {
+            return null;
+        }
+
+        foreach (AtlasNodeDefinition prerequisite in node.PrerequisiteNodes)
+        {
+            if (prerequisite != null && record.allocatedNodeIds.Contains(prerequisite.NodeId))
+            {
+                return null;
+            }
+        }
+
+        return "A prerequisite node must be allocated first.";
+    }
+
+    private static string GetAtlasRefundBlockReason(AtlasTreeDefinition tree, AtlasNodeDefinition node)
+    {
+        if (!TryValidateAtlasNodeReference(tree, node))
+        {
+            return "Invalid atlas node reference.";
+        }
+
+        AtlasTreeProgressRecord record = GetOrCreateAtlasTreeRecord(tree.Category);
+        if (!record.allocatedNodeIds.Contains(node.NodeId))
+        {
+            return "Node is not allocated.";
+        }
+
+        HashSet<string> remainingAllocatedNodeIds = new HashSet<string>(record.allocatedNodeIds);
+        remainingAllocatedNodeIds.Remove(node.NodeId);
+
+        if (AllAllocatedNodesRemainReachable(tree, remainingAllocatedNodeIds))
+        {
+            return null;
+        }
+
+        return "Refunding this node would orphan allocated nodes above it.";
+    }
+
+    private static bool TryValidateAtlasNodeReference(AtlasTreeDefinition tree, AtlasNodeDefinition node)
+    {
+        return tree != null
+            && node != null
+            && tree.Category == node.Category
+            && tree.ContainsNode(node);
+    }
+
+    private static bool AllAllocatedNodesRemainReachable(
+        AtlasTreeDefinition tree,
+        IReadOnlyCollection<string> allocatedNodeIds)
+    {
+        if (tree == null || allocatedNodeIds == null || allocatedNodeIds.Count == 0)
+        {
+            return true;
+        }
+
+        HashSet<string> reachableNodeIds = new HashSet<string>();
+        bool changed;
+
+        do
+        {
+            changed = false;
+
+            foreach (AtlasNodeDefinition node in tree.Nodes)
+            {
+                if (node == null
+                    || !allocatedNodeIds.Contains(node.NodeId)
+                    || reachableNodeIds.Contains(node.NodeId))
+                {
+                    continue;
+                }
+
+                bool isReachable = node.IsRootNode;
+
+                if (!isReachable)
+                {
+                    foreach (AtlasNodeDefinition prerequisite in node.PrerequisiteNodes)
+                    {
+                        if (prerequisite != null && reachableNodeIds.Contains(prerequisite.NodeId))
+                        {
+                            isReachable = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isReachable)
+                {
+                    reachableNodeIds.Add(node.NodeId);
+                    changed = true;
+                }
+            }
+        }
+        while (changed);
+
+        return allocatedNodeIds.All(reachableNodeIds.Contains);
     }
 
     private static void MutateAndSave(System.Action mutation)

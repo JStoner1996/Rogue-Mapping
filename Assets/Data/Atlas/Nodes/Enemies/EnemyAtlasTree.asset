@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
+  m_Name: EnemyAtlasTree
+  m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
+  category: 0
+  displayName: Enemies
+  description: Modify enemy density, behavior, and combat intensity.
+  nodes:
+  - {fileID: 11400000, guid: a6a60e6a6b262ff46af384b38884cb3b, type: 2}
+  - {fileID: 11400000, guid: 1f479564313dfc44c9bd14ac38c0b6ff, type: 2}
