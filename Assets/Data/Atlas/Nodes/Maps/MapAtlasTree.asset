@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
   m_Name: MapAtlasTree
   m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
-  category: 0
-  displayName: 
+  category: 2
+  displayName: Maps
   description: 
-  nodes: []
+  nodes:
+  - {fileID: 11400000, guid: 679c10e0bbff35b42af6f6fdee7e2cff, type: 2}
+  - {fileID: 11400000, guid: 46824728ecf9b6d46b575cbeae3a0ceb, type: 2}

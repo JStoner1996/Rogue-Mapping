@@ -12,12 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
   m_Name: MapBigNode1
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 
-  displayName: 
+  nodeId: 1201
+  displayName: +30% Map Drop Chance
   description: 
-  category: 0
-  nodeSize: 0
+  category: 2
+  nodeSize: 1
   isRootNode: 0
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
-  effects: []
+  editorPosition: {x: 0, y: 120}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: 679c10e0bbff35b42af6f6fdee7e2cff, type: 2}
+  effects:
+  - effectType: 2
+    value: 30

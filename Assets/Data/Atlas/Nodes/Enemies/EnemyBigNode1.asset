@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
   m_Name: EnemyBigNode1
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1
+  nodeId: 1001
   displayName: +50% Enemy Quality
   description: 
   category: 0

@@ -12,12 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
   m_Name: EquipmentBigNode1
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 
-  displayName: 
+  nodeId: 1301
+  displayName: +50% Equipment Drop Chance
   description: 
   category: 0
-  nodeSize: 0
+  nodeSize: 1
   isRootNode: 0
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
-  effects: []
+  editorPosition: {x: 0, y: 120}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: 4d358c8192eca3d4e9ee7832706cebd1, type: 2}
+  effects:
+  - effectType: 3
+    value: 50

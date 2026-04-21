@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
   m_Name: AtlasTree
   m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
-  category: 0
-  displayName: 
+  category: 1
+  displayName: Bosses
   description: 
-  nodes: []
+  nodes:
+  - {fileID: 11400000, guid: 8ef093d111cdb30478ef5bdbb2e0fa3c, type: 2}
+  - {fileID: 11400000, guid: cb8c51f780bf3d640a0c893ed5ed7982, type: 2}

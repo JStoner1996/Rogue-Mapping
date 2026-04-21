@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
   m_Name: ShrinesAtlasTree
   m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
-  category: 0
-  displayName: 
+  category: 3
+  displayName: Shrines
   description: 
-  nodes: []
+  nodes:
+  - {fileID: 11400000, guid: d8939c7476e47f443a2fd8c6f0ddc5d2, type: 2}
+  - {fileID: 11400000, guid: aa582f6df2921634aad73c685b87f801, type: 2}

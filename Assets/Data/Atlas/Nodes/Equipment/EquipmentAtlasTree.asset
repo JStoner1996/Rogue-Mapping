@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
   m_Name: EquipmentAtlasTree
   m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
-  category: 0
-  displayName: 
+  category: 4
+  displayName: Equipment
   description: 
-  nodes: []
+  nodes:
+  - {fileID: 11400000, guid: 4d358c8192eca3d4e9ee7832706cebd1, type: 2}
+  - {fileID: 11400000, guid: 8cb0a4775449fa644b369a31f97a361e, type: 2}

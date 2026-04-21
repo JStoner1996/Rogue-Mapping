@@ -12,12 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
   m_Name: BossesBigNode1
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 
-  displayName: 
+  nodeId: 1101
+  displayName: '+50% Boss Rewards '
   description: 
-  category: 0
-  nodeSize: 0
+  category: 1
+  nodeSize: 1
   isRootNode: 0
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
-  effects: []
+  editorPosition: {x: 0, y: 120}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: 8ef093d111cdb30478ef5bdbb2e0fa3c, type: 2}
+  effects:
+  - effectType: 7
+    value: 50
