@@ -10,16 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: ShrinesRoot
+  m_Name: ShrinesBigNode6
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1400
-  displayName: Shrine Quantity
-  description: '+20% Shrine Quantity '
+  nodeId: 1411
+  displayName: Sanctified Reach
+  description: '+30% increased Shrine Activation Radius '
   category: 3
-  nodeSize: 0
-  isRootNode: 1
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
+  nodeSize: 1
+  isRootNode: 0
+  editorPosition: {x: 110, y: 220}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: 8010e38a600c4808b97fd3066d8b8f3c, type: 2}
   effects:
-  - effectType: 4
-    value: 10
+  - effectType: 7
+    value: 30

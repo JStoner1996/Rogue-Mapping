@@ -10,16 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: ShrinesRoot
+  m_Name: ShrinesBigNode2
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1400
-  displayName: Shrine Quantity
-  description: '+20% Shrine Quantity '
+  nodeId: 1407
+  displayName: Twin Blessings
+  description: 'Shrines grant two effects instead of one '
   category: 3
-  nodeSize: 0
-  isRootNode: 1
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
+  nodeSize: 1
+  isRootNode: 0
+  editorPosition: {x: 220, y: 220}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: 8590f5aa99c041998a20f761962987fb, type: 2}
   effects:
-  - effectType: 4
-    value: 10
+  - effectType: 9
+    value: 1

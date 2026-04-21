@@ -10,16 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: ShrinesRoot
+  m_Name: ShrinesSmallNode6
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1400
-  displayName: Shrine Quantity
-  description: '+20% Shrine Quantity '
+  nodeId: 1406
+  displayName: Greater Shrine Chance
+  description: '+2% chance for Shrines to be upgraded '
   category: 3
   nodeSize: 0
-  isRootNode: 1
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
+  isRootNode: 0
+  editorPosition: {x: 0, y: 240}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: aa582f6df2921634aad73c685b87f801, type: 2}
   effects:
-  - effectType: 4
-    value: 10
+  - effectType: 8
+    value: 2

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1401
   displayName: Shrine Duration
-  description: '+50% Shrine Duration '
+  description: '+100% Shrine Duration '
   category: 3
   nodeSize: 1
   isRootNode: 0
@@ -23,4 +23,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d8939c7476e47f443a2fd8c6f0ddc5d2, type: 2}
   effects:
   - effectType: 5
-    value: 50
+    value: 100

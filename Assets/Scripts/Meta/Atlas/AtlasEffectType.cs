@@ -6,6 +6,11 @@ public enum AtlasEffectType
     EquipmentDropChancePercent,
     ShrineChancePercent,
     ShrineDurationPercent,
+    ShrineEffectPercent,
+    ShrineActivationRadiusPercent,
+    GreaterShrineChancePercent,
+    AdditionalShrineEffects,
+    ShrineBuffKillSpawnChancePercent,
     AdditionalFinalBosses,
     BossRewardQuantityPercent,
 }

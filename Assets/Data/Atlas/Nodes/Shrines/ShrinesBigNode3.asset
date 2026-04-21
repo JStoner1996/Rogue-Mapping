@@ -10,16 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: ShrinesRoot
+  m_Name: ShrinesBigNode3
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1400
-  displayName: Shrine Quantity
-  description: '+20% Shrine Quantity '
+  nodeId: 1408
+  displayName: Fleeting Divinity
+  description: 'Shrines have 50% increased effect, but expire 30% faster '
   category: 3
-  nodeSize: 0
-  isRootNode: 1
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
+  nodeSize: 1
+  isRootNode: 0
+  editorPosition: {x: -110, y: 220}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: ee48c173d00a4c869b36303cb2798c7a, type: 2}
   effects:
-  - effectType: 4
-    value: 10
+  - effectType: 6
+    value: 50
+  - effectType: 5
+    value: -30

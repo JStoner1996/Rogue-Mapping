@@ -89,4 +89,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtlasConnectionUI
   lineTransform: {fileID: 6294140282280707406}
-  lineThickness: 3
+  lineThickness: 6
