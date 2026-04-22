@@ -10,11 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
-  m_Name: MapAtlasTree
+  m_Name: _MapAtlasTree
   m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
   category: 2
   displayName: Maps
   description: 
   nodes:
   - {fileID: 11400000, guid: 679c10e0bbff35b42af6f6fdee7e2cff, type: 2}
-  - {fileID: 11400000, guid: 46824728ecf9b6d46b575cbeae3a0ceb, type: 2}
+  - {fileID: 11400000, guid: 1a5e0e8c1c8245d6985ef0f011aa1201, type: 2}
+  - {fileID: 11400000, guid: 1a5e0e8c1c8245d6985ef0f011aa1202, type: 2}
+  - {fileID: 11400000, guid: 1a5e0e8c1c8245d6985ef0f011aa1203, type: 2}
+  - {fileID: 11400000, guid: 1a5e0e8c1c8245d6985ef0f011aa1204, type: 2}
+  - {fileID: 11400000, guid: 1a5e0e8c1c8245d6985ef0f011aa1205, type: 2}
+  - {fileID: 11400000, guid: 1a5e0e8c1c8245d6985ef0f011aa1206, type: 2}

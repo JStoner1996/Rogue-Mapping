@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
+  m_Name: D_BossesSmallNode
+  m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
+  nodeId: 1107
+  displayName: Echoing Summons
+  description: +10% chance to spawn two mini bosses when a mini boss spawns
+  category: 1
+  nodeSize: 0
+  isRootNode: 0
+  editorPosition: {x: 0, y: -120}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: 8ef093d111cdb30478ef5bdbb2e0fa3c, type: 2}
+  effects:
+  - effectType: 33
+    value: 10

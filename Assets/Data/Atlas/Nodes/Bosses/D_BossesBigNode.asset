@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: BossesBigNode1
+  m_Name: D_BossesBigNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1101
-  displayName: 'Boss Rewards '
-  description: +50% Boss Rewards
+  nodeId: 1108
+  displayName: Endless Throne
+  description: +1 Final Boss
   category: 1
   nodeSize: 1
   isRootNode: 0
-  editorPosition: {x: 0, y: 120}
+  editorPosition: {x: 0, y: -270}
   prerequisiteNodes:
-  - {fileID: 11400000, guid: 8ef093d111cdb30478ef5bdbb2e0fa3c, type: 2}
+  - {fileID: 11400000, guid: 2b05a7f0a0904bf78f54dd5d9db81107, type: 2}
   effects:
-  - effectType: 7
-    value: 50
+  - effectType: 24
+    value: 1
