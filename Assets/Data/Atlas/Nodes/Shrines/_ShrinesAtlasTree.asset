@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -10,21 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
-  m_Name: ShrinesAtlasTree
+  m_Name: _ShrinesAtlasTree
   m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
   category: 3
   displayName: Shrines
   description: 
   nodes:
   - {fileID: 11400000, guid: d8939c7476e47f443a2fd8c6f0ddc5d2, type: 2}
-  - {fileID: 11400000, guid: aa582f6df2921634aad73c685b87f801, type: 2}
-  - {fileID: 11400000, guid: 9981b370d5a44910931d1c9db0511e35, type: 2}
-  - {fileID: 11400000, guid: 8590f5aa99c041998a20f761962987fb, type: 2}
-  - {fileID: 11400000, guid: ee48c173d00a4c869b36303cb2798c7a, type: 2}
-  - {fileID: 11400000, guid: 8010e38a600c4808b97fd3066d8b8f3c, type: 2}
-  - {fileID: 11400000, guid: 8f75e72785194bfebc92500ec82f55c4, type: 2}
-  - {fileID: 11400000, guid: 6ef35473e6a94aa5aa6f14bca2341743, type: 2}
   - {fileID: 11400000, guid: 41431689a75d41fb990793e0ad35e97f, type: 2}
-  - {fileID: 11400000, guid: 41edce3899834a8689e6882cf2572ad7, type: 2}
+  - {fileID: 11400000, guid: ac8e4902d804d494e9a973a06a07a6f9, type: 2}
   - {fileID: 11400000, guid: 16b555fc6de842e9a9cb5c4964445e3c, type: 2}
+  - {fileID: 11400000, guid: 8f75e72785194bfebc92500ec82f55c4, type: 2}
+  - {fileID: 11400000, guid: aa582f6df2921634aad73c685b87f801, type: 2}
+  - {fileID: 11400000, guid: ee48c173d00a4c869b36303cb2798c7a, type: 2}
   - {fileID: 11400000, guid: 5361f4743883456fa834c9ec5b524338, type: 2}
+  - {fileID: 11400000, guid: 8010e38a600c4808b97fd3066d8b8f3c, type: 2}
+  - {fileID: 11400000, guid: 41edce3899834a8689e6882cf2572ad7, type: 2}
+  - {fileID: 11400000, guid: 9981b370d5a44910931d1c9db0511e35, type: 2}
+  - {fileID: 11400000, guid: 6ef35473e6a94aa5aa6f14bca2341743, type: 2}
+  - {fileID: 11400000, guid: 8590f5aa99c041998a20f761962987fb, type: 2}

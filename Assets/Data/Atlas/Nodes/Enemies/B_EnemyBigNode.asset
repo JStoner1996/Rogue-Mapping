@@ -10,14 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: EquipmentRoot
+  m_Name: B_EnemyBigNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1300
-  displayName: 
-  description: 
-  category: 4
-  nodeSize: 0
-  isRootNode: 1
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
-  effects: []
+  nodeId: 1004
+  displayName: Cartographer's Hunt
+  description: 'Rare Enemies have 50% increased chance to drop Maps '
+  category: 0
+  nodeSize: 1
+  isRootNode: 0
+  editorPosition: {x: 0, y: 440}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: 5eca2324aa7994941a1bd6ba04d6436c, type: 2}
+  effects:
+  - effectType: 7
+    value: 50

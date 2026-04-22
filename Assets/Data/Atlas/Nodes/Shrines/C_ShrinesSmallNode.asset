@@ -10,14 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: EquipmentRoot
+  m_Name: C_ShrinesSmallNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1300
-  displayName: 
-  description: 
-  category: 4
+  nodeId: 1405
+  displayName: Shrine Duration
+  description: '+10% increased Shrine Duration '
+  category: 3
   nodeSize: 0
-  isRootNode: 1
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
-  effects: []
+  isRootNode: 0
+  editorPosition: {x: -110, y: 90}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: d8939c7476e47f443a2fd8c6f0ddc5d2, type: 2}
+  effects:
+  - effectType: 18
+    value: 10

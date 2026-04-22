@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
+  m_Name: E_EnemyBigNode
+  m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
+  nodeId: 1010
+  displayName: Elite Prizefighters
+  description: 'Elite enemies have +20% Damage and Health but always drop equipment '
+  category: 0
+  nodeSize: 1
+  isRootNode: 0
+  editorPosition: {x: 0, y: -400}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: b2f74333605846f6a4b629c09ad63460, type: 2}
+  effects:
+  - effectType: 8
+    value: 20
+  - effectType: 9
+    value: 20
+  - effectType: 10
+    value: 1

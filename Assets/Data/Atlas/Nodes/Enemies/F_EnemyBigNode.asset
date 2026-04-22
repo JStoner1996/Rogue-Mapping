@@ -10,14 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: EquipmentRoot
+  m_Name: F_EnemyBigNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1300
-  displayName: 
-  description: 
-  category: 4
-  nodeSize: 0
-  isRootNode: 1
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
-  effects: []
+  nodeId: 1012
+  displayName: Heavy Caches
+  description: 'Tank enemies have +30% Health but have +20% chance to drop a powerup. '
+  category: 0
+  nodeSize: 1
+  isRootNode: 0
+  editorPosition: {x: 200, y: -220}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: f5816886c183411ca15f99989ca449ed, type: 2}
+  effects:
+  - effectType: 11
+    value: 30
+  - effectType: 12
+    value: 20

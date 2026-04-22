@@ -18,6 +18,7 @@ public class AtlasNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private Vector2 bigNodeSize = new Vector2(96f, 96f);
 
     [Header("State Colors")]
+    [SerializeField] private Color rootColor = new Color(0.95f, 0.64f, 0.22f, 1f);
     [SerializeField] private Color lockedColor = new Color(0.28f, 0.28f, 0.28f, 1f);
     [SerializeField] private Color availableColor = new Color(0.72f, 0.60f, 0.28f, 1f);
     [SerializeField] private Color allocatedColor = new Color(0.95f, 0.83f, 0.38f, 1f);
@@ -63,23 +64,25 @@ public class AtlasNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
-    public void SetState(bool isAllocated, bool canAllocate, bool canRefund)
+    public void SetState(bool isRootNode, bool isAllocated, bool canAllocate, bool canRefund)
     {
         if (frameImage != null)
         {
-            frameImage.color = isAllocated
+            frameImage.color = isRootNode
+                ? rootColor
+                : isAllocated
                 ? (canRefund ? refundColor : allocatedColor)
                 : (canAllocate ? availableColor : lockedColor);
         }
 
         if (nameText != null)
         {
-            nameText.color = isAllocated || canAllocate ? enabledTextColor : disabledTextColor;
+            nameText.color = isRootNode || isAllocated || canAllocate ? enabledTextColor : disabledTextColor;
         }
 
         if (button != null)
         {
-            button.interactable = isAllocated ? canRefund : canAllocate;
+            button.interactable = !isRootNode && (isAllocated ? canRefund : canAllocate);
         }
     }
 

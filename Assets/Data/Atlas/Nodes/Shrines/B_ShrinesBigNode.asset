@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: EnemyBigNode1
+  m_Name: B_ShrinesBigNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1001
-  displayName: Enemy Quality
-  description: +50% Enemy Quality
-  category: 0
+  nodeId: 1404
+  displayName: Consecrated Altars
+  description: '+20% chance for Shrines to be upgraded '
+  category: 3
   nodeSize: 1
   isRootNode: 0
-  editorPosition: {x: 0, y: 120}
+  editorPosition: {x: 0, y: 480}
   prerequisiteNodes:
-  - {fileID: 11400000, guid: a6a60e6a6b262ff46af384b38884cb3b, type: 2}
+  - {fileID: 11400000, guid: 8f75e72785194bfebc92500ec82f55c4, type: 2}
   effects:
-  - effectType: 1
-    value: 50
+  - effectType: 8
+    value: 20

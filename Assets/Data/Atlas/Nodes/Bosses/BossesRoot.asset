@@ -13,13 +13,11 @@ MonoBehaviour:
   m_Name: BossesRoot
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1100
-  displayName: Boss Rewards
-  description: +10% Boss Rewards
+  displayName: 
+  description: 
   category: 1
   nodeSize: 0
   isRootNode: 1
   editorPosition: {x: 0, y: 0}
   prerequisiteNodes: []
-  effects:
-  - effectType: 7
-    value: 10
+  effects: []

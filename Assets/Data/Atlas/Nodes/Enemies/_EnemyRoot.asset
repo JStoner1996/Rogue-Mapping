@@ -10,17 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: ShrinesSmallNode3
+  m_Name: _EnemyRoot
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1403
-  displayName: Shrine Effect
-  description: '+10% increased Shrine Effect '
-  category: 3
+  nodeId: 1000
+  displayName: 
+  description: 
+  category: 0
   nodeSize: 0
-  isRootNode: 0
-  editorPosition: {x: 220, y: 90}
-  prerequisiteNodes:
-  - {fileID: 11400000, guid: d8939c7476e47f443a2fd8c6f0ddc5d2, type: 2}
-  effects:
-  - effectType: 6
-    value: 10
+  isRootNode: 1
+  editorPosition: {x: 0, y: 0}
+  prerequisiteNodes: []
+  effects: []

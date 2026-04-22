@@ -304,7 +304,7 @@ public static class MetaProgressionService
             HashSet<string> allocatedNodeIds = new HashSet<string>(GetOrCreateAtlasTreeRecord(tree.Category).allocatedNodeIds);
             foreach (AtlasNodeDefinition node in tree.Nodes)
             {
-                if (node == null || !allocatedNodeIds.Contains(node.NodeId))
+                if (node == null || node.IsRootNode || !allocatedNodeIds.Contains(node.NodeId))
                 {
                     continue;
                 }
@@ -535,6 +535,11 @@ public static class MetaProgressionService
             return "Invalid atlas node reference.";
         }
 
+        if (node.IsRootNode)
+        {
+            return "Start node is always active.";
+        }
+
         if (saveData.unspentAtlasPoints <= 0)
         {
             return "No atlas points available.";
@@ -546,14 +551,9 @@ public static class MetaProgressionService
             return "Node is already allocated.";
         }
 
-        if (node.IsRootNode)
-        {
-            return null;
-        }
-
         foreach (AtlasNodeDefinition prerequisite in node.PrerequisiteNodes)
         {
-            if (prerequisite != null && record.allocatedNodeIds.Contains(prerequisite.NodeId))
+            if (prerequisite != null && (prerequisite.IsRootNode || record.allocatedNodeIds.Contains(prerequisite.NodeId)))
             {
                 return null;
             }
@@ -567,6 +567,11 @@ public static class MetaProgressionService
         if (!TryValidateAtlasNodeReference(tree, node))
         {
             return "Invalid atlas node reference.";
+        }
+
+        if (node.IsRootNode)
+        {
+            return "Start node cannot be refunded.";
         }
 
         AtlasTreeProgressRecord record = GetOrCreateAtlasTreeRecord(tree.Category);
@@ -613,23 +618,26 @@ public static class MetaProgressionService
             foreach (AtlasNodeDefinition node in tree.Nodes)
             {
                 if (node == null
+                    || node.IsRootNode
                     || !allocatedNodeIds.Contains(node.NodeId)
                     || reachableNodeIds.Contains(node.NodeId))
                 {
                     continue;
                 }
 
-                bool isReachable = node.IsRootNode;
+                bool isReachable = false;
 
-                if (!isReachable)
+                foreach (AtlasNodeDefinition prerequisite in node.PrerequisiteNodes)
                 {
-                    foreach (AtlasNodeDefinition prerequisite in node.PrerequisiteNodes)
+                    if (prerequisite == null)
                     {
-                        if (prerequisite != null && reachableNodeIds.Contains(prerequisite.NodeId))
-                        {
-                            isReachable = true;
-                            break;
-                        }
+                        continue;
+                    }
+
+                    if (prerequisite.IsRootNode || reachableNodeIds.Contains(prerequisite.NodeId))
+                    {
+                        isReachable = true;
+                        break;
                     }
                 }
 

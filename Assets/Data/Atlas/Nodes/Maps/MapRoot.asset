@@ -13,13 +13,11 @@ MonoBehaviour:
   m_Name: MapRoot
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1200
-  displayName: Map Drop Chance
-  description: +10% Map Drop Chance
+  displayName: 
+  description: 
   category: 2
   nodeSize: 0
   isRootNode: 1
   editorPosition: {x: 0, y: 0}
   prerequisiteNodes: []
-  effects:
-  - effectType: 2
-    value: 10
+  effects: []

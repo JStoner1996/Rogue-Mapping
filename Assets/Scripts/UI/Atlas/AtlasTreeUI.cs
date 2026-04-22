@@ -59,7 +59,7 @@ public class AtlasTreeUI : MonoBehaviour
             bool isAllocated = MetaProgressionService.IsAtlasNodeAllocated(treeDefinition.Category, node.NodeId);
             bool canAllocate = MetaProgressionService.CanAllocateAtlasNode(treeDefinition, node);
             bool canRefund = MetaProgressionService.CanRefundAtlasNode(treeDefinition, node);
-            nodeView.SetState(isAllocated, canAllocate, canRefund);
+            nodeView.SetState(node.IsRootNode, isAllocated, canAllocate, canRefund);
         }
 
         if (refundTreeButton != null)
@@ -127,6 +127,11 @@ public class AtlasTreeUI : MonoBehaviour
             return;
         }
 
+        if (node.IsRootNode)
+        {
+            return;
+        }
+
         bool isAllocated = MetaProgressionService.IsAtlasNodeAllocated(treeDefinition.Category, node.NodeId);
 
         if (isAllocated)
@@ -155,6 +160,12 @@ public class AtlasTreeUI : MonoBehaviour
 
     private void HandleNodeHoverEnter(AtlasNodeDefinition node)
     {
+        if (node == null || node.IsRootNode)
+        {
+            nodeDetailsPanel?.Hide();
+            return;
+        }
+
         nodeDetailsPanel?.ShowNode(treeDefinition, node);
     }
 

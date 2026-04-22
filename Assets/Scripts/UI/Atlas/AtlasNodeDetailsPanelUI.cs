@@ -13,7 +13,7 @@ public class AtlasNodeDetailsPanelUI : MonoBehaviour
 
     public void ShowNode(AtlasTreeDefinition tree, AtlasNodeDefinition node)
     {
-        if (tree == null || node == null)
+        if (tree == null || node == null || node.IsRootNode)
         {
             Hide();
             return;

@@ -34,7 +34,7 @@ public class AtlasNodeDefinition : ScriptableObject
 
     public bool IsConfigured()
     {
-        if (string.IsNullOrWhiteSpace(nodeId) || string.IsNullOrWhiteSpace(displayName))
+        if (string.IsNullOrWhiteSpace(nodeId))
         {
             return false;
         }

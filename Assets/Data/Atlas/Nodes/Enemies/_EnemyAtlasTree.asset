@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
+  m_Name: _EnemyAtlasTree
+  m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
+  category: 0
+  displayName: Enemies
+  description: Modify enemy density, behavior, and combat intensity.
+  nodes:
+  - {fileID: 11400000, guid: a6a60e6a6b262ff46af384b38884cb3b, type: 2}
+  - {fileID: 11400000, guid: 1f479564313dfc44c9bd14ac38c0b6ff, type: 2}
+  - {fileID: 11400000, guid: aaf4248fde7e406f8ff96be77db2610e, type: 2}
+  - {fileID: 11400000, guid: 3282a3886a654ced93c1594249a910d1, type: 2}
+  - {fileID: 11400000, guid: 5eca2324aa7994941a1bd6ba04d6436c, type: 2}
+  - {fileID: 11400000, guid: ab48b40ccd6e4a0394e6d72198d4388e, type: 2}
+  - {fileID: 11400000, guid: f34da640987541238ed2bc26d9ed0c16, type: 2}
+  - {fileID: 11400000, guid: 4d172731e428487e89882f5910832df1, type: 2}
+  - {fileID: 11400000, guid: c882044f850a46d0811de95c673f74c0, type: 2}
+  - {fileID: 11400000, guid: ca0f9666e9874365b4fdfe9783a4b82f, type: 2}
+  - {fileID: 11400000, guid: b2f74333605846f6a4b629c09ad63460, type: 2}
+  - {fileID: 11400000, guid: 5ea3c47f44264796b62df3803d148b52, type: 2}
+  - {fileID: 11400000, guid: f5816886c183411ca15f99989ca449ed, type: 2}
+  - {fileID: 11400000, guid: ed9ffd68ac814dbd94cad131974a3a42, type: 2}
+  - {fileID: 11400000, guid: 16fad29ba41d40f88d3157d99ed7e111, type: 2}

@@ -10,14 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: EquipmentRoot
+  m_Name: B_EnemySmallNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1300
-  displayName: 
-  description: 
-  category: 4
+  nodeId: 1003
+  displayName: Enemy Quantity
+  description: '+15% Enemy Quantity '
+  category: 0
   nodeSize: 0
-  isRootNode: 1
-  editorPosition: {x: 0, y: 0}
-  prerequisiteNodes: []
-  effects: []
+  isRootNode: 0
+  editorPosition: {x: 0, y: 350}
+  prerequisiteNodes:
+  - {fileID: 11400000, guid: 1f479564313dfc44c9bd14ac38c0b6ff, type: 2}
+  effects:
+  - effectType: 0
+    value: 10
