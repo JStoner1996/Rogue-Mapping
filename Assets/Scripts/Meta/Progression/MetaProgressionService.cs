@@ -4,8 +4,11 @@ using UnityEngine;
 
 public static class MetaProgressionService
 {
+    private const string AtlasTreeCatalogResourcePath = "Atlas/AtlasTreeCatalog";
+
     private static MetaProgressionSaveData saveData;
     private static bool isLoaded;
+    private static AtlasTreeCatalog atlasTreeCatalog;
 
     public static int UnspentAtlasPoints { get { EnsureLoaded(); return saveData.unspentAtlasPoints; } }
 
@@ -317,6 +320,17 @@ public static class MetaProgressionService
         }
 
         return summary;
+    }
+
+    public static AtlasEffectSummary GetAtlasEffectSummary()
+    {
+        EnsureLoaded();
+        return BuildAtlasEffectSummary(GetRuntimeAtlasTrees());
+    }
+
+    public static float GetAtlasEffectValue(AtlasEffectType effectType)
+    {
+        return GetAtlasEffectSummary().GetValue(effectType);
     }
 
     public static void Save()
@@ -666,5 +680,11 @@ public static class MetaProgressionService
         {
             Save();
         }
+    }
+
+    private static IReadOnlyList<AtlasTreeDefinition> GetRuntimeAtlasTrees()
+    {
+        atlasTreeCatalog ??= Resources.Load<AtlasTreeCatalog>(AtlasTreeCatalogResourcePath);
+        return atlasTreeCatalog != null ? atlasTreeCatalog.Trees : System.Array.Empty<AtlasTreeDefinition>();
     }
 }

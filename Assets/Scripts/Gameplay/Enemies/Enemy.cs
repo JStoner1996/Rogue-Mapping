@@ -305,8 +305,11 @@ public class Enemy : MonoBehaviour
         float multiplier = runtimeStats.dropChanceMultiplier;
         EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
         EquipmentStatType? bonusStatType = GetMetaDropBonusStat(lootItem);
+        AtlasEffectType? atlasEffectType = GetMetaDropAtlasEffectType(lootItem);
         EquipmentStatSummaryEntry entry = bonusStatType.HasValue ? summary?.GetEntry(bonusStatType.Value) : null;
-        return entry != null && entry.HasPercentValue ? multiplier * Mathf.Max(0f, 1f + entry.percentValue) : multiplier;
+        float equipmentIncrease = entry != null && entry.HasPercentValue ? entry.percentValue : 0f;
+        float atlasIncrease = atlasEffectType.HasValue ? MetaProgressionService.GetAtlasEffectValue(atlasEffectType.Value) / 100f : 0f;
+        return multiplier * Mathf.Max(0f, 1f + equipmentIncrease + atlasIncrease);
     }
 
     private int GetScaledPackBound(int baseValue, float qualityMultiplier)
@@ -480,6 +483,14 @@ public class Enemy : MonoBehaviour
         {
             MetaLootType.Map => EquipmentStatType.MapDropChance,
             MetaLootType.Equipment => EquipmentStatType.EquipmentDropChance,
+            _ => null
+        };
+
+    private static AtlasEffectType? GetMetaDropAtlasEffectType(MetaLootItem lootItem) =>
+        lootItem?.type switch
+        {
+            MetaLootType.Map => AtlasEffectType.MapDropChancePercent,
+            MetaLootType.Equipment => AtlasEffectType.EquipmentDropChancePercent,
             _ => null
         };
 
