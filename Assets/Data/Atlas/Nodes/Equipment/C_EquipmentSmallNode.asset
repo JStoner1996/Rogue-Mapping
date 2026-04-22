@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: B_ShrinesBigNode
+  m_Name: C_EquipmentSmallNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1404
-  displayName: Consecrated Altars
-  description: '+20% chance for Shrines to be upgraded '
-  category: 3
-  nodeSize: 1
+  nodeId: 1305
+  displayName: Jeweled Trails
+  description: +10% chance for Accessories to drop
+  category: 4
+  nodeSize: 0
   isRootNode: 0
-  editorPosition: {x: 0, y: 480}
+  editorPosition: {x: 155, y: 85}
   prerequisiteNodes:
-  - {fileID: 11400000, guid: 8f75e72785194bfebc92500ec82f55c4, type: 2}
+  - {fileID: 11400000, guid: 4d358c8192eca3d4e9ee7832706cebd1, type: 2}
   effects:
-  - effectType: 21
-    value: 20
+  - effectType: 39
+    value: 10

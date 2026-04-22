@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: EquipmentBigNode1
+  m_Name: E_EquipmentSmallNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1301
-  displayName: Equipment Drop Chance
-  description: +50% Equipment Drop Chance
+  nodeId: 1309
+  displayName: Wind-Worn Finds
+  description: +10% chance for Armor with Evasion implicit to drop
   category: 4
-  nodeSize: 1
+  nodeSize: 0
   isRootNode: 0
-  editorPosition: {x: 0, y: 120}
+  editorPosition: {x: 0, y: -160}
   prerequisiteNodes:
   - {fileID: 11400000, guid: 4d358c8192eca3d4e9ee7832706cebd1, type: 2}
   effects:
-  - effectType: 3
-    value: 50
+  - effectType: 41
+    value: 10

@@ -22,5 +22,5 @@ MonoBehaviour:
   prerequisiteNodes:
   - {fileID: 11400000, guid: 8010e38a600c4808b97fd3066d8b8f3c, type: 2}
   effects:
-  - effectType: 7
+  - effectType: 20
     value: 30

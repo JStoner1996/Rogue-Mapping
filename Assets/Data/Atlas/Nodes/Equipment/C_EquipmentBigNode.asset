@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b9f024e162b638428daf83010a6588e, type: 3}
-  m_Name: B_ShrinesBigNode
+  m_Name: C_EquipmentBigNode
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
-  nodeId: 1404
-  displayName: Consecrated Altars
-  description: '+20% chance for Shrines to be upgraded '
-  category: 3
+  nodeId: 1306
+  displayName: Crown Jewels
+  description: Accessories will always roll the highest implicit
+  category: 4
   nodeSize: 1
   isRootNode: 0
-  editorPosition: {x: 0, y: 480}
+  editorPosition: {x: 280, y: 220}
   prerequisiteNodes:
-  - {fileID: 11400000, guid: 8f75e72785194bfebc92500ec82f55c4, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1305, type: 2}
   effects:
-  - effectType: 21
-    value: 20
+  - effectType: 44
+    value: 1

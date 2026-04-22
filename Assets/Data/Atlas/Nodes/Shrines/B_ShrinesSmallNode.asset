@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1403
   displayName: Greater Shrine Chance
-  description: '+2% chance for Shrines to be upgraded '
+  description: '+5% chance for Shrines to be upgraded '
   category: 3
   nodeSize: 0
   isRootNode: 0
@@ -22,5 +22,5 @@ MonoBehaviour:
   prerequisiteNodes:
   - {fileID: 11400000, guid: 41431689a75d41fb990793e0ad35e97f, type: 2}
   effects:
-  - effectType: 8
-    value: 2
+  - effectType: 21
+    value: 5

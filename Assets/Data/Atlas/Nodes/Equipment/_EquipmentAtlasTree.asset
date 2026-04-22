@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf8e1855908cbef4c930abcc4b2e51d3, type: 3}
+  m_Name: _EquipmentAtlasTree
+  m_EditorClassIdentifier: Assembly-CSharp::AtlasTreeDefinition
+  category: 4
+  displayName: Equipment
+  description: 
+  nodes:
+  - {fileID: 11400000, guid: 4d358c8192eca3d4e9ee7832706cebd1, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1301, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1302, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1303, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1304, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1305, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1306, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1307, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1308, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1309, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1310, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1311, type: 2}
+  - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1312, type: 2}
