@@ -85,8 +85,14 @@ public static class MapAffixLibrary
     public static MapAffixDefinition RollSuffix(MapAffixTier tier) => RollAffix(Suffixes, tier);
     public static MapAffixDefinition FindPrefix(string affixName) => FindAffix(Prefixes, affixName);
     public static MapAffixDefinition FindSuffix(string affixName) => FindAffix(Suffixes, affixName);
+    public static MapAffixDefinition FindAnyAffix(string affixName) => FindAffix(GetAllAffixes(), affixName);
+    public static MapAffixDefinition RollAnyAffix(MapAffixTier tier, IReadOnlyCollection<string> excludedNames = null) =>
+        RollAffix(GetAllAffixes(), tier, excludedNames);
 
-    private static MapAffixDefinition RollAffix(IReadOnlyList<MapAffixDefinition> source, MapAffixTier tier)
+    private static MapAffixDefinition RollAffix(
+        IReadOnlyList<MapAffixDefinition> source,
+        MapAffixTier tier,
+        IReadOnlyCollection<string> excludedNames = null)
     {
         if (source == null)
         {
@@ -97,7 +103,9 @@ public static class MapAffixLibrary
 
         for (int i = 0; i < source.Count; i++)
         {
-            if (source[i] != null && source[i].tier == tier)
+            if (source[i] != null
+                && source[i].tier == tier
+                && (excludedNames == null || !IsExcludedAffix(excludedNames, source[i].name)))
             {
                 candidates.Add(source[i]);
             }
@@ -127,5 +135,31 @@ public static class MapAffixLibrary
         }
 
         return null;
+    }
+
+    private static IReadOnlyList<MapAffixDefinition> GetAllAffixes()
+    {
+        List<MapAffixDefinition> allAffixes = new List<MapAffixDefinition>(Prefixes.Count + Suffixes.Count);
+        allAffixes.AddRange(Prefixes);
+        allAffixes.AddRange(Suffixes);
+        return allAffixes;
+    }
+
+    private static bool IsExcludedAffix(IReadOnlyCollection<string> excludedNames, string affixName)
+    {
+        if (excludedNames == null || string.IsNullOrWhiteSpace(affixName))
+        {
+            return false;
+        }
+
+        foreach (string excludedName in excludedNames)
+        {
+            if (excludedName == affixName)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

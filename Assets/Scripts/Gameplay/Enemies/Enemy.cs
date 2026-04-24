@@ -486,6 +486,7 @@ public class Enemy : MonoBehaviour
             _ => null
         };
 
+    // Equipment and atlas both contribute "increased drop chance" style bonuses, so they share one multiplier path.
     private static AtlasEffectType? GetMetaDropAtlasEffectType(MetaLootItem lootItem) =>
         lootItem?.type switch
         {

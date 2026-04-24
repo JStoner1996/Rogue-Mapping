@@ -5,6 +5,9 @@ public static class MapGenerator
 {
     private const string MapCatalogResourcePath = "Maps/MapCatalog";
     public const string DefaultMapId = "default_map";
+    private const float CommonRarityWeight = 48f;
+    private const float UncommonRarityWeight = 34f;
+    private const float RareRarityWeight = 18f;
 
     private static readonly int[] TimeMinutesByRarity =
     {
@@ -26,6 +29,26 @@ public static class MapGenerator
     private static MapCatalog loadedMapCatalog;
     private static readonly IReadOnlyList<MapBaseDefinition> EmptyBaseMaps = System.Array.Empty<MapBaseDefinition>();
     private static readonly List<MapModifierValue> EmptyModifiers = new();
+
+    private readonly struct DroppedMapAtlasSettings
+    {
+        public readonly float rarityMultiplier;
+        public readonly int additionalAffixCount;
+        public readonly float higherTierBonus;
+        public readonly bool lowerTierMapsNeverDrop;
+
+        public DroppedMapAtlasSettings(
+            float rarityMultiplier,
+            int additionalAffixCount,
+            float higherTierBonus,
+            bool lowerTierMapsNeverDrop)
+        {
+            this.rarityMultiplier = rarityMultiplier;
+            this.additionalAffixCount = additionalAffixCount;
+            this.higherTierBonus = higherTierBonus;
+            this.lowerTierMapsNeverDrop = lowerTierMapsNeverDrop;
+        }
+    }
 
     public static List<MapInstance> GenerateChoices(int count)
     {
@@ -70,7 +93,8 @@ public static class MapGenerator
     public static MapInstance CreateDroppedMap(int currentTier, MapDropSettings dropSettings)
     {
         MapDropSettings settings = dropSettings ?? new MapDropSettings();
-        int targetTier = RollDroppedMapTier(currentTier, settings);
+        DroppedMapAtlasSettings atlasSettings = GetDroppedMapAtlasSettings();
+        int targetTier = RollDroppedMapTier(currentTier, settings, atlasSettings);
         MapBaseDefinition baseMap = RollBaseMapForTier(targetTier);
 
         if (baseMap == null)
@@ -79,7 +103,7 @@ public static class MapGenerator
             return CreateDefaultMap();
         }
 
-        return CreateGeneratedMap(baseMap);
+        return CreateGeneratedMap(baseMap, atlasSettings.rarityMultiplier, atlasSettings.additionalAffixCount);
     }
 
     public static OwnedMapRecord CreateOwnedMapRecord(MapInstance map)
@@ -95,6 +119,7 @@ public static class MapGenerator
             baseMapId = map.BaseMapId,
             prefixName = map.prefix != null ? map.prefix.name : string.Empty,
             suffixName = map.suffix != null ? map.suffix.name : string.Empty,
+            extraAffixNames = GetAffixNames(map.extraAffixes),
             victoryConditionType = map.VictoryConditionType,
             victoryTarget = Mathf.Max(1, map.VictoryTarget),
             modifiers = CopyModifiers(map.modifiers),
@@ -121,6 +146,7 @@ public static class MapGenerator
             baseMap = baseMap,
             prefix = MapAffixLibrary.FindPrefix(record.prefixName),
             suffix = MapAffixLibrary.FindSuffix(record.suffixName),
+            extraAffixes = GetAffixes(record.extraAffixNames),
             VictoryConditionType = record.victoryConditionType,
             VictoryTarget = Mathf.Max(1, record.victoryTarget),
             modifiers = CopyModifiers(record.modifiers),
@@ -175,16 +201,27 @@ public static class MapGenerator
         return baseTargets[rarityIndex] + (tier * perTierValue);
     }
 
-    private static MapAffixTier RollTier()
+    private static MapAffixTier RollTier(float higherRarityMultiplier = 1f)
     {
-        float roll = Random.value;
+        float clampedMultiplier = Mathf.Max(0f, higherRarityMultiplier);
+        float commonWeight = CommonRarityWeight;
+        float uncommonWeight = UncommonRarityWeight * clampedMultiplier;
+        float rareWeight = RareRarityWeight * clampedMultiplier;
+        float totalWeight = commonWeight + uncommonWeight + rareWeight;
 
-        if (roll < 0.18f)
+        if (totalWeight <= 0f)
+        {
+            return MapAffixTier.Common;
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+
+        if (roll < rareWeight)
         {
             return MapAffixTier.Rare;
         }
 
-        if (roll < 0.52f)
+        if (roll < rareWeight + uncommonWeight)
         {
             return MapAffixTier.Uncommon;
         }
@@ -198,32 +235,41 @@ public static class MapGenerator
         foreach (MapModifierRange modifier in affix.modifiers) output.Add(new MapModifierValue(modifier.statType, modifier.Roll()));
     }
 
-    private static MapInstance CreateGeneratedMap(MapBaseDefinition baseMap)
+    private static MapInstance CreateGeneratedMap(
+        MapBaseDefinition baseMap,
+        float higherRarityMultiplier = 1f,
+        int additionalAffixCount = 0)
     {
         MapInstance map = new MapInstance
         {
             baseMap = baseMap,
-            prefix = MapAffixLibrary.RollPrefix(RollTier()),
-            suffix = MapAffixLibrary.RollSuffix(RollTier()),
+            prefix = MapAffixLibrary.RollPrefix(RollTier(higherRarityMultiplier)),
+            suffix = MapAffixLibrary.RollSuffix(RollTier(higherRarityMultiplier)),
         };
 
         RollModifiersInto(map.prefix, map.modifiers);
         RollModifiersInto(map.suffix, map.modifiers);
+        RollExtraAffixesInto(map, additionalAffixCount, higherRarityMultiplier);
         AssignVictoryCondition(map);
         return map;
     }
 
-    private static int RollDroppedMapTier(int currentTier, MapDropSettings settings)
+    private static int RollDroppedMapTier(int currentTier, MapDropSettings settings, DroppedMapAtlasSettings atlasSettings)
     {
         if (currentTier <= 0)
         {
             return GetNearestAvailableTierAtOrAbove(1);
         }
 
+        float sameTierWeight = settings.sameTierWeight;
+        float aboveTierWeight = settings.aboveTierWeight;
+        float belowTierWeight = settings.belowTierWeight;
+        ApplyDroppedMapTierAtlasRules(ref sameTierWeight, ref aboveTierWeight, ref belowTierWeight, atlasSettings);
+
         List<TierWeightOption> candidates = new List<TierWeightOption>();
-        AddTierWeightCandidate(candidates, currentTier, settings.sameTierWeight);
-        AddTierWeightCandidate(candidates, currentTier + 1, settings.aboveTierWeight);
-        if (currentTier > 1) AddTierWeightCandidate(candidates, currentTier - 1, settings.belowTierWeight);
+        AddTierWeightCandidate(candidates, currentTier, sameTierWeight);
+        AddTierWeightCandidate(candidates, currentTier + 1, aboveTierWeight);
+        if (currentTier > 1) AddTierWeightCandidate(candidates, currentTier - 1, belowTierWeight);
 
         return RollTierFromCandidates(candidates, currentTier);
     }
@@ -299,6 +345,66 @@ public static class MapGenerator
 
     private static MapBaseDefinition RollBaseMapForTier(int tier) => TakeRandom(GetBaseMapsForTier(tier));
 
+    // Atlas affects only dropped maps, so we capture those bonuses once per roll and pass them down.
+    private static DroppedMapAtlasSettings GetDroppedMapAtlasSettings()
+    {
+        return new DroppedMapAtlasSettings(
+            1f + (MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.MapRarityPercent) / 100f),
+            Mathf.Max(0, Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.AdditionalMapAffixes))),
+            Mathf.Max(0f, MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.HigherTierMapDropChancePercent)),
+            MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.LowerTierMapsNeverDrop) > 0f);
+    }
+
+    // The tier-roll nodes both rebalance the same/same+above/below buckets rather than adding a separate post-roll override.
+    private static void ApplyDroppedMapTierAtlasRules(
+        ref float sameTierWeight,
+        ref float aboveTierWeight,
+        ref float belowTierWeight,
+        DroppedMapAtlasSettings atlasSettings)
+    {
+        if (atlasSettings.lowerTierMapsNeverDrop)
+        {
+            float transferredLowerTierWeight = Mathf.Max(0f, belowTierWeight);
+            belowTierWeight = 0f;
+            sameTierWeight = Mathf.Max(0f, sameTierWeight + transferredLowerTierWeight);
+        }
+
+        if (atlasSettings.higherTierBonus <= 0f)
+        {
+            return;
+        }
+
+        float transferredSameTierWeight = Mathf.Min(atlasSettings.higherTierBonus, Mathf.Max(0f, sameTierWeight));
+        sameTierWeight = Mathf.Max(0f, sameTierWeight - transferredSameTierWeight);
+        aboveTierWeight = Mathf.Max(0f, aboveTierWeight + transferredSameTierWeight);
+    }
+
+    private static void RollExtraAffixesInto(MapInstance map, int additionalAffixCount, float rarityMultiplier)
+    {
+        if (map == null || additionalAffixCount <= 0)
+        {
+            return;
+        }
+
+        HashSet<string> usedAffixNames = new HashSet<string>();
+        AddAffixName(usedAffixNames, map.prefix);
+        AddAffixName(usedAffixNames, map.suffix);
+
+        for (int i = 0; i < additionalAffixCount; i++)
+        {
+            MapAffixDefinition extraAffix = MapAffixLibrary.RollAnyAffix(RollTier(rarityMultiplier), usedAffixNames);
+
+            if (extraAffix == null)
+            {
+                break;
+            }
+
+            map.extraAffixes.Add(extraAffix);
+            RollModifiersInto(extraAffix, map.modifiers);
+            usedAffixNames.Add(extraAffix.name);
+        }
+    }
+
     private static List<MapBaseDefinition> GetNonDefaultBaseMaps() => GetMatchingBaseMaps(IsNonDefaultBaseMap);
 
     private static List<MapBaseDefinition> GetMatchingBaseMaps(System.Predicate<MapBaseDefinition> match)
@@ -368,6 +474,56 @@ public static class MapGenerator
 
     private static List<MapModifierValue> CopyModifiers(IReadOnlyList<MapModifierValue> modifiers) =>
         new(modifiers ?? EmptyModifiers);
+
+    private static void AddAffixName(HashSet<string> usedAffixNames, MapAffixDefinition affix)
+    {
+        if (usedAffixNames != null && affix != null && !string.IsNullOrWhiteSpace(affix.name))
+        {
+            usedAffixNames.Add(affix.name);
+        }
+    }
+
+    private static List<string> GetAffixNames(IReadOnlyList<MapAffixDefinition> affixes)
+    {
+        List<string> names = new List<string>();
+
+        if (affixes == null)
+        {
+            return names;
+        }
+
+        for (int i = 0; i < affixes.Count; i++)
+        {
+            if (affixes[i] != null && !string.IsNullOrWhiteSpace(affixes[i].name))
+            {
+                names.Add(affixes[i].name);
+            }
+        }
+
+        return names;
+    }
+
+    private static List<MapAffixDefinition> GetAffixes(IReadOnlyList<string> affixNames)
+    {
+        List<MapAffixDefinition> affixes = new List<MapAffixDefinition>();
+
+        if (affixNames == null)
+        {
+            return affixes;
+        }
+
+        for (int i = 0; i < affixNames.Count; i++)
+        {
+            MapAffixDefinition affix = MapAffixLibrary.FindAnyAffix(affixNames[i]);
+
+            if (affix != null)
+            {
+                affixes.Add(affix);
+            }
+        }
+
+        return affixes;
+    }
 
     private struct TierWeightOption
     {

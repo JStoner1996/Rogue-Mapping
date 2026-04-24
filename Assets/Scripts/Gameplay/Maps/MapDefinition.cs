@@ -128,6 +128,7 @@ public class MapInstance
     public MapBaseDefinition baseMap;
     public MapAffixDefinition prefix;
     public MapAffixDefinition suffix;
+    public List<MapAffixDefinition> extraAffixes = new List<MapAffixDefinition>();
     public List<MapModifierValue> modifiers = new List<MapModifierValue>();
 
     public string BaseMapId => baseMap?.id ?? string.Empty;
@@ -145,7 +146,21 @@ public class MapInstance
         get
         {
             MapAffixTier rarity = prefix?.tier ?? MapAffixTier.Common;
-            return suffix != null && suffix.tier > rarity ? suffix.tier : rarity;
+
+            if (suffix != null && suffix.tier > rarity)
+            {
+                rarity = suffix.tier;
+            }
+
+            for (int i = 0; i < extraAffixes.Count; i++)
+            {
+                if (extraAffixes[i] != null && extraAffixes[i].tier > rarity)
+                {
+                    rarity = extraAffixes[i].tier;
+                }
+            }
+
+            return rarity;
         }
     }
 
