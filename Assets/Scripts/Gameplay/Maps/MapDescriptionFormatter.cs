@@ -8,10 +8,23 @@ public static class MapDescriptionFormatter
         { MapStatType.EnemyQuantity, "Enemy Quantity" },
         { MapStatType.EnemyQuality, "Enemy Quality" },
         { MapStatType.DropChance, "Drop Chance" },
+        { MapStatType.MapDropChance, "Map Drop Chance" },
+        { MapStatType.MapRarity, "Map Quality" },
+        { MapStatType.EquipmentDropChance, "Equipment Drop Chance" },
+        { MapStatType.EquipmentRarity, "Equipment Quality" },
         { MapStatType.EnemyDamage, "Enemy Damage" },
         { MapStatType.EnemyHealth, "Enemy Health" },
         { MapStatType.EnemyMoveSpeed, "Enemy Movement Speed" },
-        { MapStatType.ExperienceWorth, "Experience Worth" },
+        { MapStatType.ExperienceWorth, "Experience Gain" },
+        { MapStatType.EliteChance, "Elite Chance" },
+        { MapStatType.TankChance, "Tank Chance" },
+        { MapStatType.SkirmisherChance, "Skirmisher Chance" },
+        { MapStatType.EliteDamage, "Elite Damage" },
+        { MapStatType.EliteHealth, "Elite Health" },
+        { MapStatType.TankDamage, "Tank Damage" },
+        { MapStatType.TankHealth, "Tank Health" },
+        { MapStatType.SkirmisherDamage, "Skirmisher Damage" },
+        { MapStatType.SkirmisherHealth, "Skirmisher Health" },
     };
 
     public static string Build(MapInstance map)
@@ -29,29 +42,56 @@ public static class MapDescriptionFormatter
 
         builder.AppendLine($"Tier: {map.Tier}");
         builder.AppendLine($"Rarity: {map.Rarity}");
-        builder.AppendLine($"Tileset: {StringUtils.SplitCamelCase(map.TilesetTheme.ToString())}");
         builder.AppendLine($"Completed: {(map.IsBaseMapCompleted ? "Yes" : "No")}");
         builder.AppendLine($"Victory: {FormatVictoryCondition(map)}");
-
-        if (map.modifiers.Count > 0)
-        {
-            builder.AppendLine();
-        }
-        else
-        {
-            builder.AppendLine();
-            builder.AppendLine("No modifiers");
-        }
-
-        foreach (MapModifierValue modifier in map.modifiers)
-        {
-            builder.Append("+");
-            builder.Append(modifier.percent.ToString("0.#"));
-            builder.Append("% ");
-            builder.AppendLine(Labels[modifier.statType]);
-        }
+        builder.AppendLine("__________________________");
+        AppendAffixSummary(builder, map);
 
         return builder.ToString().TrimEnd();
+    }
+
+    private static void AppendAffixSummary(StringBuilder builder, MapInstance map)
+    {
+        if (map == null)
+        {
+            return;
+        }
+
+        IReadOnlyList<MapRolledAffix> affixes = map.GetAllAffixes();
+        if (affixes == null || affixes.Count == 0)
+        {
+            return;
+        }
+
+        AppendAffixRolls(builder, map.PrefixAffixes);
+        AppendAffixRolls(builder, map.SuffixAffixes);
+        AppendAffixRolls(builder, map.AdditionalAffixes);
+    }
+
+    private static void AppendAffixRolls(StringBuilder builder, IReadOnlyList<MapRolledAffix> affixes)
+    {
+        if (builder == null || affixes == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < affixes.Count; i++)
+        {
+            MapRolledAffix affix = affixes[i];
+            if (affix?.ModifierRolls == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < affix.ModifierRolls.Count; j++)
+            {
+                MapModifierValue modifier = affix.ModifierRolls[j];
+                builder.Append('+');
+                builder.Append(modifier.percent.ToString("0.#"));
+                builder.Append("% ");
+                builder.AppendLine(Labels[modifier.statType]);
+            }
+        }
     }
 
     public static string FormatVictoryCondition(MapInstance map)

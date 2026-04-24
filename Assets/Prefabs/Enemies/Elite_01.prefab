@@ -315,27 +315,19 @@ MonoBehaviour:
       aboveTierWeight: 50
       belowTierWeight: 10
     equipmentDropSettings:
-      useSelectedMapTier: 1
-      minTierOffset: -1
-      maxTierOffset: 1
-      fallbackMinTier: 1
-      fallbackMaxTier: 3
+      fallbackItemTier: 1
       maximumGeneratedTier: 10
       commonWeight: 60
       uncommonWeight: 30
       rareWeight: 10
   - type: 1
-    dropChance: 75
+    dropChance: 25
     mapDropSettings:
       sameTierWeight: 40
       aboveTierWeight: 50
       belowTierWeight: 10
     equipmentDropSettings:
-      useSelectedMapTier: 1
-      minTierOffset: -1
-      maxTierOffset: 1
-      fallbackMinTier: 1
-      fallbackMaxTier: 3
+      fallbackItemTier: 1
       maximumGeneratedTier: 10
       commonWeight: 60
       uncommonWeight: 30
