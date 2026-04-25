@@ -28,6 +28,7 @@ public class PlayerHealth : MonoBehaviour
     public float MaxHealth => (baseMaxHealth + flatMaxHealthBonus) * (1f + maxHealthMultiplier);
     public float CurrentHealth { get; private set; }
     public float Armor => armor;
+    public float ArmorMitigationFraction => armor <= 0f ? 0f : armor / (ArmorMitigationDenominator + armor);
     public float Evasion => evasion;
     public float EvadeChance => Mathf.Min(MaximumEvadeChance, evasion / (evasion + EvasionScalingDenominator));
     public float HealthRegenPerSecond => healthRegenPerSecond;
@@ -39,7 +40,7 @@ public class PlayerHealth : MonoBehaviour
         maxHealthMultiplier = 0f;
         immunityDuration = configuredImmunityDuration;
         armor = 5f;
-        evasion = 0f;
+        evasion = 5f;
         healthRegenPerSecond = .05f;
         CurrentHealth = MaxHealth;
         initialized = true;

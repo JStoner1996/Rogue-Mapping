@@ -54,6 +54,11 @@ public class MapAffixCatalog : ScriptableObject
 
     public IReadOnlyList<MapAffixDefinition> AffixDefinitions => affixDefinitions;
 
+    public void Initialize(IEnumerable<MapAffixDefinition> definitions)
+    {
+        affixDefinitions = definitions != null ? new List<MapAffixDefinition>(definitions) : new List<MapAffixDefinition>();
+    }
+
     public List<MapAffixDefinition> GetValidAffixes(MapAffixType affixType, MapAffixTier affixTier, int mapTier)
     {
         List<MapAffixDefinition> validAffixes = new List<MapAffixDefinition>();
@@ -136,5 +141,19 @@ public class MapAffixCatalog : ScriptableObject
         }
 
         return null;
+    }
+
+    public bool HasConfiguredAffixes()
+    {
+        for (int i = 0; i < affixDefinitions.Count; i++)
+        {
+            MapAffixDefinition definition = affixDefinitions[i];
+            if (definition != null && definition.IsConfigured())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -106,9 +106,8 @@ public class MapBaseCatalog : ScriptableObject
 
 public static class MapCatalogResources
 {
-    private const string BaseCatalogResourcePath = "Maps/Catalogs/MapBaseCatalog";
-    private const string AffixCatalogResourcePath = "Maps/Catalogs/MapAffixCatalog";
     private const string BasesResourcePath = "Maps/Bases";
+    private const string AffixesResourcePath = "Maps/Affixes";
 
     private static MapBaseCatalog loadedBaseCatalog;
     private static MapAffixCatalog loadedAffixCatalog;
@@ -135,11 +134,6 @@ public static class MapCatalogResources
     {
         if (loadedBaseCatalog == null)
         {
-            loadedBaseCatalog = Resources.Load<MapBaseCatalog>(BaseCatalogResourcePath);
-        }
-
-        if (loadedBaseCatalog == null || loadedBaseCatalog.BaseDefinitions == null || loadedBaseCatalog.BaseDefinitions.Count == 0)
-        {
             MapBaseDefinition[] baseDefinitions = Resources.LoadAll<MapBaseDefinition>(BasesResourcePath);
             if (baseDefinitions != null && baseDefinitions.Length > 0)
             {
@@ -150,7 +144,12 @@ public static class MapCatalogResources
 
         if (loadedAffixCatalog == null)
         {
-            loadedAffixCatalog = Resources.Load<MapAffixCatalog>(AffixCatalogResourcePath);
+            MapAffixDefinition[] affixDefinitions = Resources.LoadAll<MapAffixDefinition>(AffixesResourcePath);
+            if (affixDefinitions != null && affixDefinitions.Length > 0)
+            {
+                loadedAffixCatalog = ScriptableObject.CreateInstance<MapAffixCatalog>();
+                loadedAffixCatalog.Initialize(affixDefinitions);
+            }
         }
     }
 }
