@@ -54,6 +54,7 @@ public class CharacterStatsUI : MonoBehaviour
         if (health != null)
         {
             desc += $"Health: {health.CurrentHealth:F1}/{health.MaxHealth:F1}\n";
+            desc += $"Barrier: {health.CurrentBarrier:F1}/{health.MaxBarrier:F1}\n";
             desc += $"Armor: {health.Armor:F1} ({health.ArmorMitigationFraction * 100f:F1}% mitigation)\n";
             desc += $"Evasion: {health.Evasion:F1} ({health.EvadeChance * 100f:F1}% evade)\n";
             desc += $"Health Regen: {health.HealthRegenPerSecond:F2}/s\n";

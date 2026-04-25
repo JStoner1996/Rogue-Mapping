@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class UIController : SingletonBehaviour<UIController>
 {
     [SerializeField] private Slider playerHealthSlider;
+    [SerializeField] private Slider playerBarrierSlider;
     [SerializeField] private TMP_Text healthText;
     [SerializeField] private Slider playerExperienceSlider;
     [SerializeField] private TMP_Text experienceText;
@@ -53,7 +54,7 @@ public class UIController : SingletonBehaviour<UIController>
             return;
         }
 
-        UpdateSlider(playerHealthSlider, healthText, playerHealth.MaxHealth, playerHealth.CurrentHealth);
+        UpdateHealthAndBarrier(playerHealthSlider, playerBarrierSlider, healthText, playerHealth);
     }
 
     public void UpdateExperienceSlider()
@@ -199,6 +200,34 @@ public class UIController : SingletonBehaviour<UIController>
         slider.maxValue = maxValue;
         slider.value = value;
         text.text = $"{Mathf.RoundToInt(value)} / {Mathf.RoundToInt(maxValue)}";
+    }
+
+    private static void UpdateHealthAndBarrier(Slider healthSlider, Slider barrierSlider, TMP_Text text, PlayerHealth playerHealth)
+    {
+        if (healthSlider == null || text == null || playerHealth == null)
+        {
+            return;
+        }
+
+        healthSlider.maxValue = playerHealth.MaxHealth;
+        healthSlider.value = playerHealth.CurrentHealth;
+
+        bool hasBarrier = playerHealth.MaxBarrier > 0f;
+
+        if (barrierSlider != null)
+        {
+            barrierSlider.maxValue = Mathf.Max(1f, playerHealth.MaxBarrier);
+            barrierSlider.value = playerHealth.CurrentBarrier;
+            if (barrierSlider.gameObject.activeSelf != hasBarrier)
+            {
+                barrierSlider.gameObject.SetActive(hasBarrier);
+            }
+        }
+
+        text.text = hasBarrier
+            ? $"{Mathf.RoundToInt(playerHealth.CurrentHealth)}/{Mathf.RoundToInt(playerHealth.MaxHealth)} " +
+              $"({Mathf.RoundToInt(playerHealth.CurrentBarrier)}/{Mathf.RoundToInt(playerHealth.MaxBarrier)})"
+            : $"{Mathf.RoundToInt(playerHealth.CurrentHealth)}/{Mathf.RoundToInt(playerHealth.MaxHealth)}";
     }
 
     private static void SetPanelState(GameObject panel, bool isVisible, float timeScale)
