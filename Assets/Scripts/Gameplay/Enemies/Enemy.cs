@@ -108,7 +108,7 @@ public class Enemy : MonoBehaviour
             CachePlayerReferences();
         }
 
-        playerHealth?.TakeDamage(runtimeStats.contactDamage);
+        playerHealth?.TakeEnemyContactDamage(runtimeStats.contactDamage);
     }
 
     public void TakeDamage(float damage, Vector2? hitDirection = null, float knockbackForce = 0f)

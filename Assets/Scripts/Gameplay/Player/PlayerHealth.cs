@@ -4,6 +4,14 @@ using UnityEngine;
 public class PlayerHealth : MonoBehaviour
 {
     private const float ArmorMitigationDenominator = 100f;
+    private const float EvasionScalingDenominator = 100f;
+    private const float MaximumEvadeChance = 0.75f;
+
+    private enum IncomingDamageKind
+    {
+        Generic,
+        EnemyContact,
+    }
 
     private float baseMaxHealth;
     private float flatMaxHealthBonus;
@@ -11,6 +19,7 @@ public class PlayerHealth : MonoBehaviour
     private float immunityDuration;
     private bool initialized;
     private float armor;
+    private float evasion;
     private float healthRegenPerSecond;
 
     private bool isImmune;
@@ -19,6 +28,8 @@ public class PlayerHealth : MonoBehaviour
     public float MaxHealth => (baseMaxHealth + flatMaxHealthBonus) * (1f + maxHealthMultiplier);
     public float CurrentHealth { get; private set; }
     public float Armor => armor;
+    public float Evasion => evasion;
+    public float EvadeChance => Mathf.Min(MaximumEvadeChance, evasion / (evasion + EvasionScalingDenominator));
     public float HealthRegenPerSecond => healthRegenPerSecond;
 
     public void Configure(float configuredMaxHealth, float configuredImmunityDuration)
@@ -28,6 +39,7 @@ public class PlayerHealth : MonoBehaviour
         maxHealthMultiplier = 0f;
         immunityDuration = configuredImmunityDuration;
         armor = 5f;
+        evasion = 0f;
         healthRegenPerSecond = .05f;
         CurrentHealth = MaxHealth;
         initialized = true;
@@ -50,6 +62,11 @@ public class PlayerHealth : MonoBehaviour
     public void ApplyArmorModifier(float value)
     {
         armor = Mathf.Max(0f, armor + value);
+    }
+
+    public void ApplyEvasionModifier(float value)
+    {
+        evasion = Mathf.Max(0f, evasion + value);
     }
 
     public void ApplyHealthRegenModifier(float value)
@@ -92,7 +109,22 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        ApplyIncomingDamage(damage, IncomingDamageKind.Generic);
+    }
+
+    public void TakeEnemyContactDamage(float damage)
+    {
+        ApplyIncomingDamage(damage, IncomingDamageKind.EnemyContact);
+    }
+
+    private void ApplyIncomingDamage(float damage, IncomingDamageKind damageKind)
+    {
         if (isImmune)
+        {
+            return;
+        }
+
+        if (damageKind == IncomingDamageKind.EnemyContact && RollEvade())
         {
             return;
         }
@@ -148,6 +180,16 @@ public class PlayerHealth : MonoBehaviour
 
         float mitigatedDamage = incomingDamage * (ArmorMitigationDenominator / (ArmorMitigationDenominator + armor));
         return Mathf.Max(1f, mitigatedDamage);
+    }
+
+    private bool RollEvade()
+    {
+        if (evasion <= 0f)
+        {
+            return false;
+        }
+
+        return Random.value < EvadeChance;
     }
 
     private void RefreshHealthUI() => UIController.Instance?.UpdateHealthSlider();

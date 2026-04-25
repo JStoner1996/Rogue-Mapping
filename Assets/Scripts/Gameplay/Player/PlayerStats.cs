@@ -92,6 +92,7 @@ public class PlayerStats : MonoBehaviour
 
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.MaximumHealth), PlayerStatType.MaximumHealth, supportsFlatValue: true);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Armor), PlayerStatType.Armor);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Evasion), PlayerStatType.Evasion);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.HealthRegen), PlayerStatType.HealthRegen);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.MovementSpeed), PlayerStatType.MovementSpeed);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.PickupRange), PlayerStatType.PickupRange);
@@ -118,6 +119,10 @@ public class PlayerStats : MonoBehaviour
 
             case PlayerStatType.Armor:
                 playerHealth?.ApplyArmorModifier(value);
+                break;
+
+            case PlayerStatType.Evasion:
+                playerHealth?.ApplyEvasionModifier(value);
                 break;
 
             case PlayerStatType.HealthRegen:

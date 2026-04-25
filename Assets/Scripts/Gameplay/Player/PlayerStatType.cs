@@ -2,6 +2,7 @@ public enum PlayerStatType
 {
     MaximumHealth,
     Armor,
+    Evasion,
     HealthRegen,
     MovementSpeed,
     PickupRange,

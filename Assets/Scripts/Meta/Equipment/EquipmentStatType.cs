@@ -2,6 +2,7 @@ public enum EquipmentStatType
 {
     MaximumHealth,
     Armor,
+    Evasion,
     HealthRegen,
     Damage,
     AttackSpeed,

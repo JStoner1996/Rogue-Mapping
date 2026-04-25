@@ -33,6 +33,7 @@ public class PlayerStatsPanelUI : MonoBehaviour
     [SerializeField] private StatRowUI maxHealthRow;
     [SerializeField] private StatRowUI healthRegenRow;
     [SerializeField] private StatRowUI armorRow;
+    [SerializeField] private StatRowUI evasionRow;
     [Header("Utility")]
     [SerializeField] private StatRowUI pickupRangeRow;
     [SerializeField] private StatRowUI shrineQuantityRow;
@@ -64,6 +65,7 @@ public class PlayerStatsPanelUI : MonoBehaviour
         SetFlatWithOptionalPercentRow(maxHealthRow, GetEntry(summary, EquipmentStatType.MaximumHealth), "{0:+0;-0;+0}", " ({0:+0%;-0%;+0%})");
         SetFlatRow(healthRegenRow, GetEntry(summary, EquipmentStatType.HealthRegen), "{0:+0.##;-0.##;+0}/s");
         SetFlatRow(armorRow, GetEntry(summary, EquipmentStatType.Armor), "{0:+0.##;-0.##;+0}");
+        SetFlatRow(evasionRow, GetEntry(summary, EquipmentStatType.Evasion), "{0:+0.##;-0.##;+0}");
         if (page2Button != null) page2Button.interactable = false;
         if (uniqueStatsText != null)
         {
