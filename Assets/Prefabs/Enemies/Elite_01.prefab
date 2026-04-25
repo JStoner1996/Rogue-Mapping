@@ -270,8 +270,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.030283153, y: 0.7545025}
-  m_Radius: 0.6928318
+  m_Offset: {x: 0.015201211, y: 0.5101811}
+  m_Radius: 0.4635919
 --- !u!114 &6557924966457350784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -290,12 +290,18 @@ MonoBehaviour:
   rarityOutlineMaterial: {fileID: 0}
   archetypeDefinition: {fileID: 11400000, guid: 5dfec0fc6d118fc45ad01b8a7e19a107, type: 2}
   experienceWorth: 150
-  moveSpeed: 1
+  moveSpeed: 1.1
   damage: 20
   health: 800
   packSizeMin: 1
   packSizeMax: 1
   knockbackResistance: 100
+  attackRecoilOnHit: 5
+  attackRecoilOnEvade: 7.5
+  knockbackPropagationRadius: 1
+  knockbackPropagationForceMultiplier: 0.65
+  knockbackPropagationForwardDot: 0.05
+  knockbackPropagationMaxTargets: 4
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}
   uncommonOutlineThickness: 1.2

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -6,11 +7,19 @@ public class PlayerHealth : MonoBehaviour
     private const float ArmorMitigationDenominator = 100f;
     private const float EvasionScalingDenominator = 100f;
     private const float MaximumEvadeChance = 0.75f;
+    private const float EvasionEntropyJitterMagnitude = 0.10f;
 
     private enum IncomingDamageKind
     {
         Generic,
         EnemyContact,
+    }
+
+    public enum EnemyContactResult
+    {
+        NoEffect,
+        Evaded,
+        Hit,
     }
 
     private float baseMaxHealth;
@@ -21,6 +30,7 @@ public class PlayerHealth : MonoBehaviour
     private float armor;
     private float evasion;
     private float healthRegenPerSecond;
+    private readonly Dictionary<EntityId, float> evasionEntropyByAttacker = new Dictionary<EntityId, float>();
 
     private bool isImmune;
     private float immunityTimer;
@@ -118,31 +128,45 @@ public class PlayerHealth : MonoBehaviour
         ApplyIncomingDamage(damage, IncomingDamageKind.EnemyContact);
     }
 
+    public void TakeEnemyContactDamage(float damage, EntityId attackerId)
+    {
+        ApplyIncomingDamage(damage, IncomingDamageKind.EnemyContact, attackerId);
+    }
+
+    public EnemyContactResult ResolveEnemyContactDamage(float damage, EntityId attackerId)
+    {
+        if (isImmune)
+        {
+            return EnemyContactResult.NoEffect;
+        }
+
+        if (ShouldEvadeEnemyContact(attackerId))
+        {
+            return EnemyContactResult.Evaded;
+        }
+
+        ApplyDamage(damage);
+        return EnemyContactResult.Hit;
+    }
+
     private void ApplyIncomingDamage(float damage, IncomingDamageKind damageKind)
+    {
+        ApplyIncomingDamage(damage, damageKind, EntityId.None);
+    }
+
+    private void ApplyIncomingDamage(float damage, IncomingDamageKind damageKind, EntityId attackerId)
     {
         if (isImmune)
         {
             return;
         }
 
-        if (damageKind == IncomingDamageKind.EnemyContact && RollEvade())
+        if (damageKind == IncomingDamageKind.EnemyContact && ShouldEvadeEnemyContact(attackerId))
         {
             return;
         }
 
-        isImmune = true;
-        immunityTimer = immunityDuration;
-        CurrentHealth -= GetMitigatedDamage(damage);
-
-        RefreshHealthUI();
-
-        if (CurrentHealth > 0f)
-        {
-            return;
-        }
-
-        gameObject.SetActive(false);
-        GameManager.Instance.GameOver();
+        ApplyDamage(damage);
     }
 
     public void GainHealth(int healthAmount)
@@ -183,14 +207,57 @@ public class PlayerHealth : MonoBehaviour
         return Mathf.Max(1f, mitigatedDamage);
     }
 
-    private bool RollEvade()
+    private bool ShouldEvadeEnemyContact(EntityId attackerId)
     {
         if (evasion <= 0f)
         {
             return false;
         }
 
-        return Random.value < EvadeChance;
+        float hitChance = 1f - EvadeChance;
+        float entropy = GetEvasionEntropy(attackerId) + hitChance;
+        float jitter = Random.Range(-EvasionEntropyJitterMagnitude, EvasionEntropyJitterMagnitude);
+
+        if (entropy + jitter >= 1f)
+        {
+            SetEvasionEntropy(attackerId, Mathf.Max(0f, entropy - 1f));
+            return false;
+        }
+
+        SetEvasionEntropy(attackerId, entropy);
+        return true;
+    }
+
+    private float GetEvasionEntropy(EntityId attackerId)
+    {
+        return attackerId != EntityId.None && evasionEntropyByAttacker.TryGetValue(attackerId, out float entropy) ? entropy : 0f;
+    }
+
+    private void SetEvasionEntropy(EntityId attackerId, float entropy)
+    {
+        if (attackerId == EntityId.None)
+        {
+            return;
+        }
+
+        evasionEntropyByAttacker[attackerId] = Mathf.Clamp01(entropy);
+    }
+
+    private void ApplyDamage(float damage)
+    {
+        isImmune = true;
+        immunityTimer = immunityDuration;
+        CurrentHealth -= GetMitigatedDamage(damage);
+
+        RefreshHealthUI();
+
+        if (CurrentHealth > 0f)
+        {
+            return;
+        }
+
+        gameObject.SetActive(false);
+        GameManager.Instance.GameOver();
     }
 
     private void RefreshHealthUI() => UIController.Instance?.UpdateHealthSlider();

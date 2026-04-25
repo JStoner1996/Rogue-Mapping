@@ -7,6 +7,8 @@ public class Enemy : MonoBehaviour
 
     private const float KnockbackDuration = 0.1f;
     private static readonly Vector2 ZeroVelocity = Vector2.zero;
+    private static readonly Collider2D[] KnockbackPropagationColliderBuffer = new Collider2D[16];
+    private static readonly Enemy[] KnockbackPropagationEnemyBuffer = new Enemy[16];
 
     private struct RuntimeStats
     {
@@ -39,6 +41,12 @@ public class Enemy : MonoBehaviour
     [Header("Knockback")]
     [SerializeField, Range(0f, 100f)]
     private float knockbackResistance = 0f;
+    [SerializeField, Min(0f)] private float attackRecoilOnHit = 3f;
+    [SerializeField, Min(0f)] private float attackRecoilOnEvade = 4.5f;
+    [SerializeField, Min(0f)] private float knockbackPropagationRadius = 1f;
+    [SerializeField, Range(0f, 1f)] private float knockbackPropagationForceMultiplier = 0.65f;
+    [SerializeField, Range(-1f, 1f)] private float knockbackPropagationForwardDot = 0.05f;
+    [SerializeField, Min(0)] private int knockbackPropagationMaxTargets = 4;
 
     [Header("Rarity Visuals")]
     [SerializeField] private Color uncommonOutlineColor = new Color(0.2f, 0.55f, 1f, 1f);
@@ -50,6 +58,7 @@ public class Enemy : MonoBehaviour
     private float knockbackTimer;
     private Material defaultMaterial;
     private MaterialPropertyBlock rarityPropertyBlock;
+    private Collider2D bodyCollider;
 
     [Header("Drops")]
     [SerializeField] private List<LootItem> powerUpLootTable = new List<LootItem>();
@@ -69,6 +78,7 @@ public class Enemy : MonoBehaviour
 
     void Awake()
     {
+        bodyCollider = GetComponent<Collider2D>();
         EnsureRarityMaterial();
         ResetRuntimeState();
     }
@@ -108,7 +118,20 @@ public class Enemy : MonoBehaviour
             CachePlayerReferences();
         }
 
-        playerHealth?.TakeEnemyContactDamage(runtimeStats.contactDamage);
+        if (playerHealth == null)
+        {
+            return;
+        }
+
+        PlayerHealth.EnemyContactResult contactResult =
+            playerHealth.ResolveEnemyContactDamage(runtimeStats.contactDamage, gameObject.GetEntityId());
+
+        if (contactResult == PlayerHealth.EnemyContactResult.NoEffect)
+        {
+            return;
+        }
+
+        ApplyAttackRecoil(collision, contactResult == PlayerHealth.EnemyContactResult.Evaded ? attackRecoilOnEvade : attackRecoilOnHit);
     }
 
     public void TakeDamage(float damage, Vector2? hitDirection = null, float knockbackForce = 0f)
@@ -175,13 +198,138 @@ public class Enemy : MonoBehaviour
         xp.Init(runtimeStats.experienceWorth);
     }
 
-    private void ApplyKnockback(Vector2 hitDirection, float force)
+    private void ApplyKnockback(Vector2 hitDirection, float force, bool applyResistance = true, bool propagateToNearbyEnemies = true)
     {
-        float resistance = Mathf.Clamp01(knockbackResistance / 100f);
-        float finalForce = force * (1f - resistance);
+        float finalForce = force;
+        if (applyResistance)
+        {
+            float resistance = Mathf.Clamp01(knockbackResistance / 100f);
+            finalForce *= 1f - resistance;
+        }
 
-        knockbackVelocity = hitDirection.normalized * finalForce;
+        if (finalForce <= 0f || hitDirection.sqrMagnitude <= Mathf.Epsilon)
+        {
+            return;
+        }
+
+        Vector2 knockbackDirection = hitDirection.normalized;
+        ApplyKnockbackVelocity(knockbackDirection, finalForce);
+
+        if (propagateToNearbyEnemies)
+        {
+            PropagateKnockbackToNearbyEnemies(knockbackDirection, finalForce, applyResistance);
+        }
+    }
+
+    private void ApplyKnockbackVelocity(Vector2 direction, float force)
+    {
+        knockbackVelocity = direction * force;
         knockbackTimer = KnockbackDuration;
+    }
+
+    private void PropagateKnockbackToNearbyEnemies(Vector2 direction, float force, bool applyResistance)
+    {
+        if (knockbackPropagationRadius <= 0f || knockbackPropagationForceMultiplier <= 0f || knockbackPropagationMaxTargets <= 0)
+        {
+            return;
+        }
+
+        float propagatedForce = force * knockbackPropagationForceMultiplier;
+        if (propagatedForce <= 0f)
+        {
+            return;
+        }
+
+        Vector2 overlapOrigin = (Vector2)transform.position + direction * (knockbackPropagationRadius * 0.35f);
+        ContactFilter2D enemyFilter = new ContactFilter2D
+        {
+            useLayerMask = true,
+            layerMask = 1 << gameObject.layer,
+            useTriggers = true
+        };
+        int hitCount = Physics2D.OverlapCircle(
+            overlapOrigin,
+            knockbackPropagationRadius,
+            enemyFilter,
+            KnockbackPropagationColliderBuffer);
+
+        int uniqueEnemyCount = 0;
+        int pushedEnemyCount = 0;
+
+        for (int i = 0; i < hitCount && pushedEnemyCount < knockbackPropagationMaxTargets; i++)
+        {
+            Collider2D hitCollider = KnockbackPropagationColliderBuffer[i];
+            if (hitCollider == null || hitCollider == bodyCollider)
+            {
+                continue;
+            }
+
+            Enemy otherEnemy = hitCollider.GetComponentInParent<Enemy>();
+            if (otherEnemy == null || otherEnemy == this || ContainsEnemyReference(uniqueEnemyCount, otherEnemy))
+            {
+                continue;
+            }
+
+            KnockbackPropagationEnemyBuffer[uniqueEnemyCount++] = otherEnemy;
+
+            Vector2 toOtherEnemy = (Vector2)(otherEnemy.transform.position - transform.position);
+            if (toOtherEnemy.sqrMagnitude <= Mathf.Epsilon)
+            {
+                continue;
+            }
+
+            if (Vector2.Dot(direction, toOtherEnemy.normalized) < knockbackPropagationForwardDot)
+            {
+                continue;
+            }
+
+            otherEnemy.ReceivePropagatedKnockback(direction, propagatedForce, applyResistance);
+            pushedEnemyCount++;
+        }
+
+        for (int i = 0; i < uniqueEnemyCount; i++)
+        {
+            KnockbackPropagationEnemyBuffer[i] = null;
+        }
+    }
+
+    private void ReceivePropagatedKnockback(Vector2 direction, float force, bool applyResistance)
+    {
+        ApplyKnockback(direction, force, applyResistance, propagateToNearbyEnemies: false);
+    }
+
+    private static bool ContainsEnemyReference(int count, Enemy target)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (KnockbackPropagationEnemyBuffer[i] == target)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void ApplyAttackRecoil(Collision2D collision, float recoilForce)
+    {
+        if (recoilForce <= 0f)
+        {
+            return;
+        }
+
+        Vector2 recoilDirection = transform.position - collision.transform.position;
+        if (recoilDirection.sqrMagnitude <= Mathf.Epsilon)
+        {
+            recoilDirection = transform.position - player.transform.position;
+        }
+
+        if (recoilDirection.sqrMagnitude <= Mathf.Epsilon)
+        {
+            recoilDirection = Vector2.up;
+        }
+
+        ApplyKnockback(recoilDirection.normalized, recoilForce, applyResistance: false);
     }
 
     private void SpawnLoot(LootItem lootItem)

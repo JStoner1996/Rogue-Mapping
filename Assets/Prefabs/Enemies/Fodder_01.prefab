@@ -205,12 +205,18 @@ MonoBehaviour:
   rarityOutlineMaterial: {fileID: 0}
   archetypeDefinition: {fileID: 11400000, guid: fa2b7fae739cc424c82181dbc0d6ee98, type: 2}
   experienceWorth: 6
-  moveSpeed: 1.2
+  moveSpeed: 1.25
   damage: 5
   health: 400
   packSizeMin: 6
   packSizeMax: 12
   knockbackResistance: 0
+  attackRecoilOnHit: 6
+  attackRecoilOnEvade: 8.5
+  knockbackPropagationRadius: 1
+  knockbackPropagationForceMultiplier: 0.65
+  knockbackPropagationForwardDot: 0.05
+  knockbackPropagationMaxTargets: 4
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}
   uncommonOutlineThickness: 1.2
@@ -308,8 +314,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.08541492, y: 0.32089227}
-  m_Size: {x: 0.873891, y: 0.76977396}
+  m_Offset: {x: -0.075406164, y: 0.29660574}
+  m_Size: {x: 0.54849654, y: 0.54849654}
   m_Direction: 1
 --- !u!95 &8546063448187886291
 Animator:

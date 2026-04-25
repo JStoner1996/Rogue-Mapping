@@ -270,8 +270,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.029241705, y: 0.21774666}
-  m_Radius: 0.18746097
+  m_Offset: {x: 0.039145086, y: 0.18490918}
+  m_Radius: 0.1030211
 --- !u!114 &6557924966457350784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -290,12 +290,18 @@ MonoBehaviour:
   rarityOutlineMaterial: {fileID: 0}
   archetypeDefinition: {fileID: 11400000, guid: 8cd0851f96342f94b8c86beafd13cce8, type: 2}
   experienceWorth: 400
-  moveSpeed: 0.9
+  moveSpeed: 1
   damage: 35
   health: 2000
   packSizeMin: 1
   packSizeMax: 1
   knockbackResistance: 100
+  attackRecoilOnHit: 4
+  attackRecoilOnEvade: 6.5
+  knockbackPropagationRadius: 1
+  knockbackPropagationForceMultiplier: 0.65
+  knockbackPropagationForwardDot: 0.05
+  knockbackPropagationMaxTargets: 4
   uncommonOutlineColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   rareOutlineColor: {r: 1, g: 0.8, b: 0.15, a: 1}
   uncommonOutlineThickness: 1.2
@@ -315,11 +321,7 @@ MonoBehaviour:
       aboveTierWeight: 100
       belowTierWeight: 0
     equipmentDropSettings:
-      useSelectedMapTier: 1
-      minTierOffset: -1
-      maxTierOffset: 1
-      fallbackMinTier: 1
-      fallbackMaxTier: 3
+      fallbackItemTier: 1
       maximumGeneratedTier: 10
       commonWeight: 60
       uncommonWeight: 30
@@ -331,11 +333,7 @@ MonoBehaviour:
       aboveTierWeight: 50
       belowTierWeight: 10
     equipmentDropSettings:
-      useSelectedMapTier: 1
-      minTierOffset: -1
-      maxTierOffset: 1
-      fallbackMinTier: 1
-      fallbackMaxTier: 3
+      fallbackItemTier: 1
       maximumGeneratedTier: 10
       commonWeight: 30
       uncommonWeight: 50
