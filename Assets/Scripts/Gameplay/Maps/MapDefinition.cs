@@ -212,40 +212,9 @@ public class MapInstance
     public IReadOnlyList<MapRolledAffix> GetAllAffixes()
     {
         List<MapRolledAffix> affixes = new List<MapRolledAffix>();
-
-        if (prefixAffixes != null)
-        {
-            for (int i = 0; i < prefixAffixes.Count; i++)
-            {
-                if (prefixAffixes[i] != null)
-                {
-                    affixes.Add(prefixAffixes[i]);
-                }
-            }
-        }
-
-        if (suffixAffixes != null)
-        {
-            for (int i = 0; i < suffixAffixes.Count; i++)
-            {
-                if (suffixAffixes[i] != null)
-                {
-                    affixes.Add(suffixAffixes[i]);
-                }
-            }
-        }
-
-        if (additionalAffixes != null)
-        {
-            for (int i = 0; i < additionalAffixes.Count; i++)
-            {
-                if (additionalAffixes[i] != null)
-                {
-                    affixes.Add(additionalAffixes[i]);
-                }
-            }
-        }
-
+        AppendAffixes(prefixAffixes, affixes);
+        AppendAffixes(suffixAffixes, affixes);
+        AppendAffixes(additionalAffixes, affixes);
         return affixes;
     }
 
@@ -281,6 +250,22 @@ public class MapInstance
         for (int i = 0; i < affix.ModifierRolls.Count; i++)
         {
             output.Add(affix.ModifierRolls[i]);
+        }
+    }
+
+    private static void AppendAffixes(IReadOnlyList<MapRolledAffix> source, List<MapRolledAffix> destination)
+    {
+        if (source == null || destination == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            if (source[i] != null)
+            {
+                destination.Add(source[i]);
+            }
         }
     }
 }

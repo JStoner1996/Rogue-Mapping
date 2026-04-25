@@ -44,7 +44,12 @@ public class MapBaseCatalog : ScriptableObject
     public List<MapBaseDefinition> GetValidBases(int mapTier)
     {
         List<MapBaseDefinition> validBases = new List<MapBaseDefinition>();
+        AppendValidBases(validBases, mapTier);
+        return validBases;
+    }
 
+    public bool HasValidBases(int mapTier)
+    {
         for (int i = 0; i < baseDefinitions.Count; i++)
         {
             MapBaseDefinition definition = baseDefinitions[i];
@@ -55,11 +60,11 @@ public class MapBaseCatalog : ScriptableObject
 
             if (definition.Tier == mapTier)
             {
-                validBases.Add(definition);
+                return true;
             }
         }
 
-        return validBases;
+        return false;
     }
 
     public MapBaseDefinition FindBase(string baseId)
@@ -79,6 +84,23 @@ public class MapBaseCatalog : ScriptableObject
         }
 
         return null;
+    }
+
+    private void AppendValidBases(List<MapBaseDefinition> destination, int mapTier)
+    {
+        if (destination == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < baseDefinitions.Count; i++)
+        {
+            MapBaseDefinition definition = baseDefinitions[i];
+            if (definition != null && definition.IsConfigured() && definition.Tier == mapTier)
+            {
+                destination.Add(definition);
+            }
+        }
     }
 }
 

@@ -35,6 +35,18 @@ public static class MapGenerator
         }
     }
 
+    private readonly struct AffixRollState
+    {
+        public readonly HashSet<string> usedAffixNames;
+        public readonly HashSet<MapStatType> usedStatTypes;
+
+        public AffixRollState(HashSet<string> usedAffixNames, HashSet<MapStatType> usedStatTypes)
+        {
+            this.usedAffixNames = usedAffixNames;
+            this.usedStatTypes = usedStatTypes;
+        }
+    }
+
     public static List<MapInstance> GenerateChoices(int count)
     {
         List<MapInstance> results = new List<MapInstance>(Mathf.Max(0, count));
@@ -145,18 +157,18 @@ public static class MapGenerator
         MapAffixTier mapRarity = RollMapRarity(higherRarityMultiplier);
         GetAffixStructureForRarity(mapRarity, out int prefixCount, out int suffixCount);
 
-        HashSet<string> usedAffixNames = new HashSet<string>(StringComparer.Ordinal);
-        HashSet<MapStatType> usedStatTypes = new HashSet<MapStatType>();
-        List<MapRolledAffix> prefixAffixes = RollAffixes(MapAffixType.Prefix, baseDefinition.Tier, mapRarity, prefixCount, usedAffixNames, usedStatTypes);
-        List<MapRolledAffix> suffixAffixes = RollAffixes(MapAffixType.Suffix, baseDefinition.Tier, mapRarity, suffixCount, usedAffixNames, usedStatTypes);
+        AffixRollState rollState = new AffixRollState(
+            new HashSet<string>(StringComparer.Ordinal),
+            new HashSet<MapStatType>());
+        List<MapRolledAffix> prefixAffixes = RollAffixes(MapAffixType.Prefix, baseDefinition.Tier, mapRarity, prefixCount, rollState);
+        List<MapRolledAffix> suffixAffixes = RollAffixes(MapAffixType.Suffix, baseDefinition.Tier, mapRarity, suffixCount, rollState);
         string displayPrefixAffixName = ChooseDisplayAffixName(prefixAffixes);
         string displaySuffixAffixName = ChooseDisplayAffixName(suffixAffixes);
         List<MapRolledAffix> additionalAffixes = RollAdditionalAffixes(
             baseDefinition.Tier,
             mapRarity,
             additionalAffixCount,
-            usedAffixNames,
-            usedStatTypes);
+            rollState);
 
         MapInstance map = new MapInstance(
             Guid.NewGuid().ToString("N"),
@@ -176,8 +188,7 @@ public static class MapGenerator
         int mapTier,
         MapAffixTier maxAffixTier,
         int count,
-        ISet<string> excludedAffixNames,
-        ISet<MapStatType> excludedStatTypes)
+        AffixRollState rollState)
     {
         List<MapRolledAffix> affixes = new List<MapRolledAffix>();
         MapAffixCatalog affixCatalog = MapCatalogResources.AffixCatalog;
@@ -189,14 +200,14 @@ public static class MapGenerator
         for (int i = 0; i < count; i++)
         {
             List<MapAffixDefinition> validAffixes = affixCatalog.GetValidAffixesUpToTier(affixType, maxAffixTier, mapTier);
-            RemoveExcludedAffixes(validAffixes, excludedAffixNames, excludedStatTypes);
+            RemoveExcludedAffixes(validAffixes, rollState.usedAffixNames, rollState.usedStatTypes);
             if (validAffixes.Count == 0)
             {
                 break;
             }
 
             MapAffixDefinition definition = validAffixes[UnityEngine.Random.Range(0, validAffixes.Count)];
-            TrackAffixDefinition(definition, excludedAffixNames, excludedStatTypes);
+            TrackAffixDefinition(definition, rollState.usedAffixNames, rollState.usedStatTypes);
             affixes.Add(new MapRolledAffix(definition, RollModifiers(definition.Modifiers)));
         }
 
@@ -207,8 +218,7 @@ public static class MapGenerator
         int mapTier,
         MapAffixTier maxAffixTier,
         int additionalAffixCount,
-        ISet<string> excludedAffixNames,
-        ISet<MapStatType> excludedStatTypes)
+        AffixRollState rollState)
     {
         List<MapRolledAffix> rolledAffixes = new List<MapRolledAffix>();
         MapAffixCatalog affixCatalog = MapCatalogResources.AffixCatalog;
@@ -220,9 +230,8 @@ public static class MapGenerator
 
         for (int i = 0; i < additionalAffixCount; i++)
         {
-            List<MapAffixDefinition> validAffixes = affixCatalog.GetValidAffixesUpToTier(MapAffixType.Prefix, maxAffixTier, mapTier);
-            validAffixes.AddRange(affixCatalog.GetValidAffixesUpToTier(MapAffixType.Suffix, maxAffixTier, mapTier));
-            RemoveExcludedAffixes(validAffixes, excludedAffixNames, excludedStatTypes);
+            List<MapAffixDefinition> validAffixes = GetAllValidAffixesUpToTier(affixCatalog, maxAffixTier, mapTier);
+            RemoveExcludedAffixes(validAffixes, rollState.usedAffixNames, rollState.usedStatTypes);
 
             if (validAffixes.Count == 0)
             {
@@ -230,7 +239,7 @@ public static class MapGenerator
             }
 
             MapAffixDefinition definition = validAffixes[UnityEngine.Random.Range(0, validAffixes.Count)];
-            TrackAffixDefinition(definition, excludedAffixNames, excludedStatTypes);
+            TrackAffixDefinition(definition, rollState.usedAffixNames, rollState.usedStatTypes);
             rolledAffixes.Add(new MapRolledAffix(definition, RollModifiers(definition.Modifiers)));
         }
 
@@ -443,15 +452,7 @@ public static class MapGenerator
         float belowTierWeight = settings.belowTierWeight;
         ApplyDroppedMapTierAtlasRules(ref sameTierWeight, ref aboveTierWeight, ref belowTierWeight, atlasSettings);
 
-        List<TierWeightOption> candidates = new List<TierWeightOption>();
-        AddTierWeightCandidate(candidates, currentTier, sameTierWeight);
-        AddTierWeightCandidate(candidates, currentTier + 1, aboveTierWeight);
-
-        if (currentTier > 1)
-        {
-            AddTierWeightCandidate(candidates, currentTier - 1, belowTierWeight);
-        }
-
+        List<TierWeightOption> candidates = BuildDroppedMapTierCandidates(currentTier, sameTierWeight, aboveTierWeight, belowTierWeight);
         return RollTierFromCandidates(candidates, currentTier);
     }
 
@@ -485,6 +486,24 @@ public static class MapGenerator
         float transferredSameTierWeight = Mathf.Min(atlasSettings.higherTierBonus, Mathf.Max(0f, sameTierWeight));
         sameTierWeight = Mathf.Max(0f, sameTierWeight - transferredSameTierWeight);
         aboveTierWeight = Mathf.Max(0f, aboveTierWeight + transferredSameTierWeight);
+    }
+
+    private static List<TierWeightOption> BuildDroppedMapTierCandidates(
+        int currentTier,
+        float sameTierWeight,
+        float aboveTierWeight,
+        float belowTierWeight)
+    {
+        List<TierWeightOption> candidates = new List<TierWeightOption>();
+        AddTierWeightCandidate(candidates, currentTier, sameTierWeight);
+        AddTierWeightCandidate(candidates, currentTier + 1, aboveTierWeight);
+
+        if (currentTier > 1)
+        {
+            AddTierWeightCandidate(candidates, currentTier - 1, belowTierWeight);
+        }
+
+        return candidates;
     }
 
     private static void AddTierWeightCandidate(List<TierWeightOption> candidates, int tier, float weight)
@@ -573,8 +592,8 @@ public static class MapGenerator
 
     private static bool HasBaseMapsForTier(int tier)
     {
-        List<MapBaseDefinition> bases = GetBaseMapsForTier(tier);
-        return bases != null && bases.Count > 0;
+        MapBaseCatalog baseCatalog = MapCatalogResources.BaseCatalog;
+        return baseCatalog != null && baseCatalog.HasValidBases(tier);
     }
 
     private static bool IsNonDefaultBaseMap(MapBaseDefinition baseDefinition)
@@ -607,6 +626,13 @@ public static class MapGenerator
         T value = source[index];
         source.RemoveAt(index);
         return value;
+    }
+
+    private static List<MapAffixDefinition> GetAllValidAffixesUpToTier(MapAffixCatalog affixCatalog, MapAffixTier maxAffixTier, int mapTier)
+    {
+        List<MapAffixDefinition> validAffixes = affixCatalog.GetValidAffixesUpToTier(MapAffixType.Prefix, maxAffixTier, mapTier);
+        validAffixes.AddRange(affixCatalog.GetValidAffixesUpToTier(MapAffixType.Suffix, maxAffixTier, mapTier));
+        return validAffixes;
     }
 
     private readonly struct TierWeightOption
