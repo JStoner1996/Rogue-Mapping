@@ -6,9 +6,9 @@ public static class PlayerUpgradeDescriptionFormatter
     {
         StringBuilder builder = new StringBuilder();
 
-        foreach (var stat in upgrade.stats)
+        foreach (PlayerStatUpgradeResult.PlayerStatUpgradeEntry stat in upgrade.GetEntries())
         {
-            builder.AppendLine(FormatStat(stat.Key, stat.Value));
+            builder.AppendLine(FormatStat(stat.statType, stat.value, stat.usesFlatValue));
         }
 
         builder.AppendLine();
@@ -17,15 +17,19 @@ public static class PlayerUpgradeDescriptionFormatter
         return builder.ToString();
     }
 
-    private static string FormatStat(PlayerStatType statType, float value)
+    private static string FormatStat(PlayerStatType statType, float value, bool usesFlatValue)
     {
         string statName = StringUtils.SplitCamelCase(statType.ToString());
 
-        return statType switch
+        if (usesFlatValue)
         {
-            PlayerStatType.Armor => $"{statName} +{value:F0}",
-            PlayerStatType.HealthRegen => $"{statName} +{value:F1}/s",
-            _ => $"{statName} +{value * 100f:F0}%"
-        };
+            return statType switch
+            {
+                PlayerStatType.HealthRegen => $"{statName} +{value:F1}/s",
+                _ => $"{statName} +{value:F0}",
+            };
+        }
+
+        return $"{statName} +{value * 100f:F0}%";
     }
 }

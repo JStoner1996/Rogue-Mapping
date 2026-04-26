@@ -60,7 +60,7 @@ public static class LevelUpOptionFactory
         List<WeaponData> availableWeapons = GetAvailableWeapons(weaponController, allWeapons);
         HashSet<Weapon> usedWeapons = new HashSet<Weapon>();
         HashSet<WeaponData> offeredNewWeapons = new HashSet<WeaponData>();
-        HashSet<PlayerStatType> offeredPlayerStats = new HashSet<PlayerStatType>();
+        HashSet<string> offeredPlayerStats = new HashSet<string>();
 
         int optionCount = UIController.Instance.GetLevelUpButtons().Length;
 
@@ -107,7 +107,7 @@ public static class LevelUpOptionFactory
 
     private static LevelUpOptionData TryBuildPlayerUpgradeOption(
         PlayerStats playerStats,
-        HashSet<PlayerStatType> offeredPlayerStats,
+        HashSet<string> offeredPlayerStats,
         Sprite playerUpgradeIcon)
     {
         bool offerPlayerUpgrade = playerStats != null && Random.value < 0.35f;
@@ -124,9 +124,9 @@ public static class LevelUpOptionFactory
             return null;
         }
 
-        foreach (PlayerStatType statType in playerUpgrade.stats.Keys)
+        foreach (PlayerStatUpgradeResult.PlayerStatUpgradeEntry stat in playerUpgrade.GetEntries())
         {
-            offeredPlayerStats.Add(statType);
+            offeredPlayerStats.Add(BuildPlayerStatOfferKey(stat.statType, stat.usesFlatValue));
         }
 
         return CreatePlayerUpgradeOption(playerStats, playerUpgrade, playerUpgradeIcon);
@@ -162,7 +162,7 @@ public static class LevelUpOptionFactory
         return CreateWeaponUpgradeOption(selectedWeapon, upgrade);
     }
 
-    private static PlayerStatUpgradeResult RollPlayerUpgrade(PlayerStats playerStats, HashSet<PlayerStatType> alreadyOfferedStats)
+    private static PlayerStatUpgradeResult RollPlayerUpgrade(PlayerStats playerStats, HashSet<string> alreadyOfferedStats)
     {
         if (playerStats == null || playerStats.UpgradeRolls.Count == 0)
         {
@@ -170,7 +170,13 @@ public static class LevelUpOptionFactory
         }
 
         List<PlayerStatRoll> availableRolls = new List<PlayerStatRoll>();
-        foreach (PlayerStatRoll roll in playerStats.UpgradeRolls) if (!alreadyOfferedStats.Contains(roll.statType)) availableRolls.Add(roll);
+        foreach (PlayerStatRoll roll in playerStats.UpgradeRolls)
+        {
+            if (!alreadyOfferedStats.Contains(BuildPlayerStatOfferKey(roll.statType, roll.usesFlatValue)))
+            {
+                availableRolls.Add(roll);
+            }
+        }
 
         if (availableRolls.Count == 0)
         {
@@ -203,6 +209,11 @@ public static class LevelUpOptionFactory
         List<Weapon> pool = new List<Weapon>(weapons);
         pool.RemoveAll(weapon => usedWeapons.Contains(weapon));
         return pool.Count == 0 ? null : pool[Random.Range(0, pool.Count)];
+    }
+
+    private static string BuildPlayerStatOfferKey(PlayerStatType statType, bool usesFlatValue)
+    {
+        return $"{statType}:{(usesFlatValue ? "flat" : "percent")}";
     }
 
     private static List<WeaponData> GetAvailableWeapons(WeaponController weaponController, List<WeaponData> allWeapons)

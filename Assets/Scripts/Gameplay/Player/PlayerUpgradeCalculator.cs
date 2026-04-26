@@ -62,7 +62,7 @@ public static class PlayerUpgradeCalculator
             }
 
             float value = Random.Range(roll.minValue, roll.maxValue);
-            result.AddStat(roll.statType, value);
+            result.AddStat(roll.statType, value, roll.usesFlatValue);
 
             usedStats.Add(roll.statType);
             currentWeight += roll.weight;

@@ -9,6 +9,24 @@ public class PlayerStats : MonoBehaviour
         new() { statType = PlayerStatType.MaximumHealth, minValue = 0.08f, maxValue = 0.14f, weight = 1 },
         new() { statType = PlayerStatType.MaximumHealth, minValue = 0.14f, maxValue = 0.22f, weight = 3 },
         new() { statType = PlayerStatType.MaximumHealth, minValue = 0.22f, maxValue = 0.30f, weight = 6 },
+        new() { statType = PlayerStatType.Armor, usesFlatValue = true, minValue = 6f, maxValue = 12f, weight = 1 },
+        new() { statType = PlayerStatType.Armor, usesFlatValue = true, minValue = 13f, maxValue = 20f, weight = 3 },
+        new() { statType = PlayerStatType.Armor, usesFlatValue = true, minValue = 21f, maxValue = 30f, weight = 6 },
+        new() { statType = PlayerStatType.Armor, minValue = 0.06f, maxValue = 0.10f, weight = 1 },
+        new() { statType = PlayerStatType.Armor, minValue = 0.10f, maxValue = 0.15f, weight = 3 },
+        new() { statType = PlayerStatType.Armor, minValue = 0.15f, maxValue = 0.22f, weight = 6 },
+        new() { statType = PlayerStatType.Evasion, usesFlatValue = true, minValue = 6f, maxValue = 12f, weight = 1 },
+        new() { statType = PlayerStatType.Evasion, usesFlatValue = true, minValue = 13f, maxValue = 20f, weight = 3 },
+        new() { statType = PlayerStatType.Evasion, usesFlatValue = true, minValue = 21f, maxValue = 30f, weight = 6 },
+        new() { statType = PlayerStatType.Evasion, minValue = 0.06f, maxValue = 0.10f, weight = 1 },
+        new() { statType = PlayerStatType.Evasion, minValue = 0.10f, maxValue = 0.15f, weight = 3 },
+        new() { statType = PlayerStatType.Evasion, minValue = 0.15f, maxValue = 0.22f, weight = 6 },
+        new() { statType = PlayerStatType.Barrier, usesFlatValue = true, minValue = 10f, maxValue = 20f, weight = 1 },
+        new() { statType = PlayerStatType.Barrier, usesFlatValue = true, minValue = 21f, maxValue = 35f, weight = 3 },
+        new() { statType = PlayerStatType.Barrier, usesFlatValue = true, minValue = 36f, maxValue = 50f, weight = 6 },
+        new() { statType = PlayerStatType.Barrier, minValue = 0.10f, maxValue = 0.15f, weight = 1 },
+        new() { statType = PlayerStatType.Barrier, minValue = 0.15f, maxValue = 0.22f, weight = 3 },
+        new() { statType = PlayerStatType.Barrier, minValue = 0.22f, maxValue = 0.30f, weight = 6 },
         new() { statType = PlayerStatType.MovementSpeed, minValue = 0.05f, maxValue = 0.08f, weight = 1 },
         new() { statType = PlayerStatType.MovementSpeed, minValue = 0.08f, maxValue = 0.13f, weight = 3 },
         new() { statType = PlayerStatType.MovementSpeed, minValue = 0.13f, maxValue = 0.18f, weight = 6 },
@@ -64,9 +82,9 @@ public class PlayerStats : MonoBehaviour
 
     public void ApplyUpgrade(PlayerStatUpgradeResult upgrade)
     {
-        foreach (var stat in upgrade.stats)
+        foreach (PlayerStatUpgradeResult.PlayerStatUpgradeEntry stat in upgrade.GetEntries())
         {
-            ApplyStat(stat.Key, stat.Value);
+            ApplyStat(stat.statType, stat.value, stat.usesFlatValue);
         }
     }
 
@@ -91,9 +109,9 @@ public class PlayerStats : MonoBehaviour
         }
 
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.MaximumHealth), PlayerStatType.MaximumHealth, supportsFlatValue: true);
-        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Armor), PlayerStatType.Armor);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Armor), PlayerStatType.Armor, supportsFlatValue: true);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Barrier), PlayerStatType.Barrier, supportsFlatValue: true);
-        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Evasion), PlayerStatType.Evasion);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Evasion), PlayerStatType.Evasion, supportsFlatValue: true);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.HealthRegen), PlayerStatType.HealthRegen);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.MovementSpeed), PlayerStatType.MovementSpeed);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.PickupRange), PlayerStatType.PickupRange);
@@ -108,26 +126,33 @@ public class PlayerStats : MonoBehaviour
         return totals.TryGetValue(statType, out float value) ? value : 0f;
     }
 
-    private void ApplyStat(PlayerStatType statType, float value)
+    private void ApplyStat(PlayerStatType statType, float value, bool usesFlatValue = false)
     {
-        totals[statType] = GetTotal(statType) + value;
+        if (!usesFlatValue)
+        {
+            totals[statType] = GetTotal(statType) + value;
+        }
 
         switch (statType)
         {
             case PlayerStatType.MaximumHealth:
-                playerHealth?.ApplyMaxHealthModifier(value);
+                if (usesFlatValue) playerHealth?.ApplyFlatMaxHealthModifier(value);
+                else playerHealth?.ApplyMaxHealthModifier(value);
                 break;
 
             case PlayerStatType.Armor:
-                playerHealth?.ApplyArmorModifier(value);
+                if (usesFlatValue) playerHealth?.ApplyFlatArmorModifier(value);
+                else playerHealth?.ApplyArmorModifier(value);
                 break;
 
             case PlayerStatType.Barrier:
-                playerHealth?.ApplyBarrierModifier(value);
+                if (usesFlatValue) playerHealth?.ApplyFlatBarrierModifier(value);
+                else playerHealth?.ApplyBarrierModifier(value);
                 break;
 
             case PlayerStatType.Evasion:
-                playerHealth?.ApplyEvasionModifier(value);
+                if (usesFlatValue) playerHealth?.ApplyFlatEvasionModifier(value);
+                else playerHealth?.ApplyEvasionModifier(value);
                 break;
 
             case PlayerStatType.HealthRegen:
@@ -160,7 +185,7 @@ public class PlayerStats : MonoBehaviour
 
         if (supportsFlatValue && !Mathf.Approximately(entry.flatValue, 0f))
         {
-            ApplyFlatEquipmentValue(targetStatType, entry.flatValue);
+            ApplyStat(targetStatType, entry.flatValue, usesFlatValue: true);
         }
 
         if (!Mathf.Approximately(entry.percentValue, 0f))
@@ -171,20 +196,6 @@ public class PlayerStats : MonoBehaviour
         if (!supportsFlatValue && !Mathf.Approximately(entry.flatValue, 0f))
         {
             ApplyStat(targetStatType, entry.flatValue);
-        }
-    }
-
-    private void ApplyFlatEquipmentValue(PlayerStatType targetStatType, float value)
-    {
-        if (targetStatType == PlayerStatType.MaximumHealth)
-        {
-            playerHealth?.ApplyFlatMaxHealthModifier(value);
-            return;
-        }
-
-        if (targetStatType == PlayerStatType.Barrier)
-        {
-            playerHealth?.ApplyFlatBarrierModifier(value);
         }
     }
 }

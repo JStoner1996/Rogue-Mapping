@@ -8,6 +8,10 @@ public class PlayerHealth : MonoBehaviour
     private const float EvasionScalingDenominator = 100f;
     private const float MaximumEvadeChance = 0.75f;
     private const float EvasionEntropyJitterMagnitude = 0.10f;
+    private const float BaseArmor = 5f;
+    private const float BaseEvasion = 5f;
+    private const float BaseHealthRegenPerSecond = 0.05f;
+    private const float MinimumMitigatedDamage = 1f;
     private const float DefaultBarrierRegenDelay = 5f;
     private const float DefaultBarrierRegenPercentPerSecond = 0.20f;
 
@@ -27,6 +31,12 @@ public class PlayerHealth : MonoBehaviour
     private float baseMaxHealth;
     private float flatMaxHealthBonus;
     private float maxHealthMultiplier;
+    private float baseArmor;
+    private float flatArmorBonus;
+    private float armorMultiplier;
+    private float baseEvasion;
+    private float flatEvasionBonus;
+    private float evasionMultiplier;
     private float baseMaxBarrier;
     private float flatMaxBarrierBonus;
     private float maxBarrierMultiplier;
@@ -47,10 +57,10 @@ public class PlayerHealth : MonoBehaviour
     public float MaxBarrier => (baseMaxBarrier + flatMaxBarrierBonus) * (1f + maxBarrierMultiplier);
     public float CurrentHealth { get; private set; }
     public float CurrentBarrier { get; private set; }
-    public float Armor => armor;
-    public float ArmorMitigationFraction => armor <= 0f ? 0f : armor / (ArmorMitigationDenominator + armor);
-    public float Evasion => evasion;
-    public float EvadeChance => Mathf.Min(MaximumEvadeChance, evasion / (evasion + EvasionScalingDenominator));
+    public float Armor => (baseArmor + flatArmorBonus) * (1f + armorMultiplier);
+    public float ArmorMitigationFraction => Armor <= 0f ? 0f : Armor / (ArmorMitigationDenominator + Armor);
+    public float Evasion => (baseEvasion + flatEvasionBonus) * (1f + evasionMultiplier);
+    public float EvadeChance => Mathf.Min(MaximumEvadeChance, Evasion / (Evasion + EvasionScalingDenominator));
     public float HealthRegenPerSecond => healthRegenPerSecond;
 
     public void Configure(float configuredMaxHealth, float configuredImmunityDuration)
@@ -58,13 +68,17 @@ public class PlayerHealth : MonoBehaviour
         baseMaxHealth = configuredMaxHealth;
         flatMaxHealthBonus = 0f;
         maxHealthMultiplier = 0f;
+        baseArmor = BaseArmor;
+        flatArmorBonus = 0f;
+        armorMultiplier = 0f;
+        baseEvasion = BaseEvasion;
+        flatEvasionBonus = 0f;
+        evasionMultiplier = 0f;
         baseMaxBarrier = 0f;
         flatMaxBarrierBonus = 0f;
         maxBarrierMultiplier = 0f;
         immunityDuration = configuredImmunityDuration;
-        armor = 5f;
-        evasion = 5f;
-        healthRegenPerSecond = .05f;
+        healthRegenPerSecond = BaseHealthRegenPerSecond;
         barrierRegenDelay = DefaultBarrierRegenDelay;
         barrierRegenPercentPerSecond = DefaultBarrierRegenPercentPerSecond;
         barrierRegenTimer = 0f;
@@ -89,7 +103,12 @@ public class PlayerHealth : MonoBehaviour
 
     public void ApplyArmorModifier(float value)
     {
-        armor = Mathf.Max(0f, armor + value);
+        armorMultiplier += value;
+    }
+
+    public void ApplyFlatArmorModifier(float value)
+    {
+        flatArmorBonus = Mathf.Max(0f, flatArmorBonus + value);
     }
 
     public void ApplyBarrierModifier(float value)
@@ -108,7 +127,12 @@ public class PlayerHealth : MonoBehaviour
 
     public void ApplyEvasionModifier(float value)
     {
-        evasion = Mathf.Max(0f, evasion + value);
+        evasionMultiplier += value;
+    }
+
+    public void ApplyFlatEvasionModifier(float value)
+    {
+        flatEvasionBonus = Mathf.Max(0f, flatEvasionBonus + value);
     }
 
     public void ApplyHealthRegenModifier(float value)
@@ -130,14 +154,7 @@ public class PlayerHealth : MonoBehaviour
     {
         RegenerateBarrier();
         RegenerateHealth();
-
-        if (immunityTimer > 0f)
-        {
-            immunityTimer -= Time.deltaTime;
-            return;
-        }
-
-        isImmune = false;
+        UpdateDamageImmunity();
     }
 
     void OnEnable()
@@ -152,27 +169,22 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        ApplyIncomingDamage(damage, IncomingDamageKind.Generic);
+        ResolveIncomingDamage(damage, IncomingDamageKind.Generic, EntityId.None);
     }
 
     public void TakeEnemyContactDamage(float damage)
     {
-        ApplyIncomingDamage(damage, IncomingDamageKind.EnemyContact);
+        ResolveIncomingDamage(damage, IncomingDamageKind.EnemyContact, EntityId.None);
     }
 
     public void TakeEnemyContactDamage(float damage, EntityId attackerId)
     {
-        ApplyIncomingDamage(damage, IncomingDamageKind.EnemyContact, attackerId);
+        ResolveIncomingDamage(damage, IncomingDamageKind.EnemyContact, attackerId);
     }
 
     public EnemyContactResult ResolveEnemyContactDamage(float damage, EntityId attackerId)
     {
-        if (isImmune)
-        {
-            return EnemyContactResult.NoEffect;
-        }
-
-        if (damage <= 0f)
+        if (!CanResolveIncomingDamage(damage))
         {
             return EnemyContactResult.NoEffect;
         }
@@ -194,19 +206,9 @@ public class PlayerHealth : MonoBehaviour
         return EnemyContactResult.Hit;
     }
 
-    private void ApplyIncomingDamage(float damage, IncomingDamageKind damageKind)
+    private void ResolveIncomingDamage(float damage, IncomingDamageKind damageKind, EntityId attackerId)
     {
-        ApplyIncomingDamage(damage, damageKind, EntityId.None);
-    }
-
-    private void ApplyIncomingDamage(float damage, IncomingDamageKind damageKind, EntityId attackerId)
-    {
-        if (isImmune)
-        {
-            return;
-        }
-
-        if (damage <= 0f)
+        if (!CanResolveIncomingDamage(damage))
         {
             return;
         }
@@ -218,14 +220,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         DamageResolution resolution = ResolveDamageAgainstBarrier(damage);
-        if (resolution.remainingDamage <= 0f)
-        {
-            RegisterSuccessfulHit();
-            RefreshHealthUI();
-            return;
-        }
-
-        ApplyLifeDamage(resolution.remainingDamage);
+        ApplyResolvedGenericDamage(resolution);
     }
 
     public void GainHealth(int healthAmount)
@@ -241,13 +236,8 @@ public class PlayerHealth : MonoBehaviour
             return;
         }
 
-        float previousHealth = CurrentHealth;
-        CurrentHealth = Mathf.Min(CurrentHealth + healthRegenPerSecond * Time.deltaTime, MaxHealth);
-
-        if (!Mathf.Approximately(previousHealth, CurrentHealth))
-        {
-            RefreshHealthUI();
-        }
+        float nextHealth = Mathf.Min(CurrentHealth + healthRegenPerSecond * Time.deltaTime, MaxHealth);
+        RefreshHealthUIIfChanged(CurrentHealth, nextHealth, value => CurrentHealth = value);
     }
 
     private void RegenerateBarrier()
@@ -269,13 +259,8 @@ public class PlayerHealth : MonoBehaviour
             return;
         }
 
-        float previousBarrier = CurrentBarrier;
-        CurrentBarrier = Mathf.Min(CurrentBarrier + regenAmount, MaxBarrier);
-
-        if (!Mathf.Approximately(previousBarrier, CurrentBarrier))
-        {
-            RefreshHealthUI();
-        }
+        float nextBarrier = Mathf.Min(CurrentBarrier + regenAmount, MaxBarrier);
+        RefreshHealthUIIfChanged(CurrentBarrier, nextBarrier, value => CurrentBarrier = value);
     }
 
     private float GetMitigatedDamage(float incomingDamage)
@@ -285,18 +270,18 @@ public class PlayerHealth : MonoBehaviour
             return 0f;
         }
 
-        if (armor <= 0f)
+        if (Armor <= 0f)
         {
             return incomingDamage;
         }
 
-        float mitigatedDamage = incomingDamage * (ArmorMitigationDenominator / (ArmorMitigationDenominator + armor));
-        return Mathf.Max(1f, mitigatedDamage);
+        float mitigatedDamage = incomingDamage * (ArmorMitigationDenominator / (ArmorMitigationDenominator + Armor));
+        return Mathf.Max(MinimumMitigatedDamage, mitigatedDamage);
     }
 
     private bool ShouldEvadeEnemyContact(EntityId attackerId)
     {
-        if (evasion <= 0f)
+        if (Evasion <= 0f)
         {
             return false;
         }
@@ -334,13 +319,13 @@ public class PlayerHealth : MonoBehaviour
     {
         if (damage <= 0f || CurrentBarrier <= 0f)
         {
-            return new DamageResolution(0f, damage);
+            return new DamageResolution(damage, barrierWasHit: false);
         }
 
         float absorbedDamage = Mathf.Min(CurrentBarrier, damage);
         CurrentBarrier -= absorbedDamage;
         ResetBarrierRegenTimer();
-        return new DamageResolution(absorbedDamage, damage - absorbedDamage);
+        return new DamageResolution(damage - absorbedDamage, barrierWasHit: true);
     }
 
     private void ApplyLifeDamage(float damage)
@@ -364,7 +349,35 @@ public class PlayerHealth : MonoBehaviour
         GameManager.Instance.GameOver();
     }
 
+    private void ApplyResolvedGenericDamage(DamageResolution resolution)
+    {
+        if (resolution.remainingDamage <= 0f)
+        {
+            RegisterSuccessfulHit();
+            RefreshHealthUI();
+            return;
+        }
+
+        ApplyLifeDamage(resolution.remainingDamage);
+    }
+
+    private bool CanResolveIncomingDamage(float damage)
+    {
+        return !isImmune && damage > 0f;
+    }
+
     private void RefreshHealthUI() => UIController.Instance?.UpdateHealthSlider();
+
+    private void RefreshHealthUIIfChanged(float currentValue, float nextValue, System.Action<float> applyValue)
+    {
+        if (applyValue == null || Mathf.Approximately(currentValue, nextValue))
+        {
+            return;
+        }
+
+        applyValue(nextValue);
+        RefreshHealthUI();
+    }
 
     private void AdjustCurrentHealthForMaxHealthChange(float previousMaxHealth)
     {
@@ -392,15 +405,26 @@ public class PlayerHealth : MonoBehaviour
         barrierRegenTimer = barrierRegenDelay;
     }
 
-    private readonly struct DamageResolution
+    private void UpdateDamageImmunity()
     {
-        public DamageResolution(float barrierAbsorbedDamage, float remainingDamage)
+        if (immunityTimer > 0f)
         {
-            this.barrierAbsorbedDamage = barrierAbsorbedDamage;
-            this.remainingDamage = remainingDamage;
+            immunityTimer -= Time.deltaTime;
+            return;
         }
 
-        public readonly float barrierAbsorbedDamage;
+        isImmune = false;
+    }
+
+    private readonly struct DamageResolution
+    {
+        public DamageResolution(float remainingDamage, bool barrierWasHit)
+        {
+            this.remainingDamage = remainingDamage;
+            this.barrierWasHit = barrierWasHit;
+        }
+
         public readonly float remainingDamage;
+        public readonly bool barrierWasHit;
     }
 }
