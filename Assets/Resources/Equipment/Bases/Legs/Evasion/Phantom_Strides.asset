@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f63683b0993a084db4268f28e65ccee, type: 3}
-  m_Name: Leather_Boots
+  m_Name: Phantom_Strides
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentBaseDefinition
-  baseName: Leather Boots
-  slotType: 3
-  minItemTier: 1
+  baseName: Phantom Strides
+  slotType: 2
+  minItemTier: 8
   maxItemTier: 10
   icon: {fileID: 0}
   implicitModifiers:
-  - statType: 6
-    modifierKind: 1
-    minValue: 0.03
-    maxValue: 0.05
+  - statType: 15
+    modifierKind: 0
+    minValue: 42
+    maxValue: 60
     tierScalingMode: 1
-    tierScalingAmount: 0.005
+    tierScalingAmount: 8
