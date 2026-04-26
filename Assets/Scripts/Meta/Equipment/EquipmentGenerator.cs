@@ -61,13 +61,27 @@ public static class EquipmentGenerator
             return null;
         }
 
-        EquipmentBaseDefinition baseDefinition = validBases[Random.Range(0, validBases.Count)];
-        List<EquipmentModifierRoll> implicitRolls = RollModifiers(baseDefinition.ImplicitModifiers, itemTier);
+        EquipmentBaseDefinition baseDefinition = RollWeightedBaseDefinition(validBases, slotType, request);
+        List<EquipmentModifierRoll> implicitRolls = RollModifiers(
+            baseDefinition.ImplicitModifiers,
+            itemTier,
+            request.accessoriesAlwaysHighestImplicit && IsAccessorySlot(slotType));
         if (!TryRollAffixes(affixCatalog, request, baseDefinition, slotType, itemTier, itemLevel, rarity, out List<EquipmentRolledAffix> prefixAffixes, out List<EquipmentRolledAffix> suffixAffixes))
         {
             WarnMissingAffixes(rarity, slotType, itemTier);
             return null;
         }
+
+        AddAtlasBonusAffixes(
+            affixCatalog,
+            request,
+            baseDefinition,
+            slotType,
+            itemTier,
+            itemLevel,
+            rarity,
+            prefixAffixes,
+            suffixAffixes);
 
         return new EquipmentInstance(
             rarity,
@@ -135,6 +149,11 @@ public static class EquipmentGenerator
         for (int i = 0; i < combinations.Count; i++)
         {
             (int prefixes, int suffixes) = combinations[i];
+            if (prefixes <= 0 && RequiresForcedLocalDefensePrefix(request, baseDefinition))
+            {
+                continue;
+            }
+
             if (TryRollFixedAffixes(
                 affixCatalog,
                 request,
@@ -154,6 +173,11 @@ public static class EquipmentGenerator
         return false;
     }
 
+    private static bool RequiresForcedLocalDefensePrefix(
+        EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition) =>
+        TryGetForcedLocalDefensePrefixStat(request, baseDefinition, out _);
+
     private static bool TryRollFixedAffixes(
         EquipmentAffixCatalog affixCatalog,
         EquipmentGenerationRequest request,
@@ -167,9 +191,117 @@ public static class EquipmentGenerator
         out List<EquipmentRolledAffix> suffixAffixes)
     {
         HashSet<string> usedTags = new(TagComparer);
-        prefixAffixes = RollAffixSet(affixCatalog, EquipmentAffixType.Prefix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, requiredPrefixCount, usedTags);
+        prefixAffixes = new List<EquipmentRolledAffix>();
+
+        if (!TryAddForcedLocalDefensePrefix(
+            affixCatalog,
+            request,
+            baseDefinition,
+            slotType,
+            itemTier,
+            itemLevel,
+            requiredPrefixCount,
+            usedTags,
+            prefixAffixes))
+        {
+            suffixAffixes = null;
+            return false;
+        }
+
+        int remainingPrefixCount = requiredPrefixCount - prefixAffixes.Count;
+        List<EquipmentRolledAffix> rolledPrefixes = RollAffixSet(affixCatalog, EquipmentAffixType.Prefix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, remainingPrefixCount, usedTags);
+        if (rolledPrefixes == null)
+        {
+            suffixAffixes = null;
+            return false;
+        }
+
+        prefixAffixes.AddRange(rolledPrefixes);
         suffixAffixes = RollAffixSet(affixCatalog, EquipmentAffixType.Suffix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, requiredSuffixCount, usedTags);
         return prefixAffixes != null && suffixAffixes != null;
+    }
+
+    private static bool TryAddForcedLocalDefensePrefix(
+        EquipmentAffixCatalog affixCatalog,
+        EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
+        EquipmentSlotType slotType,
+        int itemTier,
+        int itemLevel,
+        int requiredPrefixCount,
+        ISet<string> usedTags,
+        List<EquipmentRolledAffix> prefixAffixes)
+    {
+        if (requiredPrefixCount <= 0 || !TryGetForcedLocalDefensePrefixStat(request, baseDefinition, out EquipmentStatType statType))
+        {
+            return true;
+        }
+
+        List<EquipmentAffixDefinition> validPrefixes = GetFilteredAffixes(
+            affixCatalog,
+            EquipmentAffixType.Prefix,
+            baseDefinition,
+            slotType,
+            itemTier,
+            int.MaxValue,
+            request.requiredAffixStats,
+            usedTags);
+        validPrefixes.RemoveAll(affix => !HasPercentModifier(affix, statType));
+
+        if (validPrefixes.Count == 0)
+        {
+            return true;
+        }
+
+        EquipmentAffixDefinition forcedAffix = validPrefixes[Random.Range(0, validPrefixes.Count)];
+        TrackAffixTag(forcedAffix, usedTags);
+        prefixAffixes.Add(CreateRolledAffix(forcedAffix, itemTier));
+        return true;
+    }
+
+    private static bool TryGetForcedLocalDefensePrefixStat(
+        EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
+        out EquipmentStatType statType)
+    {
+        statType = default;
+        if (request == null)
+        {
+            return false;
+        }
+
+        EquipmentStatType? implicitType = GetLocalDefenseImplicitType(baseDefinition);
+        if (!implicitType.HasValue)
+        {
+            return false;
+        }
+
+        statType = implicitType.Value;
+        return statType switch
+        {
+            EquipmentStatType.Armor => request.forceArmorImplicitPercentArmorPrefix,
+            EquipmentStatType.Evasion => request.forceEvasionImplicitPercentEvasionPrefix,
+            EquipmentStatType.Barrier => request.forceBarrierImplicitPercentBarrierPrefix,
+            _ => false,
+        };
+    }
+
+    private static bool HasPercentModifier(EquipmentAffixDefinition affix, EquipmentStatType statType)
+    {
+        if (affix == null)
+        {
+            return false;
+        }
+
+        foreach (EquipmentModifierDefinition modifier in affix.Modifiers)
+        {
+            if (modifier.statType == statType && modifier.modifierKind == EquipmentModifierKind.Percent)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static List<EquipmentRolledAffix> RollAffixSet(
@@ -233,6 +365,115 @@ public static class EquipmentGenerator
     private static EquipmentRolledAffix CreateRolledAffix(EquipmentAffixDefinition affix, int itemTier)
     {
         return affix == null ? null : new EquipmentRolledAffix(affix, RollModifiers(affix.Modifiers, itemTier));
+    }
+
+    private static void AddAtlasBonusAffixes(
+        EquipmentAffixCatalog affixCatalog,
+        EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
+        EquipmentSlotType slotType,
+        int itemTier,
+        int itemLevel,
+        EquipmentRarity rarity,
+        List<EquipmentRolledAffix> prefixAffixes,
+        List<EquipmentRolledAffix> suffixAffixes)
+    {
+        if (rarity != EquipmentRarity.Rare || request == null || request.additionalAffixesForRareItems <= 0)
+        {
+            return;
+        }
+
+        HashSet<string> usedTags = new(TagComparer);
+        HashSet<string> usedAffixNames = new(System.StringComparer.Ordinal);
+        TrackRolledAffixes(prefixAffixes, usedTags, usedAffixNames);
+        TrackRolledAffixes(suffixAffixes, usedTags, usedAffixNames);
+
+        for (int i = 0; i < request.additionalAffixesForRareItems; i++)
+        {
+            EquipmentRolledAffix bonusAffix = RollBonusAffix(
+                affixCatalog,
+                request,
+                baseDefinition,
+                slotType,
+                itemTier,
+                itemLevel,
+                usedTags,
+                usedAffixNames);
+
+            if (bonusAffix == null)
+            {
+                return;
+            }
+
+            GetRolledAffixList(bonusAffix.AffixType, prefixAffixes, suffixAffixes).Add(bonusAffix);
+        }
+    }
+
+    private static EquipmentRolledAffix RollBonusAffix(
+        EquipmentAffixCatalog affixCatalog,
+        EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
+        EquipmentSlotType slotType,
+        int itemTier,
+        int itemLevel,
+        ISet<string> usedTags,
+        ISet<string> usedAffixNames)
+    {
+        List<EquipmentAffixDefinition> candidates = new();
+        AddBonusAffixCandidates(candidates, affixCatalog, EquipmentAffixType.Prefix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, usedTags, usedAffixNames);
+        AddBonusAffixCandidates(candidates, affixCatalog, EquipmentAffixType.Suffix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, usedTags, usedAffixNames);
+
+        if (candidates.Count == 0)
+        {
+            return null;
+        }
+
+        EquipmentAffixDefinition affix = candidates[Random.Range(0, candidates.Count)];
+        TrackAffixTag(affix, usedTags);
+        if (!string.IsNullOrWhiteSpace(affix.AffixName))
+        {
+            usedAffixNames.Add(affix.AffixName);
+        }
+
+        return CreateRolledAffix(affix, itemTier);
+    }
+
+    private static void AddBonusAffixCandidates(
+        List<EquipmentAffixDefinition> candidates,
+        EquipmentAffixCatalog affixCatalog,
+        EquipmentAffixType affixType,
+        EquipmentBaseDefinition baseDefinition,
+        EquipmentSlotType slotType,
+        int itemTier,
+        int itemLevel,
+        IReadOnlyList<EquipmentStatType> requiredStats,
+        ISet<string> usedTags,
+        ISet<string> usedAffixNames)
+    {
+        List<EquipmentAffixDefinition> affixes = GetFilteredAffixes(affixCatalog, affixType, baseDefinition, slotType, itemTier, itemLevel, requiredStats, usedTags);
+        affixes.RemoveAll(affix => affix == null || usedAffixNames.Contains(affix.AffixName));
+        candidates.AddRange(affixes);
+    }
+
+    private static void TrackRolledAffixes(
+        IReadOnlyList<EquipmentRolledAffix> affixes,
+        ISet<string> usedTags,
+        ISet<string> usedAffixNames)
+    {
+        if (affixes == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < affixes.Count; i++)
+        {
+            EquipmentAffixDefinition definition = affixes[i]?.AffixDefinition;
+            TrackAffixTag(definition, usedTags);
+            if (definition != null && !string.IsNullOrWhiteSpace(definition.AffixName))
+            {
+                usedAffixNames.Add(definition.AffixName);
+            }
+        }
     }
 
     private static List<EquipmentAffixDefinition> GetFilteredAffixes(
@@ -321,8 +562,135 @@ public static class EquipmentGenerator
             return EquipmentSlotType.Head;
         }
 
-        return validSlotTypes[Random.Range(0, validSlotTypes.Count)];
+        return RollWeightedSlotType(validSlotTypes, request.accessoryDropChanceMultiplier);
     }
+
+    private static EquipmentSlotType RollWeightedSlotType(
+        IReadOnlyList<EquipmentSlotType> validSlotTypes,
+        float accessoryDropChanceMultiplier)
+    {
+        float totalWeight = 0f;
+        float[] weights = new float[validSlotTypes.Count];
+
+        for (int i = 0; i < validSlotTypes.Count; i++)
+        {
+            float weight = IsAccessorySlot(validSlotTypes[i])
+                ? Mathf.Max(0f, accessoryDropChanceMultiplier)
+                : 1f;
+
+            weights[i] = weight;
+            totalWeight += weight;
+        }
+
+        if (totalWeight <= 0f)
+        {
+            return validSlotTypes[Random.Range(0, validSlotTypes.Count)];
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        for (int i = 0; i < validSlotTypes.Count; i++)
+        {
+            if (roll < weights[i])
+            {
+                return validSlotTypes[i];
+            }
+
+            roll -= weights[i];
+        }
+
+        return validSlotTypes[validSlotTypes.Count - 1];
+    }
+
+    private static bool IsAccessorySlot(EquipmentSlotType slotType) =>
+        slotType == EquipmentSlotType.Ring || slotType == EquipmentSlotType.Necklace;
+
+    private static EquipmentBaseDefinition RollWeightedBaseDefinition(
+        IReadOnlyList<EquipmentBaseDefinition> validBases,
+        EquipmentSlotType slotType,
+        EquipmentGenerationRequest request)
+    {
+        if (validBases == null || validBases.Count == 0)
+        {
+            return null;
+        }
+
+        if (!IsArmorSlot(slotType) || request == null)
+        {
+            return validBases[Random.Range(0, validBases.Count)];
+        }
+
+        float totalWeight = 0f;
+        float[] weights = new float[validBases.Count];
+
+        for (int i = 0; i < validBases.Count; i++)
+        {
+            float weight = GetImplicitWeight(validBases[i], request);
+            weights[i] = weight;
+            totalWeight += weight;
+        }
+
+        if (totalWeight <= 0f)
+        {
+            return validBases[Random.Range(0, validBases.Count)];
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        for (int i = 0; i < validBases.Count; i++)
+        {
+            if (roll < weights[i])
+            {
+                return validBases[i];
+            }
+
+            roll -= weights[i];
+        }
+
+        return validBases[validBases.Count - 1];
+    }
+
+    private static float GetImplicitWeight(EquipmentBaseDefinition baseDefinition, EquipmentGenerationRequest request)
+    {
+        EquipmentStatType? localDefenseType = GetLocalDefenseImplicitType(baseDefinition);
+        if (!localDefenseType.HasValue)
+        {
+            return 1f;
+        }
+
+        return localDefenseType.Value switch
+        {
+            EquipmentStatType.Armor => Mathf.Max(0f, request.armorImplicitDropChanceMultiplier),
+            EquipmentStatType.Evasion => Mathf.Max(0f, request.evasionImplicitDropChanceMultiplier),
+            EquipmentStatType.Barrier => Mathf.Max(0f, request.barrierImplicitDropChanceMultiplier),
+            _ => 1f,
+        };
+    }
+
+    private static EquipmentStatType? GetLocalDefenseImplicitType(EquipmentBaseDefinition baseDefinition)
+    {
+        if (baseDefinition == null)
+        {
+            return null;
+        }
+
+        IReadOnlyList<EquipmentModifierDefinition> modifiers = baseDefinition.ImplicitModifiers;
+        for (int i = 0; i < modifiers.Count; i++)
+        {
+            EquipmentStatType statType = modifiers[i].statType;
+            if (EquipmentLocalDefenseUtility.IsLocalDefenseStat(statType))
+            {
+                return statType;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsArmorSlot(EquipmentSlotType slotType) =>
+        slotType == EquipmentSlotType.Head
+        || slotType == EquipmentSlotType.Chest
+        || slotType == EquipmentSlotType.Legs
+        || slotType == EquipmentSlotType.Hands
+        || slotType == EquipmentSlotType.Feet;
 
     private static bool CanGenerateForSlot(
         EquipmentBaseCatalog baseCatalog,
@@ -495,17 +863,27 @@ public static class EquipmentGenerator
         }
     }
 
-    private static List<EquipmentModifierRoll> RollModifiers(IReadOnlyList<EquipmentModifierDefinition> modifiers, int itemTier)
+    private static List<EquipmentModifierRoll> RollModifiers(
+        IReadOnlyList<EquipmentModifierDefinition> modifiers,
+        int itemTier,
+        bool forceMaximumRoll = false)
     {
         List<EquipmentModifierRoll> rolls = new();
         if (modifiers == null) return rolls;
 
         for (int i = 0; i < modifiers.Count; i++)
         {
-            rolls.Add(RollModifier(modifiers[i], itemTier));
+            rolls.Add(forceMaximumRoll ? RollModifierMaximum(modifiers[i], itemTier) : RollModifier(modifiers[i], itemTier));
         }
 
         return rolls;
+    }
+
+    private static EquipmentModifierRoll RollModifierMaximum(EquipmentModifierDefinition modifier, int itemTier)
+    {
+        float scaledMin = ApplyTierScaling(modifier.minValue, modifier.tierScalingMode, modifier.tierScalingAmount, itemTier);
+        float scaledMax = ApplyTierScaling(modifier.maxValue, modifier.tierScalingMode, modifier.tierScalingAmount, itemTier);
+        return new EquipmentModifierRoll(modifier.statType, modifier.modifierKind, Mathf.Max(scaledMin, scaledMax));
     }
 
     private static float ApplyTierScaling(float baseValue, EquipmentTierScalingMode scalingMode, float scalingAmount, int itemTier)

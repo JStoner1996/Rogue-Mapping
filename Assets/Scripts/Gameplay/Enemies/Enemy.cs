@@ -397,13 +397,30 @@ public class Enemy : MonoBehaviour
 
         EquipmentGenerationRequest request = lootItem.equipmentDropSettings.BuildRequest(selectedMap);
         request.itemLevel = EquipmentItemLevelResolver.Resolve(selectedMap, archetypeDefinition);
+        request.accessoryDropChanceMultiplier = GetAtlasMultiplier(AtlasEffectType.AccessoryDropChancePercent);
+        request.armorImplicitDropChanceMultiplier = GetAtlasMultiplier(AtlasEffectType.ArmorImplicitArmorDropChancePercent);
+        request.evasionImplicitDropChanceMultiplier = GetAtlasMultiplier(AtlasEffectType.ArmorImplicitEvasionDropChancePercent);
+        request.barrierImplicitDropChanceMultiplier = GetAtlasMultiplier(AtlasEffectType.ArmorImplicitBarrierDropChancePercent);
+        request.accessoriesAlwaysHighestImplicit = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.AccessoriesAlwaysHighestImplicit) > 0f;
+        request.forceArmorImplicitPercentArmorPrefix = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ArmorImplicitArmorAlwaysRollPercentArmorPrefix) > 0f;
+        request.forceEvasionImplicitPercentEvasionPrefix = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ArmorImplicitEvasionAlwaysRollPercentEvasionPrefix) > 0f;
+        request.forceBarrierImplicitPercentBarrierPrefix = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ArmorImplicitBarrierAlwaysRollPercentBarrierPrefix) > 0f;
+        request.additionalAffixesForRareItems = Mathf.Max(
+            0,
+            Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.RareItemsAdditionalAffixes)));
+        GetAtlasAdjustedEquipmentRarityWeights(
+            lootItem.equipmentDropSettings,
+            out float commonWeight,
+            out float uncommonWeight,
+            out float rareWeight);
+
         EquipmentInstance droppedEquipment = EquipmentGenerator.Generate(
             baseCatalog,
             affixCatalog,
             request,
-            lootItem.equipmentDropSettings.CommonWeight,
-            lootItem.equipmentDropSettings.UncommonWeight,
-            lootItem.equipmentDropSettings.RareWeight);
+            commonWeight,
+            uncommonWeight,
+            rareWeight);
 
         if (droppedEquipment == null)
         {
@@ -453,10 +470,9 @@ public class Enemy : MonoBehaviour
         float multiplier = runtimeStats.dropChanceMultiplier;
         EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
         EquipmentStatType? bonusStatType = GetMetaDropBonusStat(lootItem);
-        AtlasEffectType? atlasEffectType = GetMetaDropAtlasEffectType(lootItem);
+        float atlasIncrease = GetMetaDropAtlasIncrease(lootItem);
         EquipmentStatSummaryEntry entry = bonusStatType.HasValue ? summary?.GetEntry(bonusStatType.Value) : null;
         float equipmentIncrease = entry != null && entry.HasPercentValue ? entry.percentValue : 0f;
-        float atlasIncrease = atlasEffectType.HasValue ? MetaProgressionService.GetAtlasEffectValue(atlasEffectType.Value) / 100f : 0f;
         return multiplier * Mathf.Max(0f, 1f + equipmentIncrease + atlasIncrease);
     }
 
@@ -635,13 +651,40 @@ public class Enemy : MonoBehaviour
         };
 
     // Equipment and atlas both contribute "increased drop chance" style bonuses, so they share one multiplier path.
-    private static AtlasEffectType? GetMetaDropAtlasEffectType(MetaLootItem lootItem) =>
-        lootItem?.type switch
+    private static float GetMetaDropAtlasIncrease(MetaLootItem lootItem)
+    {
+        if (lootItem == null)
         {
-            MetaLootType.Map => AtlasEffectType.MapDropChancePercent,
-            MetaLootType.Equipment => AtlasEffectType.EquipmentDropChancePercent,
-            _ => null
-        };
+            return 0f;
+        }
+
+        AtlasEffectType effectType = lootItem.type == MetaLootType.Map
+            ? AtlasEffectType.MapDropChancePercent
+            : AtlasEffectType.ItemDropChancePercent;
+
+        return MetaProgressionService.GetAtlasEffectValue(effectType) / 100f;
+    }
+
+    private static void GetAtlasAdjustedEquipmentRarityWeights(
+        EquipmentDropSettings settings,
+        out float commonWeight,
+        out float uncommonWeight,
+        out float rareWeight)
+    {
+        commonWeight = settings != null ? settings.CommonWeight : EquipmentGenerator.DefaultCommonWeight;
+        uncommonWeight = settings != null ? settings.UncommonWeight : EquipmentGenerator.DefaultUncommonWeight;
+        rareWeight = settings != null ? settings.RareWeight : EquipmentGenerator.DefaultRareWeight;
+
+        float higherRarityMultiplier = Mathf.Max(
+            0f,
+            1f + (MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ItemRarityPercent) / 100f));
+
+        uncommonWeight *= higherRarityMultiplier;
+        rareWeight *= higherRarityMultiplier;
+    }
+
+    private static float GetAtlasMultiplier(AtlasEffectType effectType) =>
+        Mathf.Max(0f, 1f + (MetaProgressionService.GetAtlasEffectValue(effectType) / 100f));
 
     private void ProcessDrops<TLoot>(
         IReadOnlyList<TLoot> lootTable,

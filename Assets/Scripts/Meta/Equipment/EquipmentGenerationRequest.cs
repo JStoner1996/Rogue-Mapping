@@ -9,6 +9,15 @@ public class EquipmentGenerationRequest
     public int itemLevel;
     public bool forceSlotType;
     public EquipmentSlotType forcedSlotType = EquipmentSlotType.Head;
+    public float accessoryDropChanceMultiplier = 1f;
+    public float armorImplicitDropChanceMultiplier = 1f;
+    public float evasionImplicitDropChanceMultiplier = 1f;
+    public float barrierImplicitDropChanceMultiplier = 1f;
+    public bool accessoriesAlwaysHighestImplicit;
+    public bool forceArmorImplicitPercentArmorPrefix;
+    public bool forceEvasionImplicitPercentEvasionPrefix;
+    public bool forceBarrierImplicitPercentBarrierPrefix;
+    public int additionalAffixesForRareItems;
     public List<EquipmentStatType> requiredAffixStats = new List<EquipmentStatType>();
 
     public int GetClampedMinTier()
