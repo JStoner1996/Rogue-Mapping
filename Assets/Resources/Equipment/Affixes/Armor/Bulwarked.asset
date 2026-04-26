@@ -10,20 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dda34a768f3de4a4dab0bc27c4d77a2b, type: 3}
-  m_Name: of_Guarding
+  m_Name: Bulwarked
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
-  affixName: of Guarding
+  affixName: Bulwarked
   affixType: 0
-  affixTier: 1
-  affixTag: armor
-  allowedSlots: 00000000010000000200000005000000
-  minItemTier: 1
-  maxItemTier: 10
-  requiredItemLevel: 1
+  affixTier: 2
+  affixTag: armor_flat
+  allowedSlots:
+  - 0
+  - 1
+  - 2
+  - 5
+  - 3
+  minItemTier: 4
+  maxItemTier: 5
+  requiredItemLevel: 30
   modifiers:
   - statType: 1
     modifierKind: 0
-    minValue: 10
-    maxValue: 16
+    minValue: 14
+    maxValue: 20
     tierScalingMode: 1
     tierScalingAmount: 3

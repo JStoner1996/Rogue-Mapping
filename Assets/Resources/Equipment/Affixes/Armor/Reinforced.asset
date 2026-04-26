@@ -10,22 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dda34a768f3de4a4dab0bc27c4d77a2b, type: 3}
-  m_Name: Citadel
+  m_Name: Reinforced
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
-  affixName: Citadel
+  affixName: Reinforced
   affixType: 0
-  affixTier: 2
-  affixTag: armor
+  affixTier: 1
+  affixTag: armor_percent
   allowedSlots:
+  - 0
   - 1
   - 2
-  minItemTier: 8
-  maxItemTier: 10
-  requiredItemLevel: 80
+  - 5
+  - 3
+  minItemTier: 1
+  maxItemTier: 4
+  requiredItemLevel: 20
   modifiers:
   - statType: 1
     modifierKind: 1
-    minValue: 0.16
-    maxValue: 0.24
+    minValue: 0.06
+    maxValue: 0.1
     tierScalingMode: 1
-    tierScalingAmount: 0.018
+    tierScalingAmount: 0.01

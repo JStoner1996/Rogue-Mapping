@@ -26,7 +26,7 @@ public static class EquipmentDescriptionFormatter
         {
             builder.AppendLine();
             builder.AppendLine(Divider);
-            AppendRolls(builder, item.ImplicitRolls);
+            AppendImplicitRolls(builder, item);
         }
 
         if (hasExplicit)
@@ -49,6 +49,30 @@ public static class EquipmentDescriptionFormatter
         for (int i = 0; i < rolls.Count; i++)
         {
             builder.AppendLine(FormatRoll(rolls[i]));
+        }
+    }
+
+    private static void AppendImplicitRolls(StringBuilder builder, EquipmentInstance item)
+    {
+        if (item?.ImplicitRolls == null || item.ImplicitRolls.Count == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < item.ImplicitRolls.Count; i++)
+        {
+            EquipmentModifierRoll roll = item.ImplicitRolls[i];
+            if (!EquipmentLocalDefenseUtility.IsLocalDefenseStat(roll.statType))
+            {
+                builder.AppendLine(FormatRoll(roll));
+                continue;
+            }
+
+            EquipmentLocalDefenseUtility.LocalDefenseTotals totals = EquipmentLocalDefenseUtility.Calculate(item, roll.statType);
+            string line = FormatRoll(new EquipmentModifierRoll(roll.statType, EquipmentModifierKind.Flat, totals.FinalValue));
+            builder.AppendLine(EquipmentLocalDefenseUtility.IsModifiedImplicit(totals)
+                ? EquipmentLocalDefenseUtility.WrapModifiedImplicit(line)
+                : line);
         }
     }
 

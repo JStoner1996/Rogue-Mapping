@@ -10,25 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dda34a768f3de4a4dab0bc27c4d77a2b, type: 3}
-  m_Name: Bulwarked
+  m_Name: Ironbound
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
-  affixName: Bulwarked
+  affixName: Ironbound
   affixType: 0
-  affixTier: 2
-  affixTag: armor
+  affixTier: 1
+  affixTag: armor_percent
   allowedSlots:
-  - 0
   - 1
   - 2
-  - 5
-  - 3
-  minItemTier: 4
-  maxItemTier: 5
-  requiredItemLevel: 30
+  minItemTier: 5
+  maxItemTier: 7
+  requiredItemLevel: 50
   modifiers:
   - statType: 1
-    modifierKind: 0
-    minValue: 14
-    maxValue: 20
+    modifierKind: 1
+    minValue: 0.1
+    maxValue: 0.15
     tierScalingMode: 1
-    tierScalingAmount: 3
+    tierScalingAmount: 0.015

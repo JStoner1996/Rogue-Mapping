@@ -68,7 +68,7 @@ public static class EquipmentGenerator
 
         EquipmentBaseDefinition baseDefinition = validBases[Random.Range(0, validBases.Count)];
         List<EquipmentModifierRoll> implicitRolls = RollModifiers(baseDefinition.ImplicitModifiers, itemTier);
-        if (!TryRollAffixes(affixCatalog, request, slotType, itemTier, itemLevel, rarity, out List<EquipmentRolledAffix> prefixAffixes, out List<EquipmentRolledAffix> suffixAffixes))
+        if (!TryRollAffixes(affixCatalog, request, baseDefinition, slotType, itemTier, itemLevel, rarity, out List<EquipmentRolledAffix> prefixAffixes, out List<EquipmentRolledAffix> suffixAffixes))
         {
             WarnMissingAffixes(rarity, slotType, itemTier);
             return null;
@@ -88,6 +88,7 @@ public static class EquipmentGenerator
     private static bool TryRollAffixes(
         EquipmentAffixCatalog affixCatalog,
         EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
         EquipmentSlotType slotType,
         int itemTier,
         int itemLevel,
@@ -100,9 +101,9 @@ public static class EquipmentGenerator
 
         return rarity switch
         {
-            EquipmentRarity.Common => RollCommonAffix(affixCatalog, request, slotType, itemTier, itemLevel, prefixAffixes, suffixAffixes),
-            EquipmentRarity.Uncommon => TryRollFixedAffixes(affixCatalog, request, slotType, itemTier, itemLevel, 1, 1, out prefixAffixes, out suffixAffixes),
-            EquipmentRarity.Rare => TryRollRareAffixes(affixCatalog, request, slotType, itemTier, itemLevel, out prefixAffixes, out suffixAffixes),
+            EquipmentRarity.Common => RollCommonAffix(affixCatalog, request, baseDefinition, slotType, itemTier, itemLevel, prefixAffixes, suffixAffixes),
+            EquipmentRarity.Uncommon => TryRollFixedAffixes(affixCatalog, request, baseDefinition, slotType, itemTier, itemLevel, 1, 1, out prefixAffixes, out suffixAffixes),
+            EquipmentRarity.Rare => TryRollRareAffixes(affixCatalog, request, baseDefinition, slotType, itemTier, itemLevel, out prefixAffixes, out suffixAffixes),
             _ => false,
         };
     }
@@ -121,6 +122,7 @@ public static class EquipmentGenerator
     private static bool RollCommonAffix(
         EquipmentAffixCatalog affixCatalog,
         EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
         EquipmentSlotType slotType,
         int itemTier,
         int itemLevel,
@@ -130,12 +132,12 @@ public static class EquipmentGenerator
         HashSet<string> usedTags = new(TagComparer);
         bool rollPrefix = Random.value < 0.5f;
         EquipmentAffixType affixType = rollPrefix ? EquipmentAffixType.Prefix : EquipmentAffixType.Suffix;
-        EquipmentAffixDefinition affix = RollAffix(affixCatalog, affixType, slotType, itemTier, itemLevel, request.requiredAffixStats, usedTags);
+        EquipmentAffixDefinition affix = RollAffix(affixCatalog, affixType, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, usedTags);
 
         if (affix == null)
         {
             affixType = rollPrefix ? EquipmentAffixType.Suffix : EquipmentAffixType.Prefix;
-            affix = RollAffix(affixCatalog, affixType, slotType, itemTier, itemLevel, request.requiredAffixStats, usedTags);
+            affix = RollAffix(affixCatalog, affixType, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, usedTags);
         }
 
         if (affix == null)
@@ -150,6 +152,7 @@ public static class EquipmentGenerator
     private static bool TryRollFixedAffixes(
         EquipmentAffixCatalog affixCatalog,
         EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
         EquipmentSlotType slotType,
         int itemTier,
         int itemLevel,
@@ -159,14 +162,15 @@ public static class EquipmentGenerator
         out List<EquipmentRolledAffix> suffixAffixes)
     {
         HashSet<string> usedTags = new(TagComparer);
-        prefixAffixes = RollAffixSet(affixCatalog, EquipmentAffixType.Prefix, slotType, itemTier, itemLevel, request.requiredAffixStats, requiredPrefixCount, usedTags);
-        suffixAffixes = RollAffixSet(affixCatalog, EquipmentAffixType.Suffix, slotType, itemTier, itemLevel, request.requiredAffixStats, requiredSuffixCount, usedTags);
+        prefixAffixes = RollAffixSet(affixCatalog, EquipmentAffixType.Prefix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, requiredPrefixCount, usedTags);
+        suffixAffixes = RollAffixSet(affixCatalog, EquipmentAffixType.Suffix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats, requiredSuffixCount, usedTags);
         return prefixAffixes != null && suffixAffixes != null;
     }
 
     private static bool TryRollRareAffixes(
         EquipmentAffixCatalog affixCatalog,
         EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
         EquipmentSlotType slotType,
         int itemTier,
         int itemLevel,
@@ -182,9 +186,10 @@ public static class EquipmentGenerator
 
         for (int i = 0; i < combinations.Length; i++)
         {
-            if (TryRollFixedAffixes(
+                if (TryRollFixedAffixes(
                 affixCatalog,
                 request,
+                baseDefinition,
                 slotType,
                 itemTier,
                 itemLevel,
@@ -203,6 +208,7 @@ public static class EquipmentGenerator
     private static List<EquipmentRolledAffix> RollAffixSet(
         EquipmentAffixCatalog affixCatalog,
         EquipmentAffixType affixType,
+        EquipmentBaseDefinition baseDefinition,
         EquipmentSlotType slotType,
         int itemTier,
         int itemLevel,
@@ -210,7 +216,7 @@ public static class EquipmentGenerator
         int count,
         ISet<string> usedTags)
     {
-        List<EquipmentAffixDefinition> validAffixes = GetFilteredAffixes(affixCatalog, affixType, slotType, itemTier, itemLevel, requiredStats, usedTags);
+        List<EquipmentAffixDefinition> validAffixes = GetFilteredAffixes(affixCatalog, affixType, baseDefinition, slotType, itemTier, itemLevel, requiredStats, usedTags);
         if (validAffixes.Count < count)
         {
             return null;
@@ -239,13 +245,14 @@ public static class EquipmentGenerator
     private static EquipmentAffixDefinition RollAffix(
         EquipmentAffixCatalog affixCatalog,
         EquipmentAffixType affixType,
+        EquipmentBaseDefinition baseDefinition,
         EquipmentSlotType slotType,
         int itemTier,
         int itemLevel,
         IReadOnlyList<EquipmentStatType> requiredStats,
         ISet<string> usedTags)
     {
-        List<EquipmentAffixDefinition> validAffixes = GetFilteredAffixes(affixCatalog, affixType, slotType, itemTier, itemLevel, requiredStats, usedTags);
+        List<EquipmentAffixDefinition> validAffixes = GetFilteredAffixes(affixCatalog, affixType, baseDefinition, slotType, itemTier, itemLevel, requiredStats, usedTags);
         if (validAffixes.Count == 0)
         {
             return null;
@@ -264,6 +271,7 @@ public static class EquipmentGenerator
     private static List<EquipmentAffixDefinition> GetFilteredAffixes(
         EquipmentAffixCatalog affixCatalog,
         EquipmentAffixType affixType,
+        EquipmentBaseDefinition baseDefinition,
         EquipmentSlotType slotType,
         int itemTier,
         int itemLevel,
@@ -271,6 +279,7 @@ public static class EquipmentGenerator
         ISet<string> usedTags = null)
     {
         List<EquipmentAffixDefinition> affixes = affixCatalog.GetValidAffixes(affixType, slotType, itemTier, itemLevel);
+        FilterLocalDefenseAffixes(affixes, baseDefinition);
         RemoveBlockedAffixes(affixes, usedTags);
         FilterRequiredStats(affixes, requiredStats);
         return affixes;
@@ -336,13 +345,34 @@ public static class EquipmentGenerator
         int itemLevel,
         EquipmentRarity rarity)
     {
-        if (baseCatalog.GetValidBases(slotType, itemTier).Count == 0)
+        List<EquipmentBaseDefinition> validBases = baseCatalog.GetValidBases(slotType, itemTier);
+        if (validBases.Count == 0)
         {
             return false;
         }
 
-        List<EquipmentAffixDefinition> validPrefixes = GetFilteredAffixes(affixCatalog, EquipmentAffixType.Prefix, slotType, itemTier, itemLevel, request.requiredAffixStats);
-        List<EquipmentAffixDefinition> validSuffixes = GetFilteredAffixes(affixCatalog, EquipmentAffixType.Suffix, slotType, itemTier, itemLevel, request.requiredAffixStats);
+        for (int i = 0; i < validBases.Count; i++)
+        {
+            if (CanGenerateForBase(affixCatalog, request, validBases[i], slotType, itemTier, itemLevel, rarity))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool CanGenerateForBase(
+        EquipmentAffixCatalog affixCatalog,
+        EquipmentGenerationRequest request,
+        EquipmentBaseDefinition baseDefinition,
+        EquipmentSlotType slotType,
+        int itemTier,
+        int itemLevel,
+        EquipmentRarity rarity)
+    {
+        List<EquipmentAffixDefinition> validPrefixes = GetFilteredAffixes(affixCatalog, EquipmentAffixType.Prefix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats);
+        List<EquipmentAffixDefinition> validSuffixes = GetFilteredAffixes(affixCatalog, EquipmentAffixType.Suffix, baseDefinition, slotType, itemTier, itemLevel, request.requiredAffixStats);
 
         return rarity switch
         {
@@ -430,6 +460,16 @@ public static class EquipmentGenerator
         }
 
         affixes.RemoveAll(affix => !MatchesRequiredStats(affix, requiredStats));
+    }
+
+    private static void FilterLocalDefenseAffixes(List<EquipmentAffixDefinition> affixes, EquipmentBaseDefinition baseDefinition)
+    {
+        if (affixes == null)
+        {
+            return;
+        }
+
+        affixes.RemoveAll(affix => !EquipmentLocalDefenseUtility.AffixMatchesBaseImplicit(affix, baseDefinition));
     }
 
     private static void Shuffle<T>(T[] array)

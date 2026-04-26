@@ -10,25 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dda34a768f3de4a4dab0bc27c4d77a2b, type: 3}
-  m_Name: Adamant
+  m_Name: Slipstream
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentAffixDefinition
-  affixName: Adamant
+  affixName: Slipstream
   affixType: 0
-  affixTier: 4
-  affixTag: armor
+  affixTier: 2
+  affixTag: evasion_percent
   allowedSlots:
   - 0
   - 1
   - 2
   - 5
   - 3
-  minItemTier: 8
-  maxItemTier: 10
-  requiredItemLevel: 70
+  minItemTier: 5
+  maxItemTier: 7
+  requiredItemLevel: 50
   modifiers:
-  - statType: 1
-    modifierKind: 0
-    minValue: 32
-    maxValue: 44
+  - statType: 15
+    modifierKind: 1
+    minValue: 0.1
+    maxValue: 0.15
     tierScalingMode: 1
-    tierScalingAmount: 5
+    tierScalingAmount: 0.015

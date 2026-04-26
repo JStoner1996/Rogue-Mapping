@@ -26,12 +26,36 @@ public static class EquipmentStatSummaryCalculator
             return;
         }
 
-        AddRolls(summary, item.ImplicitRolls);
-        AddAffixRolls(summary, item.PrefixAffixes);
-        AddAffixRolls(summary, item.SuffixAffixes);
+        AddImplicitRolls(summary, item);
+        AddAffixRolls(summary, item, item.PrefixAffixes);
+        AddAffixRolls(summary, item, item.SuffixAffixes);
     }
 
-    private static void AddAffixRolls(EquipmentStatSummary summary, IReadOnlyList<EquipmentRolledAffix> affixes)
+    private static void AddImplicitRolls(EquipmentStatSummary summary, EquipmentInstance item)
+    {
+        if (item?.ImplicitRolls == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < item.ImplicitRolls.Count; i++)
+        {
+            EquipmentModifierRoll roll = item.ImplicitRolls[i];
+            if (!EquipmentLocalDefenseUtility.IsLocalDefenseStat(roll.statType))
+            {
+                summary.AddRoll(roll);
+                continue;
+            }
+
+            EquipmentLocalDefenseUtility.LocalDefenseTotals totals = EquipmentLocalDefenseUtility.Calculate(item, roll.statType);
+            if (totals.HasImplicit)
+            {
+                summary.AddRoll(new EquipmentModifierRoll(roll.statType, EquipmentModifierKind.Flat, totals.FinalValue));
+            }
+        }
+    }
+
+    private static void AddAffixRolls(EquipmentStatSummary summary, EquipmentInstance item, IReadOnlyList<EquipmentRolledAffix> affixes)
     {
         if (affixes == null)
         {
@@ -40,11 +64,11 @@ public static class EquipmentStatSummaryCalculator
 
         for (int i = 0; i < affixes.Count; i++)
         {
-            AddRolls(summary, affixes[i]?.ModifierRolls);
+            AddRolls(summary, item, affixes[i]?.ModifierRolls);
         }
     }
 
-    private static void AddRolls(EquipmentStatSummary summary, IReadOnlyList<EquipmentModifierRoll> rolls)
+    private static void AddRolls(EquipmentStatSummary summary, EquipmentInstance item, IReadOnlyList<EquipmentModifierRoll> rolls)
     {
         if (rolls == null)
         {
@@ -53,7 +77,14 @@ public static class EquipmentStatSummaryCalculator
 
         for (int i = 0; i < rolls.Count; i++)
         {
-            summary.AddRoll(rolls[i]);
+            EquipmentModifierRoll roll = rolls[i];
+            if (EquipmentLocalDefenseUtility.IsLocalDefenseStat(roll.statType)
+                && EquipmentLocalDefenseUtility.Calculate(item, roll.statType).HasImplicit)
+            {
+                continue;
+            }
+
+            summary.AddRoll(roll);
         }
     }
 }

@@ -53,7 +53,7 @@ public static class EquipmentCatalogSeeder
                     tierScalingAmount = 3f
                 }),
             CreateOrUpdateBase(
-                "Plate Vest",
+                "Iron Vest",
                 EquipmentSlotType.Chest,
                 1,
                 10,
@@ -67,7 +67,7 @@ public static class EquipmentCatalogSeeder
                     tierScalingAmount = 5f
                 }),
             CreateOrUpdateBase(
-                "Chain Leggings",
+                "Iron Leggings",
                 EquipmentSlotType.Legs,
                 1,
                 10,
@@ -81,7 +81,7 @@ public static class EquipmentCatalogSeeder
                     tierScalingAmount = 4f
                 }),
             CreateOrUpdateBase(
-                "Leather Boots",
+                "Iron Boots",
                 EquipmentSlotType.Feet,
                 1,
                 10,
