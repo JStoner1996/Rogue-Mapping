@@ -183,19 +183,16 @@ public class Enemy : MonoBehaviour
 
     private void Die()
     {
-        DropExperience();
-        ProcessDrops(powerUpLootTable, lootItem => lootItem.GetAdjustedDropChance(runtimeStats.dropChanceMultiplier), SpawnLoot);
-        ProcessDrops(metaLootTable, lootItem => lootItem.GetAdjustedDropChance(GetMetaDropChanceMultiplier(lootItem)), SpawnMetaLoot);
+        EnemyLootDropper.DropAll(
+            transform.position,
+            runtimeStats.experienceWorth,
+            runtimeStats.dropChanceMultiplier,
+            archetypeDefinition,
+            powerUpLootTable,
+            metaLootTable);
         EnemyKilled?.Invoke(this);
         PlayDeathEffects();
         ReturnToPool();
-    }
-
-    private void DropExperience()
-    {
-        ExpCrystal xp = PickupPools.Instance.GetXP();
-        xp.transform.position = transform.position;
-        xp.Init(runtimeStats.experienceWorth);
     }
 
     private void ApplyKnockback(Vector2 hitDirection, float force, bool applyResistance = true, bool propagateToNearbyEnemies = true)
@@ -332,106 +329,6 @@ public class Enemy : MonoBehaviour
         ApplyKnockback(recoilDirection.normalized, recoilForce, applyResistance: false);
     }
 
-    private void SpawnLoot(LootItem lootItem)
-    {
-        if (lootItem == null)
-        {
-            return;
-        }
-
-        switch (lootItem.type)
-        {
-            case PowerUpLootType.Health:
-                HealthPickup health = PickupPools.Instance.GetHealth();
-                health.transform.position = transform.position;
-                break;
-
-            case PowerUpLootType.Magnet:
-                Magnet magnet = PickupPools.Instance.GetMagnet();
-                magnet.transform.position = transform.position;
-                break;
-
-            case PowerUpLootType.Bomb:
-                Bomb bomb = PickupPools.Instance.GetBomb();
-                bomb.transform.position = transform.position;
-                break;
-        }
-    }
-
-    private void SpawnMetaLoot(MetaLootItem lootItem)
-    {
-        if (lootItem == null)
-        {
-            return;
-        }
-
-        (lootItem.type == MetaLootType.Map ? (System.Action<MetaLootItem>)SpawnMapLoot : SpawnEquipmentLoot)(lootItem);
-    }
-
-    private void SpawnMapLoot(MetaLootItem lootItem)
-    {
-        MapInstance droppedMap = MapGenerator.CreateDroppedMap(
-            RunData.GetSelectedMapOrDefault().Tier,
-            lootItem.mapDropSettings);
-
-        if (droppedMap == null)
-        {
-            return;
-        }
-
-        MapPickup mapPickup = PickupPools.Instance.GetMapPickup();
-        mapPickup.transform.position = transform.position;
-        mapPickup.Initialize(droppedMap);
-    }
-
-    private void SpawnEquipmentLoot(MetaLootItem lootItem)
-    {
-        EquipmentBaseCatalog baseCatalog = EquipmentCatalogResources.BaseCatalog;
-        EquipmentAffixCatalog affixCatalog = EquipmentCatalogResources.AffixCatalog;
-        MapInstance selectedMap = RunData.GetSelectedMapOrDefault();
-
-        if (baseCatalog == null || affixCatalog == null)
-        {
-            return;
-        }
-
-        EquipmentGenerationRequest request = lootItem.equipmentDropSettings.BuildRequest(selectedMap);
-        request.itemLevel = EquipmentItemLevelResolver.Resolve(selectedMap, archetypeDefinition);
-        request.accessoryDropChanceMultiplier = GetAtlasMultiplier(AtlasEffectType.AccessoryDropChancePercent);
-        request.armorImplicitDropChanceMultiplier = GetAtlasMultiplier(AtlasEffectType.ArmorImplicitArmorDropChancePercent);
-        request.evasionImplicitDropChanceMultiplier = GetAtlasMultiplier(AtlasEffectType.ArmorImplicitEvasionDropChancePercent);
-        request.barrierImplicitDropChanceMultiplier = GetAtlasMultiplier(AtlasEffectType.ArmorImplicitBarrierDropChancePercent);
-        request.accessoriesAlwaysHighestImplicit = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.AccessoriesAlwaysHighestImplicit) > 0f;
-        request.forceArmorImplicitPercentArmorPrefix = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ArmorImplicitArmorAlwaysRollPercentArmorPrefix) > 0f;
-        request.forceEvasionImplicitPercentEvasionPrefix = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ArmorImplicitEvasionAlwaysRollPercentEvasionPrefix) > 0f;
-        request.forceBarrierImplicitPercentBarrierPrefix = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ArmorImplicitBarrierAlwaysRollPercentBarrierPrefix) > 0f;
-        request.additionalAffixesForRareItems = Mathf.Max(
-            0,
-            Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.RareItemsAdditionalAffixes)));
-        GetAtlasAdjustedEquipmentRarityWeights(
-            lootItem.equipmentDropSettings,
-            out float commonWeight,
-            out float uncommonWeight,
-            out float rareWeight);
-
-        EquipmentInstance droppedEquipment = EquipmentGenerator.Generate(
-            baseCatalog,
-            affixCatalog,
-            request,
-            commonWeight,
-            uncommonWeight,
-            rareWeight);
-
-        if (droppedEquipment == null)
-        {
-            return;
-        }
-
-        EquipmentPickup equipmentPickup = PickupPools.Instance.GetEquipmentPickup();
-        equipmentPickup.transform.position = transform.position;
-        equipmentPickup.Initialize(droppedEquipment);
-    }
-
     private void CachePlayerReferences()
     {
         player = PlayerController.Instance;
@@ -463,17 +360,6 @@ public class Enemy : MonoBehaviour
             experienceWorth = Mathf.RoundToInt(experienceWorth * archetypeExperienceMultiplier * spawnContext.experienceMultiplier),
             dropChanceMultiplier = archetypeDropChanceMultiplier * spawnContext.dropChanceMultiplier,
         };
-    }
-
-    private float GetMetaDropChanceMultiplier(MetaLootItem lootItem)
-    {
-        float multiplier = runtimeStats.dropChanceMultiplier;
-        EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
-        EquipmentStatType? bonusStatType = GetMetaDropBonusStat(lootItem);
-        float atlasIncrease = GetMetaDropAtlasIncrease(lootItem);
-        EquipmentStatSummaryEntry entry = bonusStatType.HasValue ? summary?.GetEntry(bonusStatType.Value) : null;
-        float equipmentIncrease = entry != null && entry.HasPercentValue ? entry.percentValue : 0f;
-        return multiplier * Mathf.Max(0f, 1f + equipmentIncrease + atlasIncrease);
     }
 
     private int GetScaledPackBound(int baseValue, float qualityMultiplier)
@@ -640,71 +526,5 @@ public class Enemy : MonoBehaviour
     {
         CachePlayerReferences();
         return player != null;
-    }
-
-    private static EquipmentStatType? GetMetaDropBonusStat(MetaLootItem lootItem) =>
-        lootItem?.type switch
-        {
-            MetaLootType.Map => EquipmentStatType.MapDropChance,
-            MetaLootType.Equipment => EquipmentStatType.EquipmentDropChance,
-            _ => null
-        };
-
-    // Equipment and atlas both contribute "increased drop chance" style bonuses, so they share one multiplier path.
-    private static float GetMetaDropAtlasIncrease(MetaLootItem lootItem)
-    {
-        if (lootItem == null)
-        {
-            return 0f;
-        }
-
-        AtlasEffectType effectType = lootItem.type == MetaLootType.Map
-            ? AtlasEffectType.MapDropChancePercent
-            : AtlasEffectType.ItemDropChancePercent;
-
-        return MetaProgressionService.GetAtlasEffectValue(effectType) / 100f;
-    }
-
-    private static void GetAtlasAdjustedEquipmentRarityWeights(
-        EquipmentDropSettings settings,
-        out float commonWeight,
-        out float uncommonWeight,
-        out float rareWeight)
-    {
-        commonWeight = settings != null ? settings.CommonWeight : EquipmentGenerator.DefaultCommonWeight;
-        uncommonWeight = settings != null ? settings.UncommonWeight : EquipmentGenerator.DefaultUncommonWeight;
-        rareWeight = settings != null ? settings.RareWeight : EquipmentGenerator.DefaultRareWeight;
-
-        float higherRarityMultiplier = Mathf.Max(
-            0f,
-            1f + (MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ItemRarityPercent) / 100f));
-
-        uncommonWeight *= higherRarityMultiplier;
-        rareWeight *= higherRarityMultiplier;
-    }
-
-    private static float GetAtlasMultiplier(AtlasEffectType effectType) =>
-        Mathf.Max(0f, 1f + (MetaProgressionService.GetAtlasEffectValue(effectType) / 100f));
-
-    private void ProcessDrops<TLoot>(
-        IReadOnlyList<TLoot> lootTable,
-        System.Func<TLoot, float> getDropChance,
-        System.Action<TLoot> spawnLoot)
-        where TLoot : class
-    {
-        if (lootTable == null || getDropChance == null || spawnLoot == null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < lootTable.Count; i++)
-        {
-            TLoot lootItem = lootTable[i];
-
-            if (lootItem != null && Random.Range(0f, 100f) <= getDropChance(lootItem))
-            {
-                spawnLoot(lootItem);
-            }
-        }
     }
 }

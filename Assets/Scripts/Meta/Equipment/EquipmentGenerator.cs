@@ -341,27 +341,6 @@ public static class EquipmentGenerator
         return rolledAffixes;
     }
 
-    private static EquipmentAffixDefinition RollAffix(
-        EquipmentAffixCatalog affixCatalog,
-        EquipmentAffixType affixType,
-        EquipmentBaseDefinition baseDefinition,
-        EquipmentSlotType slotType,
-        int itemTier,
-        int itemLevel,
-        IReadOnlyList<EquipmentStatType> requiredStats,
-        ISet<string> usedTags)
-    {
-        List<EquipmentAffixDefinition> validAffixes = GetFilteredAffixes(affixCatalog, affixType, baseDefinition, slotType, itemTier, itemLevel, requiredStats, usedTags);
-        if (validAffixes.Count == 0)
-        {
-            return null;
-        }
-
-        EquipmentAffixDefinition affix = validAffixes[Random.Range(0, validAffixes.Count)];
-        TrackAffixTag(affix, usedTags);
-        return affix;
-    }
-
     private static EquipmentRolledAffix CreateRolledAffix(EquipmentAffixDefinition affix, int itemTier)
     {
         return affix == null ? null : new EquipmentRolledAffix(affix, RollModifiers(affix.Modifiers, itemTier));
@@ -567,39 +546,10 @@ public static class EquipmentGenerator
 
     private static EquipmentSlotType RollWeightedSlotType(
         IReadOnlyList<EquipmentSlotType> validSlotTypes,
-        float accessoryDropChanceMultiplier)
-    {
-        float totalWeight = 0f;
-        float[] weights = new float[validSlotTypes.Count];
-
-        for (int i = 0; i < validSlotTypes.Count; i++)
-        {
-            float weight = IsAccessorySlot(validSlotTypes[i])
-                ? Mathf.Max(0f, accessoryDropChanceMultiplier)
-                : 1f;
-
-            weights[i] = weight;
-            totalWeight += weight;
-        }
-
-        if (totalWeight <= 0f)
-        {
-            return validSlotTypes[Random.Range(0, validSlotTypes.Count)];
-        }
-
-        float roll = Random.Range(0f, totalWeight);
-        for (int i = 0; i < validSlotTypes.Count; i++)
-        {
-            if (roll < weights[i])
-            {
-                return validSlotTypes[i];
-            }
-
-            roll -= weights[i];
-        }
-
-        return validSlotTypes[validSlotTypes.Count - 1];
-    }
+        float accessoryDropChanceMultiplier) =>
+        RollWeighted(
+            validSlotTypes,
+            slotType => IsAccessorySlot(slotType) ? Mathf.Max(0f, accessoryDropChanceMultiplier) : 1f);
 
     private static bool IsAccessorySlot(EquipmentSlotType slotType) =>
         slotType == EquipmentSlotType.Ring || slotType == EquipmentSlotType.Necklace;
@@ -619,33 +569,43 @@ public static class EquipmentGenerator
             return validBases[Random.Range(0, validBases.Count)];
         }
 
-        float totalWeight = 0f;
-        float[] weights = new float[validBases.Count];
+        return RollWeighted(validBases, baseDefinition => GetImplicitWeight(baseDefinition, request));
+    }
 
-        for (int i = 0; i < validBases.Count; i++)
+    private static T RollWeighted<T>(IReadOnlyList<T> values, System.Func<T, float> getWeight)
+    {
+        if (values == null || values.Count == 0)
         {
-            float weight = GetImplicitWeight(validBases[i], request);
+            return default;
+        }
+
+        float totalWeight = 0f;
+        float[] weights = new float[values.Count];
+
+        for (int i = 0; i < values.Count; i++)
+        {
+            float weight = Mathf.Max(0f, getWeight(values[i]));
             weights[i] = weight;
             totalWeight += weight;
         }
 
         if (totalWeight <= 0f)
         {
-            return validBases[Random.Range(0, validBases.Count)];
+            return values[Random.Range(0, values.Count)];
         }
 
         float roll = Random.Range(0f, totalWeight);
-        for (int i = 0; i < validBases.Count; i++)
+        for (int i = 0; i < values.Count; i++)
         {
             if (roll < weights[i])
             {
-                return validBases[i];
+                return values[i];
             }
 
             roll -= weights[i];
         }
 
-        return validBases[validBases.Count - 1];
+        return values[values.Count - 1];
     }
 
     private static float GetImplicitWeight(EquipmentBaseDefinition baseDefinition, EquipmentGenerationRequest request)
@@ -843,15 +803,6 @@ public static class EquipmentGenerator
         }
 
         affixes.RemoveAll(affix => !EquipmentLocalDefenseUtility.AffixMatchesBaseImplicit(affix, baseDefinition));
-    }
-
-    private static void Shuffle<T>(T[] array)
-    {
-        for (int i = 0; i < array.Length; i++)
-        {
-            int randomIndex = Random.Range(i, array.Length);
-            (array[i], array[randomIndex]) = (array[randomIndex], array[i]);
-        }
     }
 
     private static void Shuffle<T>(IList<T> list)
