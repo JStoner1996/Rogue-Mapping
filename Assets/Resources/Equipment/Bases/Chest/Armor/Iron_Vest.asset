@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f63683b0993a084db4268f28e65ccee, type: 3}
   m_Name: Iron_Vest
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentBaseDefinition
-  baseName: Plate Vest
+  baseName: Iron Vest
   slotType: 1
   minItemTier: 1
   maxItemTier: 10
