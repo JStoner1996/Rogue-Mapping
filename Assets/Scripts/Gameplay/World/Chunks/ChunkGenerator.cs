@@ -9,6 +9,7 @@ public sealed class ChunkGenerator
     private readonly int chunkSizeTiles;
     private readonly float tileSize;
     private readonly float shrineSpawnChance;
+    private readonly float greaterShrineChance;
     private readonly int shrineEdgePaddingTiles;
     private readonly IReadOnlyList<ShrineDefinition> shrineDefinitions;
 
@@ -17,6 +18,7 @@ public sealed class ChunkGenerator
         int chunkSizeTiles,
         float tileSize,
         float shrineSpawnChance,
+        float greaterShrineChance,
         int shrineEdgePaddingTiles,
         IReadOnlyList<ShrineDefinition> shrineDefinitions)
     {
@@ -24,6 +26,7 @@ public sealed class ChunkGenerator
         this.chunkSizeTiles = chunkSizeTiles;
         this.tileSize = tileSize;
         this.shrineSpawnChance = shrineSpawnChance;
+        this.greaterShrineChance = greaterShrineChance;
         this.shrineEdgePaddingTiles = shrineEdgePaddingTiles;
         this.shrineDefinitions = shrineDefinitions;
     }
@@ -35,6 +38,7 @@ public sealed class ChunkGenerator
 
         bool hasShrine = ShouldSpawnShrine(random);
         ShrineDefinition shrineDefinition = hasShrine ? RollShrineDefinition(random) : null;
+        bool isGreaterShrine = hasShrine && random.NextDouble() <= greaterShrineChance;
         Vector3 shrineLocalPosition = hasShrine
             ? RollShrineLocalPosition(random)
             : Vector3.zero;
@@ -44,7 +48,8 @@ public sealed class ChunkGenerator
             worldOrigin,
             hasShrine,
             shrineLocalPosition,
-            shrineDefinition);
+            shrineDefinition,
+            isGreaterShrine);
     }
 
     private bool ShouldSpawnShrine(System.Random random)

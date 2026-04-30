@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 155522732123109697}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.07, y: -0.06, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -153,10 +153,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShrineObjective
   shrineDefinition: {fileID: 11400000, guid: df8b7392e35ac4449873bd752f3fd902, type: 2}
   shrineRenderer: {fileID: 3648768914656614618}
+  activationRadiusVisualRoot: {fileID: 5202331666851959158}
   chargeIndicatorRoot: {fileID: 5551497482554971515}
   chargeSlider: {fileID: 6611829137784352424}
   chargeFillImage: {fileID: 1526371233872841963}
   depletedTint: {r: 0.45, g: 0.45, b: 0.45, a: 1}
+  greaterShrineScaleMultiplier: 1.5
   debugChargeNormalized: 0
 --- !u!1 &1458008533234476409
 GameObject:

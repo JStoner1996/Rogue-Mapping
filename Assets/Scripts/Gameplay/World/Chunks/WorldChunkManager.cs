@@ -33,6 +33,7 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
 
     [Header("Chunk Content")]
     [SerializeField, Range(0f, 1f)] private float shrineSpawnChance = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float greaterShrineChance = 0.05f;
     [SerializeField, Min(0)] private int shrineEdgePaddingTiles = 4;
 
     private readonly Dictionary<ChunkCoordinate, ChunkView> activeChunks = new Dictionary<ChunkCoordinate, ChunkView>();
@@ -171,6 +172,7 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
             chunkSizeTiles,
             tileSize,
             GetEffectiveShrineSpawnChance(),
+            GetEffectiveGreaterShrineChance(),
             shrineEdgePaddingTiles,
             GetShrineDefinitions());
     }
@@ -183,7 +185,14 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
     {
         EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
         float quantityModifier = summary?.GetEntry(EquipmentStatType.ShrineQuantity)?.percentValue ?? 0f;
-        return Mathf.Clamp01(shrineSpawnChance * Mathf.Max(0f, 1f + quantityModifier));
+        float atlasModifier = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineChancePercent) / 100f;
+        return Mathf.Clamp01(shrineSpawnChance * Mathf.Max(0f, 1f + quantityModifier + atlasModifier));
+    }
+
+    private float GetEffectiveGreaterShrineChance()
+    {
+        float atlasModifier = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.GreaterShrineChancePercent) / 100f;
+        return Mathf.Clamp01(greaterShrineChance * Mathf.Max(0f, 1f + atlasModifier));
     }
 
     private bool TryGetPlayerTransform(out Transform player)
@@ -220,6 +229,49 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
         return new Vector2(
             Random.Range(origin.x + padding, origin.x + chunkWorldSize - padding),
             Random.Range(origin.y + padding, origin.y + chunkWorldSize - padding));
+    }
+
+    public ShrineDefinition GetRandomShrineDefinition(ShrineDefinition excludedDefinition = null)
+    {
+        IReadOnlyList<ShrineDefinition> definitions = GetShrineDefinitions();
+        if (definitions == null || definitions.Count == 0)
+        {
+            return null;
+        }
+
+        List<ShrineDefinition> validDefinitions = new List<ShrineDefinition>();
+        for (int i = 0; i < definitions.Count; i++)
+        {
+            ShrineDefinition definition = definitions[i];
+            if (definition != null && definition != excludedDefinition)
+            {
+                validDefinitions.Add(definition);
+            }
+        }
+
+        if (validDefinitions.Count == 0 && excludedDefinition != null)
+        {
+            return excludedDefinition;
+        }
+
+        return validDefinitions.Count == 0
+            ? null
+            : validDefinitions[Random.Range(0, validDefinitions.Count)];
+    }
+
+    public bool TrySpawnShrineAt(Vector3 worldPosition)
+    {
+        ShrineObjective shrinePrefab = GetThemeValue(theme => theme.HasShrineContent(), theme => theme.ShrinePrefab, fallbackShrinePrefab);
+        ShrineDefinition shrineDefinition = GetRandomShrineDefinition();
+        if (shrinePrefab == null || shrineDefinition == null)
+        {
+            return false;
+        }
+
+        Transform parent = chunkRoot != null ? chunkRoot : transform;
+        ShrineObjective shrine = Instantiate(shrinePrefab, worldPosition, Quaternion.identity, parent);
+        shrine.Configure(shrineDefinition, Random.value <= GetEffectiveGreaterShrineChance());
+        return true;
     }
 
     private T GetThemeValue<T>(

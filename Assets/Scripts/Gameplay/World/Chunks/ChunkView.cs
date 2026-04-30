@@ -80,7 +80,7 @@ public class ChunkView : MonoBehaviour
         Transform parent = objectsRoot != null ? objectsRoot : transform;
         spawnedShrine = Instantiate(shrinePrefab, parent);
         spawnedShrine.transform.localPosition = chunkData.ShrineLocalPosition;
-        spawnedShrine.Configure(chunkData.ShrineDefinition);
+        spawnedShrine.Configure(chunkData.ShrineDefinition, chunkData.IsGreaterShrine);
         spawnedShrine.Activated += HandleShrineActivated;
     }
 

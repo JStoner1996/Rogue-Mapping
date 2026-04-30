@@ -12,7 +12,10 @@ public class SpawnerModifierShrineEffectDefinition : ShrineEffectDefinition
     {
         if (shrine != null)
         {
-            shrine.ApplySpawnerModifier(modifierType, modifierPercent / 100f, durationSeconds);
+            shrine.ApplySpawnerModifier(
+                modifierType,
+                shrine.ScaleEffectValue(modifierPercent / 100f),
+                shrine.ScaleDuration(durationSeconds));
         }
     }
 }

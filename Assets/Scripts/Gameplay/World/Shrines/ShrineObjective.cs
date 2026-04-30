@@ -12,32 +12,44 @@ public class ShrineObjective : MonoBehaviour
 
     [Header("Visual References")]
     [SerializeField] private SpriteRenderer shrineRenderer;
+    [SerializeField] private Transform activationRadiusVisualRoot;
     [SerializeField] private GameObject chargeIndicatorRoot;
     [SerializeField] private Slider chargeSlider;
     [SerializeField] private Image chargeFillImage;
 
     [Header("Visual State")]
     [SerializeField] private Color depletedTint = new Color(0.45f, 0.45f, 0.45f, 1f);
+    [SerializeField, Min(1f)] private float greaterShrineScaleMultiplier = 1.5f;
 
     [Header("Debug")]
     [SerializeField, Range(0f, 1f)] private float debugChargeNormalized;
 
     private EnemySpawner enemySpawner;
     private Collider2D triggerCollider;
+    private Vector3 baseShrineVisualScale;
+    private Vector3 baseActivationRadiusVisualScale;
+    private float baseCircleRadius;
+    private Vector2 baseBoxSize;
+    private Vector2 baseCapsuleSize;
     private bool playerInside;
     private bool activated;
+    private bool isGreaterShrine;
     private float currentCharge;
 
     public ShrineDefinition Definition => shrineDefinition;
     public float ChargeNormalized => shrineDefinition == null ? 0f : Mathf.Clamp01(currentCharge / shrineDefinition.ChargeDuration);
     public bool IsActivated => activated;
+    public bool IsGreaterShrine => isGreaterShrine;
 
-    public void Configure(ShrineDefinition definition)
+    public void Configure(ShrineDefinition definition, bool greaterShrine = false)
     {
         shrineDefinition = definition;
+        isGreaterShrine = greaterShrine;
         activated = false;
         currentCharge = 0f;
         ApplyDefinitionVisuals();
+        ApplyScaleVisuals();
+        ApplyActivationRadius();
         RefreshChargeVisuals();
     }
 
@@ -45,8 +57,11 @@ public class ShrineObjective : MonoBehaviour
     {
         triggerCollider = GetComponent<Collider2D>();
         enemySpawner = FindAnyObjectByType<EnemySpawner>();
+        CacheBaseValues();
         ConfigureTrigger();
         ApplyDefinitionVisuals();
+        ApplyScaleVisuals();
+        ApplyActivationRadius();
         RefreshChargeVisuals();
     }
 
@@ -111,6 +126,29 @@ public class ShrineObjective : MonoBehaviour
         }
 
         spawner.AddRuntimeModifier(modifierType, additiveValue, durationSeconds);
+        ShrineAtlasRuntime.RegisterActiveShrineBuff(durationSeconds);
+    }
+
+    public float GetEffectMultiplier()
+    {
+        float atlasMultiplier = 1f + MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineEffectPercent) / 100f;
+        float greaterMultiplier = isGreaterShrine ? 2f : 1f;
+        return Mathf.Max(0f, atlasMultiplier) * greaterMultiplier;
+    }
+
+    public float GetDurationMultiplier()
+    {
+        float atlasMultiplier = 1f + MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineDurationPercent) / 100f;
+        return Mathf.Max(0f, atlasMultiplier);
+    }
+
+    public float ScaleEffectValue(float value) => value * GetEffectMultiplier();
+
+    public float ScaleDuration(float durationSeconds) => durationSeconds * GetDurationMultiplier();
+
+    public int ScaleEffectCount(int count)
+    {
+        return Mathf.Max(1, Mathf.RoundToInt(count * GetEffectMultiplier()));
     }
 
     // Charge rises while the player is inside and drains when they step out.
@@ -135,10 +173,40 @@ public class ShrineObjective : MonoBehaviour
         activated = true;
         currentCharge = shrineDefinition.ChargeDuration;
         shrineDefinition.Effect?.Activate(this);
+        ActivateAdditionalShrineEffects();
         Activated?.Invoke(this);
         PlayCompletionSound();
         ApplyActivatedVisuals();
         RefreshChargeVisuals();
+    }
+
+    private void ActivateAdditionalShrineEffects()
+    {
+        int additionalEffectCount = Mathf.Max(
+            0,
+            Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.AdditionalShrineEffects)));
+
+        if (additionalEffectCount <= 0)
+        {
+            return;
+        }
+
+        WorldChunkManager chunkManager = WorldChunkManager.Instance ?? FindAnyObjectByType<WorldChunkManager>();
+        if (chunkManager == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < additionalEffectCount; i++)
+        {
+            ShrineDefinition additionalDefinition = chunkManager.GetRandomShrineDefinition(shrineDefinition);
+            if (additionalDefinition?.Effect == null)
+            {
+                continue;
+            }
+
+            additionalDefinition.Effect.Activate(this);
+        }
     }
 
     private float GetDischargeRate()
@@ -171,6 +239,29 @@ public class ShrineObjective : MonoBehaviour
         triggerCollider.isTrigger = true;
     }
 
+    private void CacheBaseValues()
+    {
+        baseShrineVisualScale = shrineRenderer != null ? shrineRenderer.transform.localScale : Vector3.one;
+        baseActivationRadiusVisualScale = activationRadiusVisualRoot != null ? activationRadiusVisualRoot.localScale : Vector3.one;
+
+        if (triggerCollider is CircleCollider2D circleCollider)
+        {
+            baseCircleRadius = circleCollider.radius;
+            return;
+        }
+
+        if (triggerCollider is BoxCollider2D boxCollider)
+        {
+            baseBoxSize = boxCollider.size;
+            return;
+        }
+
+        if (triggerCollider is CapsuleCollider2D capsuleCollider)
+        {
+            baseCapsuleSize = capsuleCollider.size;
+        }
+    }
+
     private void ApplyDefinitionVisuals()
     {
         if (shrineDefinition == null)
@@ -191,6 +282,47 @@ public class ShrineObjective : MonoBehaviour
         if (chargeFillImage != null)
         {
             chargeFillImage.color = shrineDefinition.ShrineTint;
+        }
+    }
+
+    private void ApplyScaleVisuals()
+    {
+        if (shrineRenderer != null)
+        {
+            shrineRenderer.transform.localScale = baseShrineVisualScale * (isGreaterShrine ? greaterShrineScaleMultiplier : 1f);
+        }
+    }
+
+    private void ApplyActivationRadius()
+    {
+        if (triggerCollider == null)
+        {
+            return;
+        }
+
+        float atlasMultiplier = 1f + MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineActivationRadiusPercent) / 100f;
+        float radiusMultiplier = Mathf.Max(0f, atlasMultiplier);
+
+        if (activationRadiusVisualRoot != null)
+        {
+            activationRadiusVisualRoot.localScale = baseActivationRadiusVisualScale * radiusMultiplier;
+        }
+
+        if (triggerCollider is CircleCollider2D circleCollider)
+        {
+            circleCollider.radius = baseCircleRadius * radiusMultiplier;
+            return;
+        }
+
+        if (triggerCollider is BoxCollider2D boxCollider)
+        {
+            boxCollider.size = baseBoxSize * radiusMultiplier;
+            return;
+        }
+
+        if (triggerCollider is CapsuleCollider2D capsuleCollider)
+        {
+            capsuleCollider.size = baseCapsuleSize * radiusMultiplier;
         }
     }
 
@@ -236,5 +368,39 @@ public class ShrineObjective : MonoBehaviour
     {
         RefreshDebugCharge();
         RefreshChargeVisuals();
+    }
+}
+
+public static class ShrineAtlasRuntime
+{
+    private static float activeShrineBuffUntil;
+
+    public static bool HasActiveShrineBuff => Time.time < activeShrineBuffUntil;
+
+    public static void RegisterActiveShrineBuff(float durationSeconds)
+    {
+        if (durationSeconds <= 0f)
+        {
+            return;
+        }
+
+        activeShrineBuffUntil = Mathf.Max(activeShrineBuffUntil, Time.time + durationSeconds);
+    }
+
+    public static void TrySpawnShrineFromEnemyKill(Vector3 position)
+    {
+        if (!HasActiveShrineBuff)
+        {
+            return;
+        }
+
+        float chance = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineBuffKillSpawnChancePercent) / 100f;
+        if (chance <= 0f || Random.value > Mathf.Clamp01(chance))
+        {
+            return;
+        }
+
+        WorldChunkManager chunkManager = WorldChunkManager.Instance ?? Object.FindAnyObjectByType<WorldChunkManager>();
+        chunkManager?.TrySpawnShrineAt(position);
     }
 }

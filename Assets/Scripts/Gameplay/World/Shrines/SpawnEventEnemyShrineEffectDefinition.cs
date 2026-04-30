@@ -11,7 +11,7 @@ public class SpawnEventEnemyShrineEffectDefinition : ShrineEffectDefinition
     {
         if (shrine != null)
         {
-            shrine.TrySpawnEventEnemies(enemyArchetype, spawnCount);
+            shrine.TrySpawnEventEnemies(enemyArchetype, shrine.ScaleEffectCount(spawnCount));
         }
     }
 }

@@ -191,6 +191,7 @@ public class Enemy : MonoBehaviour
             archetypeDefinition,
             powerUpLootTable,
             metaLootTable);
+        ShrineAtlasRuntime.TrySpawnShrineFromEnemyKill(transform.position);
         EnemyKilled?.Invoke(this);
         PlayDeathEffects();
         ReturnToPool();

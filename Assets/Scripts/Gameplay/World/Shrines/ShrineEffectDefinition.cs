@@ -4,4 +4,9 @@ using UnityEngine;
 public abstract class ShrineEffectDefinition : ScriptableObject
 {
     public abstract void Activate(ShrineObjective shrine);
+
+    public virtual void Activate(ShrineObjective shrine, float effectMultiplier, float durationMultiplier)
+    {
+        Activate(shrine);
+    }
 }
