@@ -211,8 +211,13 @@ public class EnemySpawner : MonoBehaviour
                 break;
             }
 
-            SpawnPack(eventEntry, BuildSpawnContext(EnemyRarity.Normal), spawnOriginOverride);
+            SpawnPack(eventEntry, BuildSpawnContext(archetype, EnemyRarity.Normal), spawnOriginOverride);
             spawnedCount++;
+
+            if (archetype == EnemyArchetype.Miniboss && Random.value < GetAtlasPercentModifier(AtlasEffectType.DoubleMiniBossSpawnChancePercent))
+            {
+                SpawnPack(eventEntry, BuildSpawnContext(archetype, EnemyRarity.Normal), spawnOriginOverride);
+            }
         }
 
         return spawnedCount == count;
@@ -316,14 +321,18 @@ public class EnemySpawner : MonoBehaviour
             rarity = rarity,
             healthMultiplier = rarityProfile.healthMultiplier
                 * GetEffectiveModifier(EnemySpawnerModifierType.EnemyHealth)
-                * GetArchetypeHealthMultiplier(archetype),
+                * GetArchetypeHealthMultiplier(archetype)
+                * GetBossHealthMultiplier(archetype),
             damageMultiplier = rarityProfile.damageMultiplier
                 * GetEffectiveModifier(EnemySpawnerModifierType.EnemyDamage)
-                * GetArchetypeDamageMultiplier(archetype),
+                * GetArchetypeDamageMultiplier(archetype)
+                * GetBossDamageMultiplier(archetype),
             moveSpeedMultiplier = rarityProfile.moveSpeedMultiplier
                 * GetEffectiveModifier(EnemySpawnerModifierType.EnemyMoveSpeed)
                 * GetArchetypeMoveSpeedMultiplier(archetype),
-            experienceMultiplier = rarityProfile.experienceMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.ExperienceWorth),
+            experienceMultiplier = rarityProfile.experienceMultiplier
+                * GetEffectiveModifier(EnemySpawnerModifierType.ExperienceWorth)
+                * GetBossExperienceMultiplier(archetype),
             dropChanceMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.DropChance),
         };
     }
@@ -512,6 +521,24 @@ public class EnemySpawner : MonoBehaviour
     private static float GetArchetypeMoveSpeedMultiplier(EnemyArchetype archetype) =>
         archetype == EnemyArchetype.Skirmisher
             ? 1f + GetAtlasPercentModifier(AtlasEffectType.SkirmisherEnemyMoveSpeedPercent)
+            : 1f;
+
+    private static bool IsBossArchetype(EnemyArchetype archetype) =>
+        archetype == EnemyArchetype.Boss || archetype == EnemyArchetype.Miniboss;
+
+    private static float GetBossExperienceMultiplier(EnemyArchetype archetype) =>
+        IsBossArchetype(archetype)
+            ? 1f + GetAtlasPercentModifier(AtlasEffectType.BossExperiencePercent)
+            : 1f;
+
+    private static float GetBossHealthMultiplier(EnemyArchetype archetype) =>
+        IsBossArchetype(archetype)
+            ? 1f + GetAtlasPercentModifier(AtlasEffectType.BossLifePercent)
+            : 1f;
+
+    private static float GetBossDamageMultiplier(EnemyArchetype archetype) =>
+        IsBossArchetype(archetype)
+            ? 1f + GetAtlasPercentModifier(AtlasEffectType.BossDamagePercent)
             : 1f;
 
     private Vector2? GetAmbientPackSpawnOrigin()

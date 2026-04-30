@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1001
   displayName: Enemy Quality
-  description: '+15% increased Enemy Quality '
+  description: '+10% increased Enemy Quality '
   category: 0
   nodeSize: 0
   isRootNode: 0
@@ -23,4 +23,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a6a60e6a6b262ff46af384b38884cb3b, type: 2}
   effects:
   - effectType: 1
-    value: 15
+    value: 10

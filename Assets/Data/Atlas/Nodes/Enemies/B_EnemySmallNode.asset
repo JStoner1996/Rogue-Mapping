@@ -23,4 +23,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1f479564313dfc44c9bd14ac38c0b6ff, type: 2}
   effects:
   - effectType: 0
-    value: 10
+    value: 15

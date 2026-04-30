@@ -225,7 +225,13 @@ public class GameManager : SingletonBehaviour<GameManager>
         return spawner != null;
     }
 
-    private int GetFinalBossCount() => 1;
+    private int GetFinalBossCount()
+    {
+        int additionalBosses = Mathf.Max(
+            0,
+            Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.AdditionalFinalBosses)));
+        return 1 + additionalBosses;
+    }
 
     private static void SetPanelPausedState(GameObject panel, bool isVisible)
     {

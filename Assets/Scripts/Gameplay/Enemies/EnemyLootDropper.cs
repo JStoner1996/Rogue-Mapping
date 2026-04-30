@@ -63,13 +63,21 @@ public static class EnemyLootDropper
             return;
         }
 
+        int dropCount = GetBossMetaDropCount(lootItem, archetypeDefinition);
+
         if (lootItem.type == MetaLootType.Map)
         {
-            SpawnMapLoot(position, lootItem);
+            for (int i = 0; i < dropCount; i++)
+            {
+                SpawnMapLoot(position, lootItem);
+            }
             return;
         }
 
-        SpawnEquipmentLoot(position, lootItem, archetypeDefinition);
+        for (int i = 0; i < dropCount; i++)
+        {
+            SpawnEquipmentLoot(position, lootItem, archetypeDefinition);
+        }
     }
 
     private static void SpawnMapLoot(Vector3 position, MetaLootItem lootItem)
@@ -133,6 +141,11 @@ public static class EnemyLootDropper
         EnemyRarity enemyRarity,
         EnemyArchetypeDefinition archetypeDefinition)
     {
+        if (BossesCannotDropMetaLoot(lootItem, archetypeDefinition))
+        {
+            return 0f;
+        }
+
         if (lootItem?.type == MetaLootType.Equipment
             && IsArchetype(archetypeDefinition, EnemyArchetype.Elite)
             && MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.EliteEnemiesAlwaysDropEquipment) > 0f)
@@ -210,6 +223,41 @@ public static class EnemyLootDropper
 
     private static bool IsArchetype(EnemyArchetypeDefinition definition, EnemyArchetype archetype) =>
         definition != null && definition.Archetype == archetype;
+
+    private static bool IsBossArchetype(EnemyArchetypeDefinition definition) =>
+        definition != null
+        && (definition.Archetype == EnemyArchetype.Boss || definition.Archetype == EnemyArchetype.Miniboss);
+
+    private static bool BossesCannotDropMetaLoot(MetaLootItem lootItem, EnemyArchetypeDefinition archetypeDefinition)
+    {
+        return IsBossArchetype(archetypeDefinition)
+            && lootItem != null
+            && (lootItem.type == MetaLootType.Map || lootItem.type == MetaLootType.Equipment)
+            && MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.BossesDropNoEquipmentOrMaps) > 0f;
+    }
+
+    private static int GetBossMetaDropCount(MetaLootItem lootItem, EnemyArchetypeDefinition archetypeDefinition)
+    {
+        if (!IsBossArchetype(archetypeDefinition) || lootItem == null)
+        {
+            return 1;
+        }
+
+        AtlasEffectType? effectType = lootItem.type switch
+        {
+            MetaLootType.Map => AtlasEffectType.BossMapDropCount,
+            MetaLootType.Equipment => AtlasEffectType.BossEquipmentDropCount,
+            _ => null
+        };
+
+        if (!effectType.HasValue)
+        {
+            return 1;
+        }
+
+        int atlasDropCount = Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(effectType.Value));
+        return Mathf.Max(1, atlasDropCount);
+    }
 
     private static void ProcessDrops<TLoot>(
         IReadOnlyList<TLoot> lootTable,
