@@ -190,7 +190,7 @@ public static class EnemyLootDropper
 
         AtlasEffectType effectType = lootItem.type == MetaLootType.Map
             ? AtlasEffectType.MapDropChancePercent
-            : AtlasEffectType.ItemDropChancePercent;
+            : AtlasEffectType.EquipmentDropChancePercent;
 
         float atlasIncrease = GetAtlasPercent(effectType);
 

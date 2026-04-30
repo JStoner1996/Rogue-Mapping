@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1303
   displayName: Lustrous Finds
-  description: +5% increased Item Rarity
+  description: +5% increased Equipment Rarity
   category: 4
   nodeSize: 0
   isRootNode: 0

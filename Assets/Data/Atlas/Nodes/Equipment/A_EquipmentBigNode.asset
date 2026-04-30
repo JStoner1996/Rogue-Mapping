@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AtlasNodeDefinition
   nodeId: 1302
   displayName: Overflowing Cache
-  description: +40% increased Item Quantity
+  description: +40% increased Equipment Drop Chance
   category: 4
   nodeSize: 1
   isRootNode: 0
@@ -22,5 +22,5 @@ MonoBehaviour:
   prerequisiteNodes:
   - {fileID: 11400000, guid: 3d0954e8dbca4e7abf964cf7f7dc1301, type: 2}
   effects:
-  - effectType: 37
+  - effectType: 16
     value: 40

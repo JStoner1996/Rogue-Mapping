@@ -31,7 +31,7 @@ public static class EquipmentAtlasGenerationRequestBuilder
         uncommonWeight = settings != null ? settings.UncommonWeight : EquipmentGenerator.DefaultUncommonWeight;
         rareWeight = settings != null ? settings.RareWeight : EquipmentGenerator.DefaultRareWeight;
 
-        float higherRarityMultiplier = GetAtlasMultiplier(AtlasEffectType.ItemRarityPercent);
+        float higherRarityMultiplier = GetAtlasMultiplier(AtlasEffectType.EquipmentRarityPercent);
         uncommonWeight *= higherRarityMultiplier;
         rareWeight *= higherRarityMultiplier;
     }
