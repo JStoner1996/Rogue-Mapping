@@ -17,9 +17,7 @@ public static class EquipmentAtlasGenerationRequestBuilder
         request.forceArmorImplicitPercentArmorPrefix = HasAtlasEffect(AtlasEffectType.ArmorImplicitArmorAlwaysRollPercentArmorPrefix);
         request.forceEvasionImplicitPercentEvasionPrefix = HasAtlasEffect(AtlasEffectType.ArmorImplicitEvasionAlwaysRollPercentEvasionPrefix);
         request.forceBarrierImplicitPercentBarrierPrefix = HasAtlasEffect(AtlasEffectType.ArmorImplicitBarrierAlwaysRollPercentBarrierPrefix);
-        request.additionalAffixesForRareItems = Mathf.Max(
-            0,
-            Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.RareItemsAdditionalAffixes)));
+        request.additionalAffixesForRareItems = GetAtlasCount(AtlasEffectType.RareItemsAdditionalAffixes);
         return request;
     }
 
@@ -43,4 +41,7 @@ public static class EquipmentAtlasGenerationRequestBuilder
 
     private static float GetAtlasMultiplier(AtlasEffectType effectType) =>
         Mathf.Max(0f, 1f + (MetaProgressionService.GetAtlasEffectValue(effectType) / 100f));
+
+    private static int GetAtlasCount(AtlasEffectType effectType) =>
+        Mathf.Max(0, Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(effectType)));
 }

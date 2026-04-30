@@ -26,6 +26,7 @@ public class ShrineObjective : MonoBehaviour
 
     private EnemySpawner enemySpawner;
     private Collider2D triggerCollider;
+    private WorldChunkManager worldChunkManager;
     private Vector3 baseShrineVisualScale;
     private Vector3 baseActivationRadiusVisualScale;
     private float baseCircleRadius;
@@ -47,10 +48,7 @@ public class ShrineObjective : MonoBehaviour
         isGreaterShrine = greaterShrine;
         activated = false;
         currentCharge = 0f;
-        ApplyDefinitionVisuals();
-        ApplyScaleVisuals();
-        ApplyActivationRadius();
-        RefreshChargeVisuals();
+        RefreshVisualState();
     }
 
     void Awake()
@@ -59,10 +57,7 @@ public class ShrineObjective : MonoBehaviour
         enemySpawner = FindAnyObjectByType<EnemySpawner>();
         CacheBaseValues();
         ConfigureTrigger();
-        ApplyDefinitionVisuals();
-        ApplyScaleVisuals();
-        ApplyActivationRadius();
-        RefreshChargeVisuals();
+        RefreshVisualState();
     }
 
     void OnValidate()
@@ -131,25 +126,17 @@ public class ShrineObjective : MonoBehaviour
 
     public float GetEffectMultiplier()
     {
-        float atlasMultiplier = 1f + MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineEffectPercent) / 100f;
         float greaterMultiplier = isGreaterShrine ? 2f : 1f;
-        return Mathf.Max(0f, atlasMultiplier) * greaterMultiplier;
+        return ShrineAtlasRuntime.GetPercentMultiplier(AtlasEffectType.ShrineEffectPercent) * greaterMultiplier;
     }
 
-    public float GetDurationMultiplier()
-    {
-        float atlasMultiplier = 1f + MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineDurationPercent) / 100f;
-        return Mathf.Max(0f, atlasMultiplier);
-    }
+    public float GetDurationMultiplier() => ShrineAtlasRuntime.GetPercentMultiplier(AtlasEffectType.ShrineDurationPercent);
 
     public float ScaleEffectValue(float value) => value * GetEffectMultiplier();
 
     public float ScaleDuration(float durationSeconds) => durationSeconds * GetDurationMultiplier();
 
-    public int ScaleEffectCount(int count)
-    {
-        return Mathf.Max(1, Mathf.RoundToInt(count * GetEffectMultiplier()));
-    }
+    public int ScaleEffectCount(int count) => Mathf.Max(1, Mathf.RoundToInt(count * GetEffectMultiplier()));
 
     // Charge rises while the player is inside and drains when they step out.
     private void UpdateCharge()
@@ -182,17 +169,13 @@ public class ShrineObjective : MonoBehaviour
 
     private void ActivateAdditionalShrineEffects()
     {
-        int additionalEffectCount = Mathf.Max(
-            0,
-            Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.AdditionalShrineEffects)));
-
+        int additionalEffectCount = ShrineAtlasRuntime.GetFlatCount(AtlasEffectType.AdditionalShrineEffects);
         if (additionalEffectCount <= 0)
         {
             return;
         }
 
-        WorldChunkManager chunkManager = WorldChunkManager.Instance ?? FindAnyObjectByType<WorldChunkManager>();
-        if (chunkManager == null)
+        if (!TryGetWorldChunkManager(out WorldChunkManager chunkManager))
         {
             return;
         }
@@ -209,34 +192,15 @@ public class ShrineObjective : MonoBehaviour
         }
     }
 
-    private float GetDischargeRate()
-    {
-        if (shrineDefinition == null)
-        {
-            return 0f;
-        }
+    private float GetDischargeRate() =>
+        shrineDefinition == null ? 0f : shrineDefinition.ChargeDuration / shrineDefinition.DischargeDuration;
 
-        return shrineDefinition.ChargeDuration / shrineDefinition.DischargeDuration;
-    }
-
-    private bool IsPlayerCollider(Collider2D other)
-    {
-        if (other == null)
-        {
-            return false;
-        }
-
-        return other.CompareTag("Player") || other.GetComponent<PlayerController>() != null;
-    }
+    private bool IsPlayerCollider(Collider2D other) =>
+        other != null && (other.CompareTag("Player") || other.GetComponent<PlayerController>() != null);
 
     private void ConfigureTrigger()
     {
-        if (triggerCollider == null)
-        {
-            return;
-        }
-
-        triggerCollider.isTrigger = true;
+        if (triggerCollider != null) triggerCollider.isTrigger = true;
     }
 
     private void CacheBaseValues()
@@ -287,10 +251,7 @@ public class ShrineObjective : MonoBehaviour
 
     private void ApplyScaleVisuals()
     {
-        if (shrineRenderer != null)
-        {
-            shrineRenderer.transform.localScale = baseShrineVisualScale * (isGreaterShrine ? greaterShrineScaleMultiplier : 1f);
-        }
+        if (shrineRenderer != null) shrineRenderer.transform.localScale = baseShrineVisualScale * GetVisualScaleMultiplier();
     }
 
     private void ApplyActivationRadius()
@@ -300,8 +261,7 @@ public class ShrineObjective : MonoBehaviour
             return;
         }
 
-        float atlasMultiplier = 1f + MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineActivationRadiusPercent) / 100f;
-        float radiusMultiplier = Mathf.Max(0f, atlasMultiplier);
+        float radiusMultiplier = ShrineAtlasRuntime.GetPercentMultiplier(AtlasEffectType.ShrineActivationRadiusPercent);
 
         if (activationRadiusVisualRoot != null)
         {
@@ -343,64 +303,40 @@ public class ShrineObjective : MonoBehaviour
 
     private void RefreshDebugCharge() => debugChargeNormalized = ChargeNormalized;
 
+    private void RefreshVisualState()
+    {
+        ApplyDefinitionVisuals();
+        ApplyScaleVisuals();
+        ApplyActivationRadius();
+        RefreshChargeVisuals();
+    }
+
+    private float GetVisualScaleMultiplier() => isGreaterShrine ? greaterShrineScaleMultiplier : 1f;
+
     private void ApplyActivatedVisuals()
     {
-        if (shrineRenderer != null)
-        {
-            shrineRenderer.color = depletedTint;
-        }
+        if (shrineRenderer != null) shrineRenderer.color = depletedTint;
     }
 
     private void PlayCompletionSound() => AudioManager.Instance?.Play(SoundType.ShrineComplete);
 
     private bool TryGetEnemySpawner(out EnemySpawner spawner)
     {
-        if (enemySpawner == null)
-        {
-            enemySpawner = FindAnyObjectByType<EnemySpawner>();
-        }
-
+        enemySpawner ??= FindAnyObjectByType<EnemySpawner>();
         spawner = enemySpawner;
         return spawner != null;
+    }
+
+    private bool TryGetWorldChunkManager(out WorldChunkManager chunkManager)
+    {
+        worldChunkManager ??= WorldChunkManager.Instance ?? FindAnyObjectByType<WorldChunkManager>();
+        chunkManager = worldChunkManager;
+        return chunkManager != null;
     }
 
     private void RefreshChargeState()
     {
         RefreshDebugCharge();
         RefreshChargeVisuals();
-    }
-}
-
-public static class ShrineAtlasRuntime
-{
-    private static float activeShrineBuffUntil;
-
-    public static bool HasActiveShrineBuff => Time.time < activeShrineBuffUntil;
-
-    public static void RegisterActiveShrineBuff(float durationSeconds)
-    {
-        if (durationSeconds <= 0f)
-        {
-            return;
-        }
-
-        activeShrineBuffUntil = Mathf.Max(activeShrineBuffUntil, Time.time + durationSeconds);
-    }
-
-    public static void TrySpawnShrineFromEnemyKill(Vector3 position)
-    {
-        if (!HasActiveShrineBuff)
-        {
-            return;
-        }
-
-        float chance = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.ShrineBuffKillSpawnChancePercent) / 100f;
-        if (chance <= 0f || Random.value > Mathf.Clamp01(chance))
-        {
-            return;
-        }
-
-        WorldChunkManager chunkManager = WorldChunkManager.Instance ?? Object.FindAnyObjectByType<WorldChunkManager>();
-        chunkManager?.TrySpawnShrineAt(position);
     }
 }

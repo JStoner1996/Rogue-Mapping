@@ -148,7 +148,7 @@ public static class EnemyLootDropper
 
         if (lootItem?.type == MetaLootType.Equipment
             && IsArchetype(archetypeDefinition, EnemyArchetype.Elite)
-            && MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.EliteEnemiesAlwaysDropEquipment) > 0f)
+            && HasAtlasEffect(AtlasEffectType.EliteEnemiesAlwaysDropEquipment))
         {
             return 100f;
         }
@@ -192,18 +192,18 @@ public static class EnemyLootDropper
             ? AtlasEffectType.MapDropChancePercent
             : AtlasEffectType.ItemDropChancePercent;
 
-        float atlasIncrease = MetaProgressionService.GetAtlasEffectValue(effectType) / 100f;
+        float atlasIncrease = GetAtlasPercent(effectType);
 
         if (lootItem.type == MetaLootType.Map)
         {
             if (enemyRarity == EnemyRarity.Rare)
             {
-                atlasIncrease += MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.RareEnemyMapDropChancePercent) / 100f;
+                atlasIncrease += GetAtlasPercent(AtlasEffectType.RareEnemyMapDropChancePercent);
             }
 
             if (IsArchetype(archetypeDefinition, EnemyArchetype.Skirmisher))
             {
-                atlasIncrease += MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.SkirmisherMapDropChancePercent) / 100f;
+                atlasIncrease += GetAtlasPercent(AtlasEffectType.SkirmisherMapDropChancePercent);
             }
         }
 
@@ -215,7 +215,7 @@ public static class EnemyLootDropper
         EnemyArchetypeDefinition archetypeDefinition)
     {
         float atlasIncrease = IsArchetype(archetypeDefinition, EnemyArchetype.Tank)
-            ? MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.TankPowerupDropChancePercent) / 100f
+            ? GetAtlasPercent(AtlasEffectType.TankPowerupDropChancePercent)
             : 0f;
 
         return baseMultiplier * Mathf.Max(0f, 1f + atlasIncrease);
@@ -233,7 +233,7 @@ public static class EnemyLootDropper
         return IsBossArchetype(archetypeDefinition)
             && lootItem != null
             && (lootItem.type == MetaLootType.Map || lootItem.type == MetaLootType.Equipment)
-            && MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.BossesDropNoEquipmentOrMaps) > 0f;
+            && HasAtlasEffect(AtlasEffectType.BossesDropNoEquipmentOrMaps);
     }
 
     private static int GetBossMetaDropCount(MetaLootItem lootItem, EnemyArchetypeDefinition archetypeDefinition)
@@ -250,14 +250,17 @@ public static class EnemyLootDropper
             _ => null
         };
 
-        if (!effectType.HasValue)
-        {
-            return 1;
-        }
-
-        int atlasDropCount = Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(effectType.Value));
-        return Mathf.Max(1, atlasDropCount);
+        return effectType.HasValue ? Mathf.Max(1, GetAtlasCount(effectType.Value)) : 1;
     }
+
+    private static bool HasAtlasEffect(AtlasEffectType effectType) =>
+        MetaProgressionService.GetAtlasEffectValue(effectType) > 0f;
+
+    private static int GetAtlasCount(AtlasEffectType effectType) =>
+        Mathf.RoundToInt(MetaProgressionService.GetAtlasEffectValue(effectType));
+
+    private static float GetAtlasPercent(AtlasEffectType effectType) =>
+        MetaProgressionService.GetAtlasEffectValue(effectType) / 100f;
 
     private static void ProcessDrops<TLoot>(
         IReadOnlyList<TLoot> lootTable,

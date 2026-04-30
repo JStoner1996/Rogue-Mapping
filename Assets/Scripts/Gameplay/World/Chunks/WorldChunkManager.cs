@@ -5,6 +5,8 @@ using UnityEngine.Serialization;
 // Loads and unloads generated chunks around the player.
 public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
 {
+    private const int NoValidShrineIndex = -1;
+
     [Header("Scene References")]
     [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform chunkRoot;
@@ -189,11 +191,8 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
         return Mathf.Clamp01(shrineSpawnChance * Mathf.Max(0f, 1f + quantityModifier + atlasModifier));
     }
 
-    private float GetEffectiveGreaterShrineChance()
-    {
-        float atlasModifier = MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.GreaterShrineChancePercent) / 100f;
-        return Mathf.Clamp01(greaterShrineChance * Mathf.Max(0f, 1f + atlasModifier));
-    }
+    private float GetEffectiveGreaterShrineChance() =>
+        Mathf.Clamp01(greaterShrineChance * ShrineAtlasRuntime.GetPercentMultiplier(AtlasEffectType.GreaterShrineChancePercent));
 
     private bool TryGetPlayerTransform(out Transform player)
     {
@@ -234,34 +233,13 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
     public ShrineDefinition GetRandomShrineDefinition(ShrineDefinition excludedDefinition = null)
     {
         IReadOnlyList<ShrineDefinition> definitions = GetShrineDefinitions();
-        if (definitions == null || definitions.Count == 0)
-        {
-            return null;
-        }
-
-        List<ShrineDefinition> validDefinitions = new List<ShrineDefinition>();
-        for (int i = 0; i < definitions.Count; i++)
-        {
-            ShrineDefinition definition = definitions[i];
-            if (definition != null && definition != excludedDefinition)
-            {
-                validDefinitions.Add(definition);
-            }
-        }
-
-        if (validDefinitions.Count == 0 && excludedDefinition != null)
-        {
-            return excludedDefinition;
-        }
-
-        return validDefinitions.Count == 0
-            ? null
-            : validDefinitions[Random.Range(0, validDefinitions.Count)];
+        int selectedIndex = RollShrineDefinitionIndex(definitions, excludedDefinition);
+        return selectedIndex == NoValidShrineIndex ? null : definitions[selectedIndex];
     }
 
     public bool TrySpawnShrineAt(Vector3 worldPosition)
     {
-        ShrineObjective shrinePrefab = GetThemeValue(theme => theme.HasShrineContent(), theme => theme.ShrinePrefab, fallbackShrinePrefab);
+        ShrineObjective shrinePrefab = GetShrinePrefab();
         ShrineDefinition shrineDefinition = GetRandomShrineDefinition();
         if (shrinePrefab == null || shrineDefinition == null)
         {
@@ -272,6 +250,40 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
         ShrineObjective shrine = Instantiate(shrinePrefab, worldPosition, Quaternion.identity, parent);
         shrine.Configure(shrineDefinition, Random.value <= GetEffectiveGreaterShrineChance());
         return true;
+    }
+
+    private ShrineObjective GetShrinePrefab() =>
+        GetThemeValue(theme => theme.HasShrineContent(), theme => theme.ShrinePrefab, fallbackShrinePrefab);
+
+    private static int RollShrineDefinitionIndex(
+        IReadOnlyList<ShrineDefinition> definitions,
+        ShrineDefinition excludedDefinition)
+    {
+        int selectedIndex = NoValidShrineIndex;
+        int fallbackIndex = NoValidShrineIndex;
+        int validCount = 0;
+
+        for (int i = 0; definitions != null && i < definitions.Count; i++)
+        {
+            if (definitions[i] == null)
+            {
+                continue;
+            }
+
+            if (definitions[i] == excludedDefinition)
+            {
+                fallbackIndex = i;
+                continue;
+            }
+
+            validCount++;
+            if (Random.Range(0, validCount) == 0)
+            {
+                selectedIndex = i;
+            }
+        }
+
+        return selectedIndex != NoValidShrineIndex ? selectedIndex : fallbackIndex;
     }
 
     private T GetThemeValue<T>(
