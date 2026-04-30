@@ -34,7 +34,7 @@ public class WorldChunkManager : SingletonBehaviour<WorldChunkManager>
     [SerializeField, Min(0)] private int ambientEnemyDespawnChunkDistance = 3;
 
     [Header("Chunk Content")]
-    [SerializeField, Range(0f, 1f)] private float shrineSpawnChance = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float shrineSpawnChance = 0.1f;
     [SerializeField, Range(0f, 1f)] private float greaterShrineChance = 0.05f;
     [SerializeField, Min(0)] private int shrineEdgePaddingTiles = 4;
 
