@@ -91,6 +91,7 @@ public class ItemDetailsPanelUI : MonoBehaviour
 
         StringBuilder builder = new StringBuilder();
         builder.AppendLine($"Damage: {stats.damage}");
+        builder.AppendLine($"Critical Chance: {stats.criticalChance * 100f:F1}%");
         builder.AppendLine($"Attack Speed: {stats.attackSpeed}");
         builder.AppendLine($"Range: {stats.range}");
         builder.AppendLine($"Knockback: {stats.knockback}");

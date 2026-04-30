@@ -65,7 +65,7 @@ public class AreaWeaponAttack : MonoBehaviour
                     Vector2 direction = (enemy.transform.position - transform.position).normalized;
 
                     enemy.TakeDamage(
-                        stats.Damage,
+                        stats.RollDamage(),
                         direction,
                         stats.Knockback
                     );

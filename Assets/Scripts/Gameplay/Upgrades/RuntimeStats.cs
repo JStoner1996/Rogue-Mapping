@@ -3,10 +3,19 @@ using UnityEngine;
 [System.Serializable]
 public class RuntimeStats
 {
+    private const float BaseCriticalDamageMultiplier = 1.5f;
+    private const float MinimumCriticalDamageMultiplier = 1.25f;
+
     public float baseDamage;
     public float damageMultiplier = 0f;
     public float globalDamageMultiplier = 0f;
     public float Damage => baseDamage * (1f + damageMultiplier + globalDamageMultiplier);
+
+    public float baseCriticalChance;
+    public float globalCriticalChanceMultiplier = 0f;
+    public float globalCriticalDamageBonus = 0f;
+    public float CriticalChance => Mathf.Clamp01(baseCriticalChance * (1f + globalCriticalChanceMultiplier));
+    public float CriticalDamageMultiplier => Mathf.Max(MinimumCriticalDamageMultiplier, BaseCriticalDamageMultiplier + globalCriticalDamageBonus);
 
     public float baseAttackSpeed = 1f;
     public float attackSpeedMultiplier = 0f;
@@ -28,4 +37,11 @@ public class RuntimeStats
     public float projectileSpeed;
     public int bounceCount;
 
+    public DamageRoll RollDamage()
+    {
+        bool isCritical = Random.value <= CriticalChance;
+        float criticalMultiplier = CriticalDamageMultiplier;
+        float finalDamage = isCritical ? Damage * criticalMultiplier : Damage;
+        return new DamageRoll(finalDamage, isCritical, criticalMultiplier);
+    }
 }

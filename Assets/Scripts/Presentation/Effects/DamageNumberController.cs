@@ -14,6 +14,11 @@ public class DamageNumberController : SingletonBehaviour<DamageNumberController>
 
     public void CreateNumber(float value, Vector3 location)
     {
+        CreateNumber(new DamageRoll(value, isCritical: false, criticalDamageMultiplier: 1f), location);
+    }
+
+    public void CreateNumber(DamageRoll damageRoll, Vector3 location)
+    {
         if (prefab == null)
         {
             return;
@@ -21,6 +26,9 @@ public class DamageNumberController : SingletonBehaviour<DamageNumberController>
 
         DamageNumber damageNumber = Instantiate(prefab, location, transform.rotation, transform);
 
-        damageNumber.SetValue(Mathf.RoundToInt(value));
+        damageNumber.SetValue(
+            Mathf.RoundToInt(damageRoll.Damage),
+            damageRoll.IsCritical,
+            damageRoll.CriticalDamageMultiplier);
     }
 }

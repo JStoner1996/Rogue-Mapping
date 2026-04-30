@@ -136,9 +136,14 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(float damage, Vector2? hitDirection = null, float knockbackForce = 0f)
     {
-        currentHealth -= damage;
+        TakeDamage(new DamageRoll(damage, isCritical: false, criticalDamageMultiplier: 1f), hitDirection, knockbackForce);
+    }
 
-        DamageNumberController.Instance.CreateNumber(damage, transform.position);
+    public void TakeDamage(DamageRoll damageRoll, Vector2? hitDirection = null, float knockbackForce = 0f)
+    {
+        currentHealth -= damageRoll.Damage;
+
+        DamageNumberController.Instance.CreateNumber(damageRoll, transform.position);
         if (hitDirection.HasValue && knockbackForce > 0f)
         {
             ApplyKnockback(hitDirection.Value, knockbackForce);

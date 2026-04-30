@@ -23,6 +23,9 @@ public class WeaponStatsUI : MonoBehaviour
         if (allowed.Contains(StatType.Damage))
             desc += $"Damage: {stats.Damage:F2}\n";
 
+        desc += $"Critical Chance: {stats.CriticalChance * 100f:F1}%\n";
+        desc += $"Critical Damage: {stats.CriticalDamageMultiplier * 100f:F0}%\n";
+
         if (allowed.Contains(StatType.AttackSpeed))
             desc += $"Attack Speed: {stats.AttackSpeed:F2}\n";
 

@@ -11,4 +11,6 @@ public enum PlayerStatType
     AttackSpeed = 6,
     Range = 7,
     Knockback = 8,
+    CriticalChance = 11,
+    CriticalDamage = 12,
 }

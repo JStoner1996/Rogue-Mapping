@@ -26,7 +26,7 @@ public class ChainLightningAttack : ProjectileBase
         if (!hitEnemies.Contains(target))
         {
             hitEnemies.Add(target);
-            target.TakeDamage(stats.Damage);
+            target.TakeDamage(stats.RollDamage());
         }
 
         remainingBounces--;

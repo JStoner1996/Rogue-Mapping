@@ -42,7 +42,7 @@ public class FireballWeaponPrefab : ProjectileBase
             if (hit.TryGetComponent(out Enemy enemy))
             {
                 Vector2 direction = (enemy.transform.position - transform.position).normalized;
-                enemy.TakeDamage(stats.Damage, direction, stats.Knockback);
+                enemy.TakeDamage(stats.RollDamage(), direction, stats.Knockback);
             }
         }
 

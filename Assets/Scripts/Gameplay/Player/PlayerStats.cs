@@ -36,6 +36,12 @@ public class PlayerStats : MonoBehaviour
         new() { statType = PlayerStatType.Damage, minValue = 0.05f, maxValue = 0.09f, weight = 1 },
         new() { statType = PlayerStatType.Damage, minValue = 0.09f, maxValue = 0.14f, weight = 3 },
         new() { statType = PlayerStatType.Damage, minValue = 0.14f, maxValue = 0.20f, weight = 6 },
+        new() { statType = PlayerStatType.CriticalChance, minValue = 0.06f, maxValue = 0.10f, weight = 1 },
+        new() { statType = PlayerStatType.CriticalChance, minValue = 0.10f, maxValue = 0.16f, weight = 3 },
+        new() { statType = PlayerStatType.CriticalChance, minValue = 0.16f, maxValue = 0.24f, weight = 6 },
+        new() { statType = PlayerStatType.CriticalDamage, minValue = 0.10f, maxValue = 0.18f, weight = 1 },
+        new() { statType = PlayerStatType.CriticalDamage, minValue = 0.18f, maxValue = 0.28f, weight = 3 },
+        new() { statType = PlayerStatType.CriticalDamage, minValue = 0.28f, maxValue = 0.40f, weight = 6 },
         new() { statType = PlayerStatType.AttackSpeed, minValue = 0.05f, maxValue = 0.08f, weight = 1 },
         new() { statType = PlayerStatType.AttackSpeed, minValue = 0.08f, maxValue = 0.13f, weight = 3 },
         new() { statType = PlayerStatType.AttackSpeed, minValue = 0.13f, maxValue = 0.18f, weight = 6 },
@@ -116,6 +122,8 @@ public class PlayerStats : MonoBehaviour
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.MovementSpeed), PlayerStatType.MovementSpeed);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.PickupRange), PlayerStatType.PickupRange);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Damage), PlayerStatType.Damage);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.CriticalChance), PlayerStatType.CriticalChance);
+        ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.CriticalDamage), PlayerStatType.CriticalDamage);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.AttackSpeed), PlayerStatType.AttackSpeed);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Range), PlayerStatType.Range);
         ApplyEquipmentEntry(summary.GetEntry(EquipmentStatType.Knockback), PlayerStatType.Knockback);
@@ -168,6 +176,8 @@ public class PlayerStats : MonoBehaviour
                 break;
 
             case PlayerStatType.Damage:
+            case PlayerStatType.CriticalChance:
+            case PlayerStatType.CriticalDamage:
             case PlayerStatType.AttackSpeed:
             case PlayerStatType.Range:
             case PlayerStatType.Knockback:

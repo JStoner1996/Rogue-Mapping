@@ -17,4 +17,6 @@ public enum EquipmentStatType
     MapDropChance = 12,
     EquipmentDropChance = 13,
     ExperienceGain = 14,
+    CriticalChance = 17,
+    CriticalDamage = 18,
 }

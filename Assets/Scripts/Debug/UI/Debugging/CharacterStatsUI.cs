@@ -73,6 +73,8 @@ public class CharacterStatsUI : MonoBehaviour
         if (playerStats != null)
         {
             AppendPercentStat(ref desc, "Damage Bonus", playerStats.GetTotal(PlayerStatType.Damage));
+            AppendPercentStat(ref desc, "Critical Chance Bonus", playerStats.GetTotal(PlayerStatType.CriticalChance));
+            AppendPercentStat(ref desc, "Critical Damage Bonus", playerStats.GetTotal(PlayerStatType.CriticalDamage));
             AppendPercentStat(ref desc, "Attack Speed Bonus", playerStats.GetTotal(PlayerStatType.AttackSpeed));
             AppendPercentStat(ref desc, "Range Bonus", playerStats.GetTotal(PlayerStatType.Range));
             AppendPercentStat(ref desc, "Knockback Bonus", playerStats.GetTotal(PlayerStatType.Knockback));

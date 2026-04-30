@@ -73,7 +73,7 @@ public class BeamWeaponAttack : MonoBehaviour
             {
                 if (hitEnemies.Add(enemy))
                 {
-                    enemy.TakeDamage(stats.Damage, direction, stats.Knockback);
+                    enemy.TakeDamage(stats.RollDamage(), direction, stats.Knockback);
                 }
             }
         }

@@ -18,11 +18,13 @@ MonoBehaviour:
   attackPrefab: {fileID: 5855027322998723540, guid: 3077e28de779a5f4f951aaebd717e516, type: 3}
   baseStats:
     damage: 500
+    criticalChance: 0.2
     attackSpeed: 0.25
     range: 5
     knockback: 6
     duration: 0
     cooldown: 0
+    projectileSpeed: 0
     bounceCount: 0
   upgradeRolls: []
   allowedStats: 00000000010000000200000005000000

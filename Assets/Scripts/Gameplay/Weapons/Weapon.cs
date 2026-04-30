@@ -29,6 +29,7 @@ public class Weapon : MonoBehaviour
         var baseStats = data.baseStats;
 
         stats.baseDamage = baseStats.damage;
+        stats.baseCriticalChance = baseStats.criticalChance;
         stats.baseAttackSpeed = baseStats.attackSpeed;
         stats.baseKnockback = baseStats.knockback;
         stats.baseRange = baseStats.range;
@@ -42,6 +43,8 @@ public class Weapon : MonoBehaviour
         stats.knockbackMultiplier = 0f;
         stats.rangeMultiplier = 0f;
         stats.globalDamageMultiplier = 0f;
+        stats.globalCriticalChanceMultiplier = 0f;
+        stats.globalCriticalDamageBonus = 0f;
         stats.globalAttackSpeedMultiplier = 0f;
         stats.globalKnockbackMultiplier = 0f;
         stats.globalRangeMultiplier = 0f;
@@ -97,6 +100,14 @@ public class Weapon : MonoBehaviour
         {
             case PlayerStatType.Damage:
                 stats.globalDamageMultiplier += value;
+                break;
+
+            case PlayerStatType.CriticalChance:
+                stats.globalCriticalChanceMultiplier += value;
+                break;
+
+            case PlayerStatType.CriticalDamage:
+                stats.globalCriticalDamageBonus += value;
                 break;
 
             case PlayerStatType.AttackSpeed:
