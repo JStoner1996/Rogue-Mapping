@@ -111,7 +111,7 @@ public class EnemySpawner : MonoBehaviour
     private bool CanRunSpawner()
     {
         return TryGetActivePlayer()
-            && EnemySpawnEntryUtility.HasWeightedEntries(ambientPacks, EnemySpawnEntryUtility.GetAmbientSpawnWeight)
+            && EnemySpawnEntryUtility.HasWeightedEntries(ambientPacks, GetAmbientSpawnWeight)
             && TryGetWorldChunkManager(out _);
     }
 
@@ -169,7 +169,18 @@ public class EnemySpawner : MonoBehaviour
         return Mathf.Max(1, packCount);
     }
 
-    private PackEntry RollAmbientSpawnEntry() => EnemySpawnEntryUtility.RollWeightedEntry(ambientPacks, EnemySpawnEntryUtility.GetAmbientSpawnWeight);
+    private PackEntry RollAmbientSpawnEntry() => EnemySpawnEntryUtility.RollWeightedEntry(ambientPacks, GetAmbientSpawnWeight);
+
+    private float GetAmbientSpawnWeight(PackEntry entry)
+    {
+        float baseWeight = EnemySpawnEntryUtility.GetAmbientSpawnWeight(entry);
+        if (baseWeight <= 0f || !EnemySpawnEntryUtility.TryGetPackDefinition(entry, out _, out EnemyArchetypeDefinition archetypeDefinition))
+        {
+            return baseWeight;
+        }
+
+        return baseWeight * GetArchetypeSpawnWeightMultiplier(archetypeDefinition.Archetype);
+    }
 
     public bool SpawnFinalBosses(int count) => SpawnEventEnemies(EnemyArchetype.Boss, count);
 
@@ -233,7 +244,7 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        EnemySpawnContext packContext = packContextOverride ?? BuildSpawnContext();
+        EnemySpawnContext packContext = packContextOverride ?? BuildSpawnContext(enemyTemplate.Archetype);
         int packSize = GetPackSize(enemyTemplate);
         // Ambient packs choose a chunk-aware origin, while event spawns can override it.
         Vector2? generatedPackOrigin = packOriginOverride ?? GetAmbientPackSpawnOrigin();
@@ -292,15 +303,26 @@ public class EnemySpawner : MonoBehaviour
 
     private EnemySpawnContext BuildSpawnContext(EnemyRarity? rarityOverride = null)
     {
+        return BuildSpawnContext(EnemyArchetype.Fodder, rarityOverride);
+    }
+
+    private EnemySpawnContext BuildSpawnContext(EnemyArchetype archetype, EnemyRarity? rarityOverride = null)
+    {
         EnemyRarity rarity = rarityOverride ?? RollRarity();
         RarityProfile rarityProfile = GetRarityProfile(rarity);
 
         return new EnemySpawnContext
         {
             rarity = rarity,
-            healthMultiplier = rarityProfile.healthMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.EnemyHealth),
-            damageMultiplier = rarityProfile.damageMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.EnemyDamage),
-            moveSpeedMultiplier = rarityProfile.moveSpeedMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.EnemyMoveSpeed),
+            healthMultiplier = rarityProfile.healthMultiplier
+                * GetEffectiveModifier(EnemySpawnerModifierType.EnemyHealth)
+                * GetArchetypeHealthMultiplier(archetype),
+            damageMultiplier = rarityProfile.damageMultiplier
+                * GetEffectiveModifier(EnemySpawnerModifierType.EnemyDamage)
+                * GetArchetypeDamageMultiplier(archetype),
+            moveSpeedMultiplier = rarityProfile.moveSpeedMultiplier
+                * GetEffectiveModifier(EnemySpawnerModifierType.EnemyMoveSpeed)
+                * GetArchetypeMoveSpeedMultiplier(archetype),
             experienceMultiplier = rarityProfile.experienceMultiplier * GetEffectiveModifier(EnemySpawnerModifierType.ExperienceWorth),
             dropChanceMultiplier = GetEffectiveModifier(EnemySpawnerModifierType.DropChance),
         };
@@ -311,6 +333,7 @@ public class EnemySpawner : MonoBehaviour
         float quality = Mathf.Max(0f, GetEffectiveModifier(EnemySpawnerModifierType.EnemyQuality));
         float rareChance = Mathf.Clamp01(RareChancePerQuality * quality);
         float uncommonChance = Mathf.Clamp01(UncommonChancePerQuality * quality);
+        ApplyAtlasEnemyQuality(ref uncommonChance, ref rareChance);
         float roll = Random.value;
 
         if (roll < rareChance)
@@ -409,10 +432,18 @@ public class EnemySpawner : MonoBehaviour
 
         return new MapSpawnModifiers
         {
-            quantity = BuildMapModifier(MapStatType.EnemyQuantity, equipmentSummary, EquipmentStatType.EnemyQuantity),
+            quantity = BuildMapModifier(
+                MapStatType.EnemyQuantity,
+                equipmentSummary,
+                EquipmentStatType.EnemyQuantity,
+                AtlasEffectType.EnemyQuantityPercent),
             quality = BuildMapModifier(MapStatType.EnemyQuality, equipmentSummary, EquipmentStatType.EnemyQuality),
-            damage = BuildMapModifier(MapStatType.EnemyDamage),
-            health = BuildMapModifier(MapStatType.EnemyHealth),
+            damage = BuildMapModifier(
+                MapStatType.EnemyDamage,
+                atlasEffectType: AtlasEffectType.EnemyDamagePercent),
+            health = BuildMapModifier(
+                MapStatType.EnemyHealth,
+                atlasEffectType: AtlasEffectType.EnemyLifePercent),
             moveSpeed = BuildMapModifier(MapStatType.EnemyMoveSpeed),
             experience = BuildMapModifier(MapStatType.ExperienceWorth),
             dropChance = BuildMapModifier(MapStatType.DropChance),
@@ -422,7 +453,8 @@ public class EnemySpawner : MonoBehaviour
     private float BuildMapModifier(
         MapStatType mapStatType,
         EquipmentStatSummary equipmentSummary = null,
-        EquipmentStatType? equipmentStatType = null)
+        EquipmentStatType? equipmentStatType = null,
+        AtlasEffectType? atlasEffectType = null)
     {
         float modifier = 1f + GetMapModifier(mapStatType);
 
@@ -431,12 +463,56 @@ public class EnemySpawner : MonoBehaviour
             modifier += GetEquipmentPercentModifier(equipmentSummary, equipmentStatType.Value);
         }
 
+        if (atlasEffectType.HasValue)
+        {
+            modifier += GetAtlasPercentModifier(atlasEffectType.Value);
+        }
+
         return modifier;
     }
 
     private static float GetEquipmentPercentModifier(EquipmentStatSummary summary, EquipmentStatType statType) => summary?.GetEntry(statType)?.percentValue ?? 0f;
 
     private static float GetMapModifier(MapStatType statType) => RunData.SelectedMap == null ? 0f : RunData.SelectedMap.GetModifier(statType) / 100f;
+
+    private static float GetAtlasPercentModifier(AtlasEffectType effectType) =>
+        MetaProgressionService.GetAtlasEffectValue(effectType) / 100f;
+
+    private static void ApplyAtlasEnemyQuality(ref float uncommonChance, ref float rareChance)
+    {
+        float normalChance = Mathf.Clamp01(1f - uncommonChance - rareChance);
+        float qualityTransfer = Mathf.Min(normalChance, Mathf.Max(0f, GetAtlasPercentModifier(AtlasEffectType.EnemyQualityPercent)));
+
+        uncommonChance = Mathf.Clamp01(uncommonChance + (qualityTransfer * 0.5f));
+        rareChance = Mathf.Clamp01(rareChance + (qualityTransfer * 0.5f));
+    }
+
+    private static float GetArchetypeSpawnWeightMultiplier(EnemyArchetype archetype) =>
+        archetype switch
+        {
+            EnemyArchetype.Elite => 1f + GetAtlasPercentModifier(AtlasEffectType.EliteVariantChancePercent),
+            EnemyArchetype.Tank => 1f + GetAtlasPercentModifier(AtlasEffectType.TankVariantChancePercent),
+            EnemyArchetype.Skirmisher => 1f + GetAtlasPercentModifier(AtlasEffectType.SkirmisherVariantChancePercent),
+            _ => 1f,
+        };
+
+    private static float GetArchetypeHealthMultiplier(EnemyArchetype archetype) =>
+        archetype switch
+        {
+            EnemyArchetype.Elite => 1f + GetAtlasPercentModifier(AtlasEffectType.EliteEnemyHealthPercent),
+            EnemyArchetype.Tank => 1f + GetAtlasPercentModifier(AtlasEffectType.TankEnemyHealthPercent),
+            _ => 1f,
+        };
+
+    private static float GetArchetypeDamageMultiplier(EnemyArchetype archetype) =>
+        archetype == EnemyArchetype.Elite
+            ? 1f + GetAtlasPercentModifier(AtlasEffectType.EliteEnemyDamagePercent)
+            : 1f;
+
+    private static float GetArchetypeMoveSpeedMultiplier(EnemyArchetype archetype) =>
+        archetype == EnemyArchetype.Skirmisher
+            ? 1f + GetAtlasPercentModifier(AtlasEffectType.SkirmisherEnemyMoveSpeedPercent)
+            : 1f;
 
     private Vector2? GetAmbientPackSpawnOrigin()
     {

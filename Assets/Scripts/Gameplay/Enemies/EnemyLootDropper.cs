@@ -7,6 +7,7 @@ public static class EnemyLootDropper
         Vector3 position,
         int experienceWorth,
         float dropChanceMultiplier,
+        EnemyRarity enemyRarity,
         EnemyArchetypeDefinition archetypeDefinition,
         IReadOnlyList<LootItem> powerUpLootTable,
         IReadOnlyList<MetaLootItem> metaLootTable)
@@ -14,11 +15,11 @@ public static class EnemyLootDropper
         DropExperience(position, experienceWorth);
         ProcessDrops(
             powerUpLootTable,
-            lootItem => lootItem.GetAdjustedDropChance(dropChanceMultiplier),
+            lootItem => lootItem.GetAdjustedDropChance(GetPowerUpDropChanceMultiplier(dropChanceMultiplier, archetypeDefinition)),
             lootItem => SpawnPowerUp(position, lootItem));
         ProcessDrops(
             metaLootTable,
-            lootItem => lootItem.GetAdjustedDropChance(GetMetaDropChanceMultiplier(lootItem, dropChanceMultiplier)),
+            lootItem => GetMetaDropChance(lootItem, dropChanceMultiplier, enemyRarity, archetypeDefinition),
             lootItem => SpawnMetaLoot(position, lootItem, archetypeDefinition));
     }
 
@@ -126,13 +127,33 @@ public static class EnemyLootDropper
         equipmentPickup.Initialize(droppedEquipment);
     }
 
-    private static float GetMetaDropChanceMultiplier(MetaLootItem lootItem, float baseMultiplier)
+    private static float GetMetaDropChance(
+        MetaLootItem lootItem,
+        float baseMultiplier,
+        EnemyRarity enemyRarity,
+        EnemyArchetypeDefinition archetypeDefinition)
+    {
+        if (lootItem?.type == MetaLootType.Equipment
+            && IsArchetype(archetypeDefinition, EnemyArchetype.Elite)
+            && MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.EliteEnemiesAlwaysDropEquipment) > 0f)
+        {
+            return 100f;
+        }
+
+        return lootItem.GetAdjustedDropChance(GetMetaDropChanceMultiplier(lootItem, baseMultiplier, enemyRarity, archetypeDefinition));
+    }
+
+    private static float GetMetaDropChanceMultiplier(
+        MetaLootItem lootItem,
+        float baseMultiplier,
+        EnemyRarity enemyRarity,
+        EnemyArchetypeDefinition archetypeDefinition)
     {
         EquipmentStatSummary summary = MetaProgressionService.GetEquippedEquipmentStatSummary();
         EquipmentStatType? bonusStatType = GetMetaDropBonusStat(lootItem);
         EquipmentStatSummaryEntry entry = bonusStatType.HasValue ? summary?.GetEntry(bonusStatType.Value) : null;
         float equipmentIncrease = entry != null && entry.HasPercentValue ? entry.percentValue : 0f;
-        float atlasIncrease = GetMetaDropAtlasIncrease(lootItem);
+        float atlasIncrease = GetMetaDropAtlasIncrease(lootItem, enemyRarity, archetypeDefinition);
         return baseMultiplier * Mathf.Max(0f, 1f + equipmentIncrease + atlasIncrease);
     }
 
@@ -144,7 +165,10 @@ public static class EnemyLootDropper
             _ => null
         };
 
-    private static float GetMetaDropAtlasIncrease(MetaLootItem lootItem)
+    private static float GetMetaDropAtlasIncrease(
+        MetaLootItem lootItem,
+        EnemyRarity enemyRarity,
+        EnemyArchetypeDefinition archetypeDefinition)
     {
         if (lootItem == null)
         {
@@ -155,8 +179,37 @@ public static class EnemyLootDropper
             ? AtlasEffectType.MapDropChancePercent
             : AtlasEffectType.ItemDropChancePercent;
 
-        return MetaProgressionService.GetAtlasEffectValue(effectType) / 100f;
+        float atlasIncrease = MetaProgressionService.GetAtlasEffectValue(effectType) / 100f;
+
+        if (lootItem.type == MetaLootType.Map)
+        {
+            if (enemyRarity == EnemyRarity.Rare)
+            {
+                atlasIncrease += MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.RareEnemyMapDropChancePercent) / 100f;
+            }
+
+            if (IsArchetype(archetypeDefinition, EnemyArchetype.Skirmisher))
+            {
+                atlasIncrease += MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.SkirmisherMapDropChancePercent) / 100f;
+            }
+        }
+
+        return atlasIncrease;
     }
+
+    private static float GetPowerUpDropChanceMultiplier(
+        float baseMultiplier,
+        EnemyArchetypeDefinition archetypeDefinition)
+    {
+        float atlasIncrease = IsArchetype(archetypeDefinition, EnemyArchetype.Tank)
+            ? MetaProgressionService.GetAtlasEffectValue(AtlasEffectType.TankPowerupDropChancePercent) / 100f
+            : 0f;
+
+        return baseMultiplier * Mathf.Max(0f, 1f + atlasIncrease);
+    }
+
+    private static bool IsArchetype(EnemyArchetypeDefinition definition, EnemyArchetype archetype) =>
+        definition != null && definition.Archetype == archetype;
 
     private static void ProcessDrops<TLoot>(
         IReadOnlyList<TLoot> lootTable,

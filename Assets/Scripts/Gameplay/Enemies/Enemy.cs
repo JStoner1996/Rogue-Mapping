@@ -187,6 +187,7 @@ public class Enemy : MonoBehaviour
             transform.position,
             runtimeStats.experienceWorth,
             runtimeStats.dropChanceMultiplier,
+            Rarity,
             archetypeDefinition,
             powerUpLootTable,
             metaLootTable);
