@@ -12,10 +12,12 @@ public class RuntimeStats
     public float Damage => baseDamage * (1f + damageMultiplier + globalDamageMultiplier);
 
     public float baseCriticalChance;
+    public float criticalChanceMultiplier = 0f;
     public float globalCriticalChanceMultiplier = 0f;
+    public float criticalDamageBonus = 0f;
     public float globalCriticalDamageBonus = 0f;
-    public float CriticalChance => Mathf.Clamp01(baseCriticalChance * (1f + globalCriticalChanceMultiplier));
-    public float CriticalDamageMultiplier => Mathf.Max(MinimumCriticalDamageMultiplier, BaseCriticalDamageMultiplier + globalCriticalDamageBonus);
+    public float CriticalChance => Mathf.Clamp01(baseCriticalChance * (1f + criticalChanceMultiplier + globalCriticalChanceMultiplier));
+    public float CriticalDamageMultiplier => Mathf.Max(MinimumCriticalDamageMultiplier, BaseCriticalDamageMultiplier + criticalDamageBonus + globalCriticalDamageBonus);
 
     public float baseAttackSpeed = 1f;
     public float attackSpeedMultiplier = 0f;

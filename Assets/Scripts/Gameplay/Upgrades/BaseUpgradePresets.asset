@@ -29,6 +29,30 @@ MonoBehaviour:
     minValue: 0.4
     maxValue: 0.5
     weight: 6
+  - statType: 8
+    minValue: 0.06
+    maxValue: 0.1
+    weight: 1
+  - statType: 8
+    minValue: 0.1
+    maxValue: 0.16
+    weight: 2
+  - statType: 8
+    minValue: 0.16
+    maxValue: 0.24
+    weight: 4
+  - statType: 9
+    minValue: 0.1
+    maxValue: 0.18
+    weight: 1
+  - statType: 9
+    minValue: 0.18
+    maxValue: 0.3
+    weight: 2
+  - statType: 9
+    minValue: 0.3
+    maxValue: 0.45
+    weight: 4
   - statType: 1
     minValue: -0.05
     maxValue: -0.075

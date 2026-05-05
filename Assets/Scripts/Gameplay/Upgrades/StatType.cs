@@ -8,4 +8,6 @@ public enum StatType
     Knockback,
     ProjectileSpeed,
     BounceCount,
+    CriticalChance,
+    CriticalDamage,
 }

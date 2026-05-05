@@ -23,6 +23,20 @@ public class UpgradePreset : ScriptableObject
             new StatRoll { statType = StatType.Damage, minValue = 0.40f, maxValue = 0.50f, weight = 6 },
 
             // =====================
+            // CRITICAL CHANCE
+            // =====================
+            new StatRoll { statType = StatType.CriticalChance, minValue = 0.06f, maxValue = 0.10f, weight = 1 },
+            new StatRoll { statType = StatType.CriticalChance, minValue = 0.10f, maxValue = 0.16f, weight = 2 },
+            new StatRoll { statType = StatType.CriticalChance, minValue = 0.16f, maxValue = 0.24f, weight = 4 },
+
+            // =====================
+            // CRITICAL DAMAGE
+            // =====================
+            new StatRoll { statType = StatType.CriticalDamage, minValue = 0.10f, maxValue = 0.18f, weight = 1 },
+            new StatRoll { statType = StatType.CriticalDamage, minValue = 0.18f, maxValue = 0.30f, weight = 2 },
+            new StatRoll { statType = StatType.CriticalDamage, minValue = 0.30f, maxValue = 0.45f, weight = 4 },
+
+            // =====================
             // ATTACK SPEED
             // =====================
             new StatRoll { statType = StatType.AttackSpeed, minValue = -0.05f, maxValue = -0.075f, weight = 1 },

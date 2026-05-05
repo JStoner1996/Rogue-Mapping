@@ -39,6 +39,8 @@ public class Weapon : MonoBehaviour
         stats.bounceCount = baseStats.bounceCount;
 
         stats.damageMultiplier = 0f;
+        stats.criticalChanceMultiplier = 0f;
+        stats.criticalDamageBonus = 0f;
         stats.attackSpeedMultiplier = 0f;
         stats.knockbackMultiplier = 0f;
         stats.rangeMultiplier = 0f;
@@ -68,6 +70,14 @@ public class Weapon : MonoBehaviour
 
                 case StatType.Damage:
                     stats.damageMultiplier += stat.Value;
+                    break;
+
+                case StatType.CriticalChance:
+                    stats.criticalChanceMultiplier += stat.Value;
+                    break;
+
+                case StatType.CriticalDamage:
+                    stats.criticalDamageBonus += stat.Value;
                     break;
 
                 case StatType.Knockback:

@@ -29,6 +29,8 @@ public static class UpgradeDescriptionFormatter
                 return $"{statName} +{Mathf.RoundToInt(value)}";
 
             case StatType.Damage:
+            case StatType.CriticalChance:
+            case StatType.CriticalDamage:
             case StatType.Knockback:
             case StatType.AttackSpeed:
             case StatType.Range:
